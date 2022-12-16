@@ -2,6 +2,9 @@
 
 namespace DatabaseManager;
 
+use DatabaseManager\Enum\DatabaseType;
+use PDOStatement;
+
 class DatabaseManager {
 
     /**
@@ -19,8 +22,23 @@ class DatabaseManager {
     public function connect(DatabaseConnect $databaseConnect) : void {
         $databaseConnect->connect();
         self::$connection = $databaseConnect;
+    }
 
-//        var_dump(self::$connection->getConnection());
+    /**
+     * Query
+     * @param string $query
+     * @return PDOStatement|bool
+     */
+    public function query(string $query) : PDOStatement|bool {
+        return self::$connection->getConnection()->query($query);
+    }
+
+    /**
+     * Get database type
+     * @return DatabaseType
+     */
+    public static function getDatabaseType() : DatabaseType {
+        return self::$connection->getType();
     }
 
 }

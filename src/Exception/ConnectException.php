@@ -2,5 +2,5 @@
 
 namespace DatabaseManager\Exception;
 
-class ConnectException extends \Exception {
+class ConnectException extends DatabaseManagerException {
 }
