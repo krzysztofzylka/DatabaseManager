@@ -30,14 +30,23 @@ $customColumn = (new \DatabaseManager\Helper\TableColumn())
     ->setType(\DatabaseManager\Enum\ColumnType::varchar, 255) //table type with length
     ->setDefault() //default value (default empty)
     ->setPrimary(false) //is primary (default false)
-    ->setExtra() //extra value
+    ->setExtra(); //extra value
 
 
 $createTable = (new \DatabaseManager\Helper\CreateTable())
     ->setName('user') //table name
     ->addIdColumn() //predefined id column
-    ->addColumn($customColumn) //add custom column
+    ->addColumn($customColumn); //add custom column
 );
 
 $createTable->execute(); //create table
 ```
+## Predefined column
+| Method                               | Description                                | Type              | 
+|--------------------------------------|--------------------------------------------|-------------------|
+| addIdColumn()                        | ID column with autoincrement (primary key) | INTEGER / INT(24) |
+| addEmailColumn(bool $null = true)    | Email column                               | VARCHAR(255)      |
+| addUsernameColumn(bool $null = true) | Username column                            | VARCHAR(255)      |
+| addPasswordColumn(bool $null = true) | Password column                            | VARCHAR(255)      |
+| addPhoneColumn(bool $null = true)    | Phone column                               | INT(26)           |
+

@@ -10,8 +10,6 @@ $databaseManager->connect(
 $createTable = new \DatabaseManager\Helper\CreateTable();
 $createTable->setName('user');
 $createTable->addIdColumn();
-$createTable->addColumn(
-    (new \DatabaseManager\Helper\TableColumn())->setName('asd')->setNull(false)->setAutoincrement(true)->setType(\DatabaseManager\Enum\ColumnType::varchar, 255)->setDefault('as')
-);
+$createTable->addEmailColumn(false);
 
 $createTable->execute();

@@ -34,28 +34,6 @@ class CreateTable {
     }
 
     /**
-     * Add ID column
-     * @return CreateTable
-     */
-    public function addIdColumn() : self {
-        $tableColumn = (new TableColumn())
-            ->setName('id')
-            ->setType(ColumnType::int, 24)
-            ->setNull(false)
-            ->setAutoincrement(true)
-            ->setPrimary(true);
-
-        if (DatabaseManager::$connection->getType() === DatabaseType::sqlite) {
-            $tableColumn->setType(ColumnType::integer)
-                ->setAutoincrement(false);
-        }
-
-        $this->addColumn($tableColumn);
-
-        return $this;
-    }
-
-    /**
      * @param TableColumn $tableColumn
      * @return CreateTable
      */
@@ -105,6 +83,90 @@ class CreateTable {
         } catch (Exception $e) {
             throw new CreateTableException($e->getMessage());
         }
+    }
+
+    /**
+     * Add ID column
+     * @return CreateTable
+     */
+    public function addIdColumn() : self {
+        $tableColumn = (new TableColumn())
+            ->setName('id')
+            ->setType(ColumnType::int, 24)
+            ->setNull(false)
+            ->setAutoincrement(true)
+            ->setPrimary(true);
+
+        if (DatabaseManager::$connection->getType() === DatabaseType::sqlite) {
+            $tableColumn->setType(ColumnType::integer)
+                ->setAutoincrement(false);
+        }
+
+        $this->addColumn($tableColumn);
+
+        return $this;
+    }
+
+    /**
+     * Add email column
+     * @param bool $null
+     * @return CreateTable
+     */
+    public function addEmailColumn(bool $null = true) : self {
+        $tableColumn = (new TableColumn())
+            ->setName('email')
+            ->setType(ColumnType::varchar, 255)
+            ->setNull($null);
+
+        $this->addColumn($tableColumn);
+
+        return $this;
+    }
+
+    /**
+     * Add username column
+     * @param bool $null
+     * @return CreateTable
+     */
+    public function addUsernameColumn(bool $null = true) : self {
+        $tableColumn = (new TableColumn())
+            ->setName('username')
+            ->setType(ColumnType::varchar, 255)
+            ->setNull($null);
+
+        $this->addColumn($tableColumn);
+
+        return $this;
+    }
+
+    /**
+     * Add password column
+     * @param bool $null
+     * @return CreateTable
+     */
+    public function addPasswordColumn(bool $null = true) : self {
+        $tableColumn = (new TableColumn())
+            ->setName('password')
+            ->setType(ColumnType::varchar, 255)
+            ->setNull($null);
+
+        $this->addColumn($tableColumn);
+
+        return $this;
+    }
+
+    /**
+     * Add phone column
+     * @return CreateTable
+     */
+    public function addPhoneColumn() : self {
+        $tableColumn = (new TableColumn())
+            ->setName('phone')
+            ->setType(ColumnType::int, 26);
+
+        $this->addColumn($tableColumn);
+
+        return $this;
     }
 
 }
