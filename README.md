@@ -1,7 +1,6 @@
 # Connect to database
 ## MySQL
 ```php
-<?php
 $databaseConnect = (new \DatabaseManager\DatabaseConnect())
         ->setType(\DatabaseManager\Enum\DatabaseType::mysql) //type as mysql
         ->setDatabaseName('name') //database name
@@ -14,7 +13,6 @@ $databaseManager->connect($databaseConnect);
 ```
 ## SQLite
 ```php
-<?php
 $databaseConnect = (new \DatabaseManager\DatabaseConnect())
         ->setType(\DatabaseManager\Enum\DatabaseType::sqlite) //type as sqlite
         ->setSqlitePath('database.sqlite'); //sqlite path (default database.sqlite)
@@ -25,7 +23,6 @@ $databaseManager->connect($databaseConnect);
 
 # Create table
 ```php
-<?php
 $customColumn = (new \DatabaseManager\Helper\TableColumn())
     ->setName('name') //column name
     ->setNull(false) //null (true), not null (false) (default false)
