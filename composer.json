@@ -1,0 +1,20 @@
+{
+    "name": "krzysztofzylka/database-manager",
+    "description": "Database Manager",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "DatabaseManager\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "krzysztofzylka",
+            "email": "krzysztofzylka@yahoo.com"
+        }
+    ],
+    "require": {
+      "ext-pdo": "*"
+    }
+}
