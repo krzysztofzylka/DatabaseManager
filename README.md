@@ -82,9 +82,8 @@ $conditionNotAllowUser = (new Condition())
 ```php
 $table = (new GetTable())->setName('table_name');
 ```
-
-# Select
-## Find all
+## Select
+### Find all
 ```php
 use DatabaseManager\Condition;
 
@@ -105,7 +104,7 @@ $find = $table->findAll($conditions);
  * ]
  */
 ```
-## Find
+### Find
 ```php
 use DatabaseManager\Condition;
 
@@ -124,8 +123,7 @@ $find = $table->find($conditions);
  * ]
  */
 ```
-
-# Insert
+## Insert
 ```php
 use DatabaseManager\Condition;
 
@@ -137,4 +135,13 @@ $table->insert([
 ]); //return true or false
 
 $insertId = $table->getId(); //insert ID
+```
+## Set/Get id
+```php
+use DatabaseManager\Condition;
+
+$table = (new GetTable())->setName('table_name');
+
+$id = $table->getId(); //get id (insert)
+$table->setId('int'); //set id (update)
 ```

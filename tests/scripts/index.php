@@ -36,7 +36,6 @@ $table = (new GetTable())->setName('user');
 //$find = $table->find();
 
 $table->insert([
-        'id' => 4,
     'username' => 'test',
     'password' => 'test'
 ]);
