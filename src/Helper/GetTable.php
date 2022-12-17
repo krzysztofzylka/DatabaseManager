@@ -2,6 +2,7 @@
 
 namespace DatabaseManager\Helper;
 
+use DatabaseManager\Condition;
 use DatabaseManager\DatabaseManager;
 use DatabaseManager\Enum\BindType;
 use DatabaseManager\Enum\DatabaseType;
@@ -38,9 +39,10 @@ class GetTable {
 
     /**
      * Find all elements
+     * @param Condition|null $condition
      * @return array
      */
-    public function findAll() : array {
+    public function findAll(?Condition $condition = null) : array {
         $columnList = $this->getColumnList(false);
 
         foreach ($this->bind as $bind) {
@@ -48,7 +50,14 @@ class GetTable {
             $columnList = array_merge($columnList, $bindTable->getColumnList(false));
         }
 
-        $sql = 'SELECT ' . implode(', ', $columnList) . ' FROM `' . $this->getName() . '`' . implode(', ', $this->prepareBindData());
+        $sql = 'SELECT ' . implode(', ', $columnList) . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
+
+        if (!is_null($condition)) {
+            $sql .= ' WHERE ' . $condition->getPrepareConditions();
+        }
+
+        var_dump($sql);
+
         $pdo = $this->pdo->prepare($sql);
         $pdo->execute();
         $fetchData = $pdo->fetchAll(PDO::FETCH_ASSOC);

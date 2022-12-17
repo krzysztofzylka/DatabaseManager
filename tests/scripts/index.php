@@ -1,6 +1,7 @@
 <pre>
 <?php
 
+use DatabaseManager\Condition;
 use DatabaseManager\DatabaseManager;
 use DatabaseManager\Enum\BindType;
 use DatabaseManager\Enum\DatabaseType;
@@ -24,7 +25,12 @@ $databaseManager->connect(
 //    ->execute();
 
 #select
+$condition = (new Condition())
+    ->where('user.id', '2')
+    ->where('user2.password', 'p22');
 $table = (new GetTable())->setName('user');
-$findAll = $table->bind(BindType::leftJoin, 'user2', 'user.id', 'user2.id')->findAll();
+$findAll = $table
+    ->bind(BindType::leftJoin, 'user2', 'user.id', 'user2.id')
+    ->findAll($condition);
 
 var_dump($table, $findAll);
