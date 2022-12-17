@@ -5,8 +5,8 @@ use DatabaseManager\Condition;
 use DatabaseManager\DatabaseManager;
 use DatabaseManager\Enum\BindType;
 use DatabaseManager\Enum\DatabaseType;
-use DatabaseManager\Helper\CreateTable;
-use DatabaseManager\Helper\GetTable;
+use DatabaseManager\CreateTable;
+use DatabaseManager\GetTable;
 
 include('../../vendor/autoload.php');
 
