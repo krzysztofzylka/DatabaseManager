@@ -31,7 +31,7 @@ trait TableSelect {
             $sql .= ' WHERE ' . $condition->getPrepareConditions();
         }
 
-        $this->lastSql = $sql;
+         $this->setLastSql($sql);
         $pdo = $this->pdo->prepare($sql);
         $pdo->execute();
         $fetchData = $pdo->fetch(PDO::FETCH_ASSOC);
@@ -60,7 +60,7 @@ trait TableSelect {
             $sql .= ' WHERE ' . $condition->getPrepareConditions();
         }
 
-        $this->lastSql = $sql;
+         $this->setLastSql($sql);
         $pdo = $this->pdo->prepare($sql);
         $pdo->execute();
         $fetchData = $pdo->fetchAll(PDO::FETCH_ASSOC);
@@ -82,7 +82,7 @@ trait TableSelect {
         }
 
         try {
-            $this->lastSql = $sql;
+             $this->setLastSql($sql);
             $count = $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
 
             return $count['count'] ?? 0;

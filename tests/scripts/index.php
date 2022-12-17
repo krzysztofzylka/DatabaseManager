@@ -48,3 +48,4 @@ $table = (new GetTable())->setName('user');
 //$table->delete(7);
 //var_dump($table);
 //var_dump($table->findCount((new Condition())->where('id', 15, '>')));
+$table->setId(8)->updateValue('username', 'xd');

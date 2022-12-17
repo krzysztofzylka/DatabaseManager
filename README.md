@@ -156,6 +156,7 @@ $id = $table->getId(); //get id (insert)
 $table->setId('int'); //set id (update)
 ```
 ## Update
+### Standard
 ```php
 use DatabaseManager\Condition;
 
@@ -165,6 +166,14 @@ $table->update([
     'column1' => 'updated column1',
     'column2' => 'updated column2'
 ]); //return true or false
+```
+### Update single column
+```php
+use DatabaseManager\Condition;
+
+$table = (new GetTable())->setName('table_name')->setId(1);
+
+$table->updateValue('column1', 'new value'); //return bool
 ```
 ## Delete
 ```php

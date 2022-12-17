@@ -6,9 +6,9 @@ use DatabaseManager\Enum\BindType;
 use DatabaseManager\Enum\DatabaseType;
 use DatabaseManager\Exception\DeleteException;
 use DatabaseManager\Exception\InsertException;
-use DatabaseManager\Exception\UpdateException;
 use DatabaseManager\Trait\TableHelpers;
 use DatabaseManager\Trait\TableSelect;
+use DatabaseManager\Trait\TableUpdate;
 use Exception;
 use PDO;
 
@@ -22,6 +22,7 @@ class GetTable {
 
     use TableSelect;
     use TableHelpers;
+    use TableUpdate;
 
     /**
      * Constructor
@@ -122,11 +123,11 @@ class GetTable {
                 ];
             }
 
-            $this->lastSql = $sql;
+             $this->setLastSql($sql);
             return $return;
         } elseif (DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
             $sql = 'DESCRIBE `' . $this->getName() . '`;';
-            $this->lastSql = $sql;
+             $this->setLastSql($sql);
             return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         }
 
@@ -169,7 +170,7 @@ class GetTable {
             }
 
             if ($insert->execute()) {
-                $this->lastSql = $sql;
+                 $this->setLastSql($sql);
 
                 $this->setId($this->pdo->lastInsertId());
 
@@ -181,40 +182,6 @@ class GetTable {
             }
         } catch (Exception $exception) {
             throw new InsertException($exception->getMessage());
-        }
-    }
-
-    /**
-     * Update
-     * @param array $data
-     * @return bool
-     * @throws UpdateException
-     */
-    public function update(array $data) : bool {
-        if (is_null($this->getName())) {
-            throw new UpdateException('ID is not defined');
-        }
-
-        $set = [];
-
-        foreach (array_keys($data) as $name) {
-            $set[] = '`' . $name . '` = :' . $name;
-        }
-
-        $sql = 'UPDATE `' . $this->getName() . '` SET ' . implode(', ', $set) . ' WHERE id=' . $this->getId();
-
-        $update = $this->pdo->prepare($sql);
-
-        foreach ($data as $name => $value) {
-            $update->bindValue(':' . $name, $value);
-        }
-
-        if ($update->execute()) {
-            $this->lastSql = $sql;
-
-            return true;
-        } else {
-            return false;
         }
     }
 
@@ -234,7 +201,7 @@ class GetTable {
         $sql = 'DELETE FROM `' . $this->getName() . '` WHERE id=' . ($id ?? $this->getId());
 
         try {
-            $this->lastSql = $sql;
+             $this->setLastSql($sql);
 
             return (bool)$this->pdo->exec($sql);
         } catch (Exception $e) {
