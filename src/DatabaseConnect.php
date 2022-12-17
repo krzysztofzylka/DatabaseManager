@@ -136,7 +136,7 @@ class DatabaseConnect {
                     $this->getUsername() ?? '',
                     $this->getPassword() ?? '');
             } elseif ($this->getType() === DatabaseType::sqlite) {
-                $this->connection = new PDO('sqlite:' . $this->getSqlitePath() . ';charset=' . $this->getCharset());
+                $this->connection = new PDO('sqlite:' . $this->getSqlitePath());
             }
         } catch (\PDOException $e) {
             throw new ConnectException($e->getMessage());
