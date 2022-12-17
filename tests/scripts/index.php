@@ -7,9 +7,17 @@ $databaseManager->connect(
     (new \DatabaseManager\DatabaseConnect())
         ->setType(\DatabaseManager\Enum\DatabaseType::sqlite)
 );
-$createTable = new \DatabaseManager\Helper\CreateTable();
-$createTable->setName('user');
-$createTable->addIdColumn();
-$createTable->addEmailColumn(false);
 
-$createTable->execute();
+#create table
+//$createTable = (new \DatabaseManager\Helper\CreateTable())
+//    ->setName('user')
+//    ->addIdColumn()
+//    ->addUsernameColumn()
+//    ->addPasswordColumn()
+//    ->execute();
+
+#select
+$table = (new \DatabaseManager\Helper\GetTable())->setName('user');
+$findAll = $table->findAll();
+
+var_dump($table, $findAll);
