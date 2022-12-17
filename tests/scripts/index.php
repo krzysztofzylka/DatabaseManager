@@ -35,9 +35,16 @@ $table = (new GetTable())->setName('user');
 
 //$find = $table->find();
 
-$table->insert([
-    'username' => 'test',
-    'password' => 'test'
-]);
+//$table->insert([
+//    'username' => 'test',
+//    'password' => 'test'
+//]);
 
-var_dump($table, $table->getId());
+//$table->setId(4);
+//$table->update([
+//        'username' => 'updaterusername',
+//    'password' => 'updatepassword'
+//]);
+//$table->delete(7);
+//var_dump($table);
+//var_dump($table->findCount((new Condition())->where('id', 15, '>')));

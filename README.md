@@ -123,6 +123,15 @@ $find = $table->find($conditions);
  * ]
  */
 ```
+### Find count
+```php
+use DatabaseManager\Condition;
+
+$table = (new GetTable())->setName('table_name');
+
+$condition = new Condition();
+$count = $table->findCount($condition); // int, condition is not required
+```
 ## Insert
 ```php
 use DatabaseManager\Condition;
@@ -144,4 +153,24 @@ $table = (new GetTable())->setName('table_name');
 
 $id = $table->getId(); //get id (insert)
 $table->setId('int'); //set id (update)
+```
+## Update
+```php
+use DatabaseManager\Condition;
+
+$table = (new GetTable())->setName('table_name')->setId(1);
+
+$table->update([
+    'column1' => 'updated column1',
+    'column2' => 'updated column2'
+]); //return true or false
+```
+## Delete
+```php
+use DatabaseManager\Condition;
+
+$table = (new GetTable())->setName('table_name');
+
+$table->setId(2)->delete(); // delete item id=2
+$table->delete(6); //delete item id=6
 ```

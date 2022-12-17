@@ -6,7 +6,10 @@ use DatabaseManager\Condition;
 use DatabaseManager\DatabaseManager;
 use DatabaseManager\Enum\BindType;
 use DatabaseManager\Enum\DatabaseType;
+use DatabaseManager\Exception\CountException;
+use DatabaseManager\Exception\DeleteException;
 use DatabaseManager\Exception\InsertException;
+use DatabaseManager\Exception\UpdateException;
 use Exception;
 use PDO;
 
@@ -84,8 +87,7 @@ class GetTable {
             $sql .= ' WHERE ' . $condition->getPrepareConditions();
         }
 
-        var_dump($sql);
-
+        $this->lastSql = $sql;
         $pdo = $this->pdo->prepare($sql);
         $pdo->execute();
         $fetchData = $pdo->fetchAll(PDO::FETCH_ASSOC);
@@ -114,8 +116,7 @@ class GetTable {
             $sql .= ' WHERE ' . $condition->getPrepareConditions();
         }
 
-        var_dump($sql);
-
+        $this->lastSql = $sql;
         $pdo = $this->pdo->prepare($sql);
         $pdo->execute();
         $fetchData = $pdo->fetch(PDO::FETCH_ASSOC);
@@ -147,7 +148,8 @@ class GetTable {
     public function columnList() : array|bool {
         if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
             $return = [];
-            $data = $this->pdo->query('pragma table_info("user");')->fetchAll(PDO::FETCH_ASSOC);
+            $sql = 'pragma table_info("user");';
+            $data = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($data as $column) {
                 $return[] = [
@@ -160,9 +162,12 @@ class GetTable {
                 ];
             }
 
+            $this->lastSql = $sql;
             return $return;
         } elseif (DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
-            return $this->pdo->query('DESCRIBE `' . $this->getName() . '`;')->fetchAll(PDO::FETCH_ASSOC);
+            $sql = 'DESCRIBE `' . $this->getName() . '`;';
+            $this->lastSql = $sql;
+            return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         }
 
         return false;
@@ -268,6 +273,81 @@ class GetTable {
      */
     private function getName() : string {
         return $this->name;
+    }
+
+    /**
+     * Update
+     * @param array $data
+     * @return bool
+     * @throws UpdateException
+     */
+    public function update(array $data) : bool {
+        if (is_null($this->getName())) {
+            throw new UpdateException('ID is not defined');
+        }
+
+        $set = [];
+
+        foreach (array_keys($data) as $name) {
+            $set[] = '`' . $name . '` = :' . $name;
+        }
+
+        $sql = 'UPDATE `' . $this->getName() . '` SET ' . implode(', ', $set) . ' WHERE id=' . $this->getId();
+
+        $update = $this->pdo->prepare($sql);
+
+        foreach ($data as $name => $value) {
+            $update->bindValue(':' . $name, $value);
+        }
+
+        if ($update->execute()) {
+            $this->lastSql = $sql;
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Delete
+     * @param ?int $id
+     * @return bool
+     * @throws DeleteException
+     */
+    public function delete(?int $id = null) {
+        $id = $id ?? $this->getId();
+
+        if (is_null($id)) {
+            throw new DeleteException('ID must be integer');
+        }
+
+        $sql = 'DELETE FROM `' . $this->getName() . '` WHERE id=' . ($id ?? $this->getId());
+
+        try {
+            $this->lastSql = $sql;
+
+            return (bool)$this->pdo->exec($sql);
+        } catch (Exception $e) {
+            throw new DeleteException($e->getMessage());
+        }
+    }
+
+    public function findCount(?Condition $condition = null) {
+        $sql = 'SELECT COUNT(*) as `count` FROM `' . $this->getName() . '`';
+
+        if (!is_null($condition)) {
+            $sql .= ' WHERE ' . $condition->getPrepareConditions();
+        }
+
+        try {
+            $this->lastSql = $sql;
+            $count = $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
+
+            return $count['count'] ?? 0;
+        } catch (Exception $e) {
+            throw new CountException($e->getMessage());
+        }
     }
 
 }
