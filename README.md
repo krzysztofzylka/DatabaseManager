@@ -4,6 +4,7 @@
 $databaseConnect = (new \DatabaseManager\DatabaseConnect())
         ->setType(\DatabaseManager\Enum\DatabaseType::mysql) //type as mysql
         ->setDatabaseName('name') //database name
+        ->setCharset('utf8') //set database charset (default utf8)
         ->setHost('127.0.0.1') //database host (default 127.0.0.1)
         ->setUsername('username') //database username
         ->setPassword('password'); //database password

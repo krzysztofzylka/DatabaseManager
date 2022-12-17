@@ -15,6 +15,7 @@ class DatabaseConnect {
     private PDO $connection;
     private DatabaseType $type = DatabaseType::mysql;
     private string $sqlitePath = 'database.sqlite';
+    private string $charset = 'utf8';
 
     /**
      * Set host
@@ -131,11 +132,11 @@ class DatabaseConnect {
         try {
             if ($this->getType() === DatabaseType::mysql) {
                 $this->connection = new PDO(
-                    'mysql:host=' . $this->getHost() . ';dbname=' . $this->getDatabaseName(),
+                    'mysql:host=' . $this->getHost() . ';dbname=' . $this->getDatabaseName() . ';charset=' . $this->getCharset(),
                     $this->getUsername() ?? '',
                     $this->getPassword() ?? '');
             } elseif ($this->getType() === DatabaseType::sqlite) {
-                $this->connection = new PDO("sqlite:" . $this->getSqlitePath());
+                $this->connection = new PDO('sqlite:' . $this->getSqlitePath() . ';charset=' . $this->getCharset());
             }
         } catch (\PDOException $e) {
             throw new ConnectException($e->getMessage());
@@ -156,6 +157,25 @@ class DatabaseConnect {
      */
     public function getType() : DatabaseType {
         return $this->type;
+    }
+
+    /**
+     * Set charset
+     * @param string $charset
+     * @return DatabaseConnect
+     */
+    public function setCharset(string $charset) : self {
+        $this->charset = $charset;
+
+        return $this;
+    }
+
+    /**
+     * Get charset
+     * @return string
+     */
+    public function getCharset() : string {
+        return $this->charset;
     }
 
 }
