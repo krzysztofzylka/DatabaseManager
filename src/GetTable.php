@@ -4,10 +4,11 @@ namespace DatabaseManager;
 
 use DatabaseManager\Enum\BindType;
 use DatabaseManager\Enum\DatabaseType;
-use DatabaseManager\Exception\CountException;
 use DatabaseManager\Exception\DeleteException;
 use DatabaseManager\Exception\InsertException;
 use DatabaseManager\Exception\UpdateException;
+use DatabaseManager\Trait\TableHelpers;
+use DatabaseManager\Trait\TableSelect;
 use Exception;
 use PDO;
 
@@ -19,11 +20,22 @@ class GetTable {
     private ?int $id = null;
     private ?string $lastSql = null;
 
+    use TableSelect;
+    use TableHelpers;
+
     /**
      * Constructor
      */
     public function __construct() {
         $this->pdo = DatabaseManager::$connection->getConnection();
+    }
+
+    /**
+     * Get table name
+     * @return string
+     */
+    private function getName() : string {
+        return $this->name;
     }
 
     /**
@@ -65,61 +77,11 @@ class GetTable {
     }
 
     /**
-     * Find all elements
-     * @param ?Condition $condition
-     * @return array
+     * Set last sql
+     * @param ?string $lastSql
      */
-    public function findAll(?Condition $condition = null) : array {
-        $columnList = $this->getColumnList(false);
-
-        if (isset($this->bind)) {
-            foreach ($this->bind as $bind) {
-                $bindTable = (new GetTable())->setName($bind['tableName']);
-                $columnList = array_merge($columnList, $bindTable->getColumnList(false));
-            }
-        }
-
-        $sql = 'SELECT ' . implode(', ', $columnList) . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
-
-        if (!is_null($condition)) {
-            $sql .= ' WHERE ' . $condition->getPrepareConditions();
-        }
-
-        $this->lastSql = $sql;
-        $pdo = $this->pdo->prepare($sql);
-        $pdo->execute();
-        $fetchData = $pdo->fetchAll(PDO::FETCH_ASSOC);
-
-        return $this->prepareReturnValue($fetchData);
-    }
-
-    /**
-     * Find one element
-     * @param ?Condition $condition
-     * @return array
-     */
-    public function find(?Condition $condition = null) : array {
-        $columnList = $this->getColumnList(false);
-
-        if (isset($this->bind)) {
-            foreach ($this->bind as $bind) {
-                $bindTable = (new GetTable())->setName($bind['tableName']);
-                $columnList = array_merge($columnList, $bindTable->getColumnList(false));
-            }
-        }
-
-        $sql = 'SELECT ' . implode(', ', $columnList) . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
-
-        if (!is_null($condition)) {
-            $sql .= ' WHERE ' . $condition->getPrepareConditions();
-        }
-
-        $this->lastSql = $sql;
-        $pdo = $this->pdo->prepare($sql);
-        $pdo->execute();
-        $fetchData = $pdo->fetch(PDO::FETCH_ASSOC);
-
-        return $this->prepareReturnValue($fetchData);
+    public function setLastSql(?string $lastSql) : void {
+        $this->lastSql = $lastSql;
     }
 
     /**
@@ -172,11 +134,11 @@ class GetTable {
     }
 
     /**
-     * Get column list
+     * prepare column list
      * @param bool $asString
      * @return array|string
      */
-    public function getColumnList(bool $asString = true) : array|string {
+    public function prepareColumnList(bool $asString = true) : array|string {
         $columnList = $this->columnList();
         $columnListString = [];
 
@@ -223,57 +185,6 @@ class GetTable {
     }
 
     /**
-     * Prepare return data
-     * @param array $data
-     * @return array
-     */
-    private function prepareReturnValue(array $data) : array {
-        $returnData = [];
-
-        if (isset(array_keys($data)[0]) && is_int(array_keys($data)[0])) {
-            foreach ($data as $key => $insideData) {
-                foreach ($insideData as $name => $value) {
-                    $explode = explode('.', $name, 2);
-                    $returnData[$key][$explode[0]][$explode[1]] = $value;
-                }
-            }
-        } else {
-            foreach ($data as $name => $value) {
-                $explode = explode('.', $name, 2);
-                $returnData[$explode[0]][$explode[1]] = $value;
-            }
-        }
-
-        return $returnData;
-    }
-
-    /**
-     * Prepare bind data
-     * @return array
-     */
-    private function prepareBindData() : array {
-        if (!isset($this->bind)) {
-            return [];
-        }
-
-        $return = [];
-
-        foreach ($this->bind as $bind) {
-            $return[] = $bind['type'] . ' `' . $bind['tableName'] . '` ON ' . $bind['primaryKey'] . ' = ' . $bind['foreignKey'];
-        }
-
-        return $return;
-    }
-
-    /**
-     * Get table name
-     * @return string
-     */
-    private function getName() : string {
-        return $this->name;
-    }
-
-    /**
      * Update
      * @param array $data
      * @return bool
@@ -313,7 +224,7 @@ class GetTable {
      * @return bool
      * @throws DeleteException
      */
-    public function delete(?int $id = null) {
+    public function delete(?int $id = null) : bool {
         $id = $id ?? $this->getId();
 
         if (is_null($id)) {
@@ -328,29 +239,6 @@ class GetTable {
             return (bool)$this->pdo->exec($sql);
         } catch (Exception $e) {
             throw new DeleteException($e->getMessage());
-        }
-    }
-
-    /**
-     * Count
-     * @param ?Condition $condition
-     * @return int
-     * @throws CountException
-     */
-    public function findCount(?Condition $condition = null) : int {
-        $sql = 'SELECT COUNT(*) as `count` FROM `' . $this->getName() . '`';
-
-        if (!is_null($condition)) {
-            $sql .= ' WHERE ' . $condition->getPrepareConditions();
-        }
-
-        try {
-            $this->lastSql = $sql;
-            $count = $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
-
-            return $count['count'] ?? 0;
-        } catch (Exception $e) {
-            throw new CountException($e->getMessage());
         }
     }
 
