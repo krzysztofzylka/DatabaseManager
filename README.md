@@ -50,3 +50,17 @@ $createTable->execute(); //create table
 | addPasswordColumn(bool $null = true) | Password column                            | VARCHAR(255)      |
 | addPhoneColumn(bool $null = true)    | Phone column                               | INT(26)           |
 
+# Conditions
+```php
+use DatabaseManager\Condition;
+
+$condition = (new Condition())
+    ->where('user.id', '1');
+
+$conditionNotAllowUser = (new Condition())
+    ->orWhere(
+        (new Condition())
+        ->where(['user.blocked', 0])
+        ->where(['user.disabled', 0])
+    );
+```
