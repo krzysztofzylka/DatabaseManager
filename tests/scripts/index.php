@@ -1,15 +1,22 @@
 <pre>
 <?php
+
+use DatabaseManager\DatabaseManager;
+use DatabaseManager\Enum\BindType;
+use DatabaseManager\Enum\DatabaseType;
+use DatabaseManager\Helper\CreateTable;
+use DatabaseManager\Helper\GetTable;
+
 include('../../vendor/autoload.php');
 
-$databaseManager = new \DatabaseManager\DatabaseManager();
+$databaseManager = new DatabaseManager();
 $databaseManager->connect(
     (new \DatabaseManager\DatabaseConnect())
-        ->setType(\DatabaseManager\Enum\DatabaseType::sqlite)
+        ->setType(DatabaseType::sqlite)
 );
 
 #create table
-//$createTable = (new \DatabaseManager\Helper\CreateTable())
+//$createTable = (new CreateTable())
 //    ->setName('user')
 //    ->addIdColumn()
 //    ->addUsernameColumn()
@@ -17,7 +24,7 @@ $databaseManager->connect(
 //    ->execute();
 
 #select
-$table = (new \DatabaseManager\Helper\GetTable())->setName('user');
-$findAll = $table->findAll();
+$table = (new GetTable())->setName('user');
+$findAll = $table->bind(BindType::leftJoin, 'user2', 'user.id', 'user2.id')->findAll();
 
 var_dump($table, $findAll);

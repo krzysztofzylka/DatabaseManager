@@ -3,6 +3,7 @@
 namespace DatabaseManager\Helper;
 
 use DatabaseManager\DatabaseManager;
+use DatabaseManager\Enum\BindType;
 use DatabaseManager\Enum\DatabaseType;
 use PDO;
 
@@ -10,6 +11,7 @@ class GetTable {
 
     private string $name;
     private PDO $pdo;
+    private array $bind;
 
     public function __construct() {
         $this->pdo = DatabaseManager::$connection->getConnection();
@@ -39,12 +41,36 @@ class GetTable {
      * @return array
      */
     public function findAll() : array {
-        $sql = 'SELECT ' . $this->getColumnList() . ' FROM `' . $this->getName() . '`';
+        $columnList = $this->getColumnList(false);
+
+        foreach ($this->bind as $bind) {
+            $bindTable = (new GetTable())->setName($bind['tableName']);
+            $columnList = array_merge($columnList, $bindTable->getColumnList(false));
+        }
+
+        $sql = 'SELECT ' . implode(', ', $columnList) . ' FROM `' . $this->getName() . '`' . implode(', ', $this->prepareBindData());
         $pdo = $this->pdo->prepare($sql);
         $pdo->execute();
         $fetchData = $pdo->fetchAll(PDO::FETCH_ASSOC);
 
         return $this->prepareReturnValue($fetchData);
+    }
+
+    /**
+     * Bind table
+     * @param BindType $bindType
+     * @param string $tableName
+     * @param ?string $primaryKey
+     * @param ?string $foreignKey
+     * @return $this
+     */
+    public function bind(BindType $bindType, string $tableName, ?string $primaryKey = null, ?string $foreignKey = null) : self {
+        $primaryKey = $primaryKey ?? ('`' . $this->getName() . '`.`id`');
+        $foreignKey = $foreignKey ?? ('`' . $this->getName() . '`.`' . $this->getName() . '_id`');
+
+        $this->bind[] = ['type' => $bindType->value, 'tableName' => $tableName, 'primaryKey' => $primaryKey, 'foreignKey' => $foreignKey];
+
+        return $this;
     }
 
     /**
@@ -118,6 +144,20 @@ class GetTable {
         }
 
         return $returnData;
+    }
+
+    /**
+     * Prepare bind data
+     * @return array
+     */
+    private function prepareBindData() : array {
+        $return = [];
+
+        foreach ($this->bind as $bind) {
+            $return[] = $bind['type'] . ' `' . $bind['tableName'] . '` ON ' . $bind['primaryKey'] . ' = ' . $bind['foreignKey'];
+        }
+
+        return $return;
     }
 
 }
