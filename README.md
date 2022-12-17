@@ -42,7 +42,7 @@ $customColumn = (new \DatabaseManager\Helper\TableColumn())
     ->setExtra(); //extra value
 
 
-$createTable = (new \DatabaseManager\Helper\CreateTable())
+$createTable = (new \DatabaseManager\CreateTable())
     ->setName('user') //table name
     ->addIdColumn() //predefined id column
     ->addColumn($customColumn); //add custom column

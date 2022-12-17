@@ -1,9 +1,7 @@
 <?php
 
-namespace DatabaseManager\Helper;
+namespace DatabaseManager;
 
-use DatabaseManager\Condition;
-use DatabaseManager\DatabaseManager;
 use DatabaseManager\Enum\BindType;
 use DatabaseManager\Enum\DatabaseType;
 use DatabaseManager\Exception\CountException;
@@ -333,7 +331,13 @@ class GetTable {
         }
     }
 
-    public function findCount(?Condition $condition = null) {
+    /**
+     * Count
+     * @param ?Condition $condition
+     * @return int
+     * @throws CountException
+     */
+    public function findCount(?Condition $condition = null) : int {
         $sql = 'SELECT COUNT(*) as `count` FROM `' . $this->getName() . '`';
 
         if (!is_null($condition)) {

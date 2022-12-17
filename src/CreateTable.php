@@ -1,11 +1,12 @@
 <?php
 
-namespace DatabaseManager\Helper;
+namespace DatabaseManager;
 
 use DatabaseManager\DatabaseManager;
 use DatabaseManager\Enum\ColumnType;
 use DatabaseManager\Enum\DatabaseType;
 use DatabaseManager\Exception\CreateTableException;
+use DatabaseManager\Helper\TableColumn;
 use Exception;
 
 class CreateTable {
