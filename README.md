@@ -57,6 +57,9 @@ use DatabaseManager\Condition;
 $condition = (new Condition())
     ->where('user.id', '1');
 
+$condition2 = (new Condition())
+    ->where('user.id', '3', '>=');
+
 $conditionNotAllowUser = (new Condition())
     ->orWhere(
         (new Condition())
