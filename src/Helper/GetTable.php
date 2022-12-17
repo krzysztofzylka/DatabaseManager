@@ -38,7 +38,7 @@ class GetTable {
      * Find all elements
      * @return array
      */
-    public function findAll() {
+    public function findAll() : array {
         $sql = 'SELECT ' . $this->getColumnList() . ' FROM `' . $this->getName() . '`';
         $pdo = $this->pdo->prepare($sql);
         $pdo->execute();
