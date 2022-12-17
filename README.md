@@ -21,6 +21,15 @@ $databaseManager = new \DatabaseManager\DatabaseManager();
 $databaseManager->connect($databaseConnect);
 ```
 
+# Custom query
+```php
+$databaseManager = new DatabaseManager();
+
+# database connect
+
+$databaseManager->query('sql');
+```
+
 # Create table
 ```php
 $customColumn = (new \DatabaseManager\Helper\TableColumn())
@@ -66,4 +75,66 @@ $conditionNotAllowUser = (new Condition())
         ->where(['user.blocked', 0])
         ->where(['user.disabled', 0])
     );
+```
+
+# Table
+## Get table
+```php
+$table = (new GetTable())->setName('table_name');
+```
+
+# Select
+## Find all
+```php
+use DatabaseManager\Condition;
+
+$table = (new GetTable())->setName('table_name');
+
+$conditions = new Condition(); //conditions not required
+$find = $table->findAll($conditions);
+
+/**
+ * example findAll
+ * [
+ *   0 => [
+ *     'table_name' => [
+ *       'id' => 1,
+ *       'name' => 'string'
+ *     ]
+ *   ]
+ * ]
+ */
+```
+## Find
+```php
+use DatabaseManager\Condition;
+
+$table = (new GetTable())->setName('table_name');
+
+$conditions = new Condition(); //conditions not required
+$find = $table->find($conditions);
+
+/**
+ * example find
+ * [
+ *   'table_name' => [
+ *     'id' => 1,
+ *     'name' => 'string'
+ *   ]
+ * ]
+ */
+```
+
+# Insert
+```php
+use DatabaseManager\Condition;
+
+$table = (new GetTable())->setName('table_name');
+
+$table->insert([
+    'column1' => 'value1',
+    'column2' => 'value2'
+]); //return true or false
+
+$insertId = $table->getId(); //insert ID
 ```

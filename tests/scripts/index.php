@@ -25,12 +25,20 @@ $databaseManager->connect(
 //    ->execute();
 
 #select
-$condition = (new Condition())
-    ->where('user.id', '2')
-    ->where('user2.password', 'p22');
+//$condition = (new Condition())
+//    ->where('user.id', '2')
+//    ->where('user2.password', 'p22');
 $table = (new GetTable())->setName('user');
-$findAll = $table
-    ->bind(BindType::leftJoin, 'user2', 'user.id', 'user2.id')
-    ->findAll($condition);
+//$findAll = $table
+//    ->bind(BindType::leftJoin, 'user2', 'user.id', 'user2.id')
+//    ->findAll($condition);
 
-var_dump($table, $findAll);
+//$find = $table->find();
+
+$table->insert([
+        'id' => 4,
+    'username' => 'test',
+    'password' => 'test'
+]);
+
+var_dump($table, $table->getId());

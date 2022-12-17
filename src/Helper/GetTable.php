@@ -6,6 +6,8 @@ use DatabaseManager\Condition;
 use DatabaseManager\DatabaseManager;
 use DatabaseManager\Enum\BindType;
 use DatabaseManager\Enum\DatabaseType;
+use DatabaseManager\Exception\InsertException;
+use Exception;
 use PDO;
 
 class GetTable {
@@ -13,7 +15,12 @@ class GetTable {
     private string $name;
     private PDO $pdo;
     private array $bind;
+    private ?int $id = null;
+    private ?string $lastSql = null;
 
+    /**
+     * Constructor
+     */
     public function __construct() {
         $this->pdo = DatabaseManager::$connection->getConnection();
     }
@@ -30,24 +37,45 @@ class GetTable {
     }
 
     /**
-     * Get table name
-     * @return string
+     * Get ID
+     * @return ?int
      */
-    private function getName() : string {
-        return $this->name;
+    public function getId() : ?int {
+        return $this->id;
+    }
+
+    /**
+     * Set ID
+     * @param ?int $id
+     * @return GetTable
+     */
+    public function setId(?int $id) : self {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
+     * Get last sql
+     * @return string|null
+     */
+    public function getLastSql() : ?string {
+        return $this->lastSql;
     }
 
     /**
      * Find all elements
-     * @param Condition|null $condition
+     * @param ?Condition $condition
      * @return array
      */
     public function findAll(?Condition $condition = null) : array {
         $columnList = $this->getColumnList(false);
 
-        foreach ($this->bind as $bind) {
-            $bindTable = (new GetTable())->setName($bind['tableName']);
-            $columnList = array_merge($columnList, $bindTable->getColumnList(false));
+        if (isset($this->bind)) {
+            foreach ($this->bind as $bind) {
+                $bindTable = (new GetTable())->setName($bind['tableName']);
+                $columnList = array_merge($columnList, $bindTable->getColumnList(false));
+            }
         }
 
         $sql = 'SELECT ' . implode(', ', $columnList) . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
@@ -61,6 +89,36 @@ class GetTable {
         $pdo = $this->pdo->prepare($sql);
         $pdo->execute();
         $fetchData = $pdo->fetchAll(PDO::FETCH_ASSOC);
+
+        return $this->prepareReturnValue($fetchData);
+    }
+
+    /**
+     * Find one element
+     * @param ?Condition $condition
+     * @return array
+     */
+    public function find(?Condition $condition = null) : array {
+        $columnList = $this->getColumnList(false);
+
+        if (isset($this->bind)) {
+            foreach ($this->bind as $bind) {
+                $bindTable = (new GetTable())->setName($bind['tableName']);
+                $columnList = array_merge($columnList, $bindTable->getColumnList(false));
+            }
+        }
+
+        $sql = 'SELECT ' . implode(', ', $columnList) . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
+
+        if (!is_null($condition)) {
+            $sql .= ' WHERE ' . $condition->getPrepareConditions();
+        }
+
+        var_dump($sql);
+
+        $pdo = $this->pdo->prepare($sql);
+        $pdo->execute();
+        $fetchData = $pdo->fetch(PDO::FETCH_ASSOC);
 
         return $this->prepareReturnValue($fetchData);
     }
@@ -131,6 +189,37 @@ class GetTable {
     }
 
     /**
+     * Insert data
+     * @param array $data
+     * @return bool
+     * @throws InsertException
+     */
+    public function insert(array $data) : bool {
+        try {
+            $sql = 'INSERT INTO ' . $this->getName() . ' (`' . implode('`, `', array_keys($data)) . '`) VALUES (:' . implode(', :', array_keys($data)) . ')';
+            $insert = $this->pdo->prepare($sql);
+
+            foreach ($data as $name => $value) {
+                $insert->bindValue(':' . $name, $value);
+            }
+
+            if ($insert->execute()) {
+                $this->lastSql = $sql;
+
+                $this->setId($this->pdo->lastInsertId());
+
+                return true;
+            } else {
+                $this->setId(null);
+
+                return false;
+            }
+        } catch (Exception $exception) {
+            throw new InsertException($exception->getMessage());
+        }
+    }
+
+    /**
      * Prepare return data
      * @param array $data
      * @return array
@@ -160,6 +249,10 @@ class GetTable {
      * @return array
      */
     private function prepareBindData() : array {
+        if (!isset($this->bind)) {
+            return [];
+        }
+
         $return = [];
 
         foreach ($this->bind as $bind) {
@@ -167,6 +260,14 @@ class GetTable {
         }
 
         return $return;
+    }
+
+    /**
+     * Get table name
+     * @return string
+     */
+    private function getName() : string {
+        return $this->name;
     }
 
 }
