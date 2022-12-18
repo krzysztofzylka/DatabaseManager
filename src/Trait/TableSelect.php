@@ -42,9 +42,10 @@ trait TableSelect {
     /**
      * Find all elements
      * @param ?Condition $condition
+     * @param string|null $orderBy
      * @return array
      */
-    public function findAll(?Condition $condition = null) : array {
+    public function findAll(?Condition $condition = null, ?string $orderBy = null) : array {
         $columnList = $this->prepareColumnList(false);
 
         if (isset($this->bind)) {
@@ -60,7 +61,11 @@ trait TableSelect {
             $sql .= ' WHERE ' . $condition->getPrepareConditions();
         }
 
-         $this->setLastSql($sql);
+        if (!is_null($orderBy)) {
+            $sql .= ' ORDER BY ' . $orderBy;
+        }
+
+        $this->setLastSql($sql);
         $pdo = $this->pdo->prepare($sql);
         $pdo->execute();
         $fetchData = $pdo->fetchAll(PDO::FETCH_ASSOC);
