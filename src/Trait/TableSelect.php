@@ -4,6 +4,7 @@ namespace DatabaseManager\Trait;
 
 use DatabaseManager\Condition;
 use DatabaseManager\Exception\CountException;
+use DatabaseManager\Exception\SelectException;
 use DatabaseManager\GetTable;
 use Exception;
 use PDO;
@@ -14,29 +15,25 @@ trait TableSelect {
      * Find one element
      * @param ?Condition $condition
      * @return array
+     * @throws SelectException
      */
     public function find(?Condition $condition = null) : array {
-        $columnList = $this->prepareColumnList(false);
-
-        if (isset($this->bind)) {
-            foreach ($this->bind as $bind) {
-                $bindTable = (new GetTable())->setName($bind['tableName']);
-                $columnList = array_merge($columnList, $bindTable->prepareColumnList(false));
-            }
-        }
-
-        $sql = 'SELECT ' . implode(', ', $columnList) . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
+        $sql = 'SELECT ' . $this->prepareColumnListForSql() . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
             $sql .= ' WHERE ' . $condition->getPrepareConditions();
         }
 
-         $this->setLastSql($sql);
-        $pdo = $this->pdo->prepare($sql);
-        $pdo->execute();
-        $fetchData = $pdo->fetch(PDO::FETCH_ASSOC);
+        try {
+            $this->setLastSql($sql);
+            $pdo = $this->pdo->prepare($sql);
+            $pdo->execute();
+            $fetchData = $pdo->fetch(PDO::FETCH_ASSOC);
 
-        return $this->prepareReturnValue($fetchData);
+            return $this->prepareReturnValue($fetchData);
+        } catch (Exception $exception) {
+            throw new SelectException($exception->getMessage());
+        }
     }
 
     /**
@@ -45,18 +42,10 @@ trait TableSelect {
      * @param string|null $orderBy
      * @param string|null $limit
      * @return array
+     * @throws SelectException
      */
     public function findAll(?Condition $condition = null, ?string $orderBy = null, ?string $limit = null) : array {
-        $columnList = $this->prepareColumnList(false);
-
-        if (isset($this->bind)) {
-            foreach ($this->bind as $bind) {
-                $bindTable = (new GetTable())->setName($bind['tableName']);
-                $columnList = array_merge($columnList, $bindTable->prepareColumnList(false));
-            }
-        }
-
-        $sql = 'SELECT ' . implode(', ', $columnList) . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
+        $sql = 'SELECT ' . $this->prepareColumnListForSql() . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
             $sql .= ' WHERE ' . $condition->getPrepareConditions();
@@ -70,12 +59,16 @@ trait TableSelect {
             $sql .= ' LIMIT ' . $limit;
         }
 
-        $this->setLastSql($sql);
-        $pdo = $this->pdo->prepare($sql);
-        $pdo->execute();
-        $fetchData = $pdo->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $this->setLastSql($sql);
+            $pdo = $this->pdo->prepare($sql);
+            $pdo->execute();
+            $fetchData = $pdo->fetchAll(PDO::FETCH_ASSOC);
 
-        return $this->prepareReturnValue($fetchData);
+            return $this->prepareReturnValue($fetchData);
+        } catch (Exception $exception) {
+            throw new SelectException($exception->getMessage());
+        }
     }
 
     /**
@@ -92,13 +85,30 @@ trait TableSelect {
         }
 
         try {
-             $this->setLastSql($sql);
+            $this->setLastSql($sql);
             $count = $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
 
             return $count['count'] ?? 0;
         } catch (Exception $e) {
             throw new CountException($e->getMessage());
         }
+    }
+
+    /**
+     * Prepare column list for select
+     * @return string
+     */
+    private function prepareColumnListForSql() : string {
+        $columnList = $this->prepareColumnList(false);
+
+        if (isset($this->bind)) {
+            foreach ($this->bind as $bind) {
+                $bindTable = (new GetTable())->setName($bind['tableName']);
+                $columnList = array_merge($columnList, $bindTable->prepareColumnList(false));
+            }
+        }
+
+        return implode(', ', $columnList);
     }
 
 }
