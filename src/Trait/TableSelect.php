@@ -3,7 +3,6 @@
 namespace DatabaseManager\Trait;
 
 use DatabaseManager\Condition;
-use DatabaseManager\Exception\CountException;
 use DatabaseManager\Exception\SelectException;
 use DatabaseManager\GetTable;
 use Exception;
