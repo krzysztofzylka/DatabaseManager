@@ -75,7 +75,7 @@ trait TableSelect {
      * Count
      * @param ?Condition $condition
      * @return int
-     * @throws CountException
+     * @throws SelectException
      */
     public function findCount(?Condition $condition = null) : int {
         $sql = 'SELECT COUNT(*) as `count` FROM `' . $this->getName() . '`';
@@ -90,7 +90,7 @@ trait TableSelect {
 
             return $count['count'] ?? 0;
         } catch (Exception $e) {
-            throw new CountException($e->getMessage());
+            throw new SelectException($e->getMessage());
         }
     }
 
