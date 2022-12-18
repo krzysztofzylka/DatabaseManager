@@ -184,3 +184,18 @@ $table = (new GetTable())->setName('table_name');
 $table->setId(2)->delete(); // delete item id=2
 $table->delete(6); //delete item id=6
 ```
+
+# Transactions
+```php
+$transaction = new \DatabaseManager\Transaction();
+
+$transaction->begin();
+
+try {
+    #sql
+    
+    $transaction->commit();
+} catch (Exception) {
+    $transaction->rollback();
+}
+```
