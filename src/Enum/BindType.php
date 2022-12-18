@@ -2,6 +2,9 @@
 
 namespace DatabaseManager\Enum;
 
+/**
+ * Bond types
+ */
 enum BindType : string {
 
     case innerJoin = 'INNER JOIN';

@@ -2,6 +2,9 @@
 
 namespace DatabaseManager\Enum;
 
+/**
+ * Column types
+ */
 enum ColumnType {
 
     //string
