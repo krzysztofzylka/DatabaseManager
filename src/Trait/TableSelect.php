@@ -43,9 +43,10 @@ trait TableSelect {
      * Find all elements
      * @param ?Condition $condition
      * @param string|null $orderBy
+     * @param string|null $limit
      * @return array
      */
-    public function findAll(?Condition $condition = null, ?string $orderBy = null) : array {
+    public function findAll(?Condition $condition = null, ?string $orderBy = null, ?string $limit = null) : array {
         $columnList = $this->prepareColumnList(false);
 
         if (isset($this->bind)) {
@@ -63,6 +64,10 @@ trait TableSelect {
 
         if (!is_null($orderBy)) {
             $sql .= ' ORDER BY ' . $orderBy;
+        }
+
+        if (!is_null($limit)) {
+            $sql .= ' LIMIT ' . $limit;
         }
 
         $this->setLastSql($sql);
