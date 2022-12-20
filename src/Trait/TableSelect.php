@@ -94,6 +94,16 @@ trait TableSelect {
     }
 
     /**
+     * Isset
+     * @param ?Condition $condition
+     * @return bool
+     * @throws SelectException
+     */
+    public function findIsset(?Condition $condition = null) : bool {
+        return $this->findCount($condition) > 0;
+    }
+
+    /**
      * Prepare column list for select
      * @return string
      */

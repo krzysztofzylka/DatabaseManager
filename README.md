@@ -133,6 +133,15 @@ $table = (new GetTable())->setName('table_name');
 $condition = new Condition();
 $count = $table->findCount($condition); // int, condition is not required
 ```
+### Find isset
+```php
+use DatabaseManager\Condition;
+
+$table = (new GetTable())->setName('table_name');
+
+$condition = (new Condition())->where('login', 'admin'); //isset user in database
+$isset = $table->findCount($condition); // bool, condition is not required
+```
 ## Insert
 ```php
 use DatabaseManager\Condition;
