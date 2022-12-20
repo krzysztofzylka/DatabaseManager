@@ -85,12 +85,17 @@ class TableColumn {
     /**
      * Set type
      * @param ColumnType $type
-     * @param string|int|null $size
+     * @param string|int|null|array $size (array for enum)
      * @return TableColumn
      */
-    public function setType(ColumnType $type, null|string|int $size = null) : self {
+    public function setType(ColumnType $type, null|string|int|array $size = null) : self {
         $this->type = $type;
-        $this->typeSize = $size;
+
+        if ($type === ColumnType::enum) {
+            $this->typeSize = "'" . implode("','", $size) . "'";
+        } else {
+            $this->typeSize = $size;
+        }
 
         return $this;
     }

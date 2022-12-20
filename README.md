@@ -60,6 +60,27 @@ $createTable->execute(); //create table
 | addPasswordColumn(bool $null = true) | Password column                            | VARCHAR(255)      |
 | addPhoneColumn(bool $null = true)    | Phone column                               | INT(26)           |
 
+# Update table
+## Add column
+```php
+$customColumn = (new \DatabaseManager\Helper\TableColumn())
+    ->setName('permission') //column name
+    ->setNull(false) //null (true), not null (false) (default false)
+    ->setAutoincrement(false) //is autoincrement
+    ->setType(\DatabaseManager\Enum\ColumnType::varchar, 255) //table type with length
+    ->setDefault() //default value (default empty)
+    ->setPrimary(false) //is primary (default false)
+    ->setExtra(); //extra value
+
+
+$updateTable = (new \DatabaseManager\UpdateTable())
+    ->setName('user') //table name
+    ->addColumn($customColumn); //add custom column
+);
+
+$updateTable->execute(); //create table
+```
+
 # Conditions
 ```php
 use DatabaseManager\Condition;
