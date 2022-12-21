@@ -60,8 +60,9 @@ $createTable->execute(); //create table
 | addPasswordColumn(bool $null = true) | Password column                            | VARCHAR(255)      |
 | addPhoneColumn(bool $null = true)    | Phone column                               | INT(26)           |
 
-# Update table
+# Alter table
 ## Add column
+
 ```php
 $customColumn = (new \DatabaseManager\Helper\TableColumn())
     ->setName('permission') //column name
@@ -73,7 +74,7 @@ $customColumn = (new \DatabaseManager\Helper\TableColumn())
     ->setExtra(); //extra value
 
 
-$updateTable = (new \DatabaseManager\UpdateTable())
+$updateTable = (new \DatabaseManager\AlterTable())
     ->setName('user') //table name
     ->addColumn($customColumn); //add custom column
 );

@@ -16,7 +16,7 @@ $databaseManager->connect(
         ->setType(DatabaseType::sqlite)
 );
 
-$update = (new \DatabaseManager\UpdateTable())->setName('user')->addColumn((new \DatabaseManager\Helper\TableColumn())
+$update = (new \DatabaseManager\AlterTable())->setName('user')->addColumn((new \DatabaseManager\Helper\TableColumn())
     ->setName('enum')
     ->setType(\DatabaseManager\Enum\ColumnType::enum, ['a', 'b', 'c'])
 )->execute();

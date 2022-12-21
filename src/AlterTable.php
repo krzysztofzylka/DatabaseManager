@@ -6,7 +6,7 @@ use DatabaseManager\Enum\DatabaseType;
 use DatabaseManager\Exception\UpdateTableException;
 use DatabaseManager\Helper\TableColumn;
 
-class UpdateTable {
+class AlterTable {
 
     private ?string $name = null;
     private DatabaseManager $databaseManager;
@@ -30,7 +30,7 @@ class UpdateTable {
     /**
      * Set table name
      * @param ?string $name
-     * @return UpdateTable
+     * @return AlterTable
      */
     public function setName(?string $name) : self {
         $this->name = $name;
@@ -40,7 +40,7 @@ class UpdateTable {
 
     /**
      * @param TableColumn $tableColumn
-     * @return UpdateTable
+     * @return AlterTable
      */
     public function addColumn(TableColumn $tableColumn) : self {
         $column = trim(
