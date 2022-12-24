@@ -47,7 +47,6 @@ $createTable = (new \DatabaseManager\CreateTable())
     ->setName('user') //table name
     ->addIdColumn() //predefined id column
     ->addColumn($customColumn); //add custom column
-);
 
 $createTable->execute(); //create table
 ```
