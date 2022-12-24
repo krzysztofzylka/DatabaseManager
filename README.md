@@ -61,7 +61,6 @@ $createTable->execute(); //create table
 
 # Alter table
 ## Add column
-
 ```php
 $customColumn = (new \DatabaseManager\Helper\TableColumn())
     ->setName('permission') //column name
@@ -75,6 +74,18 @@ $customColumn = (new \DatabaseManager\Helper\TableColumn())
 $updateTable = (new \DatabaseManager\AlterTable())
     ->setName('user') //table name
     ->addColumn($customColumn); //add custom column
+);
+
+$updateTable->execute(); //create table
+```
+## Extend enum
+```php
+$updateTable = (new \DatabaseManager\AlterTable())
+    ->extendEnum(
+        'column', //colum name
+        'newEnumValue', //extend name value
+        true //sort enum, dafault true
+    );
 );
 
 $updateTable->execute(); //create table
@@ -213,6 +224,13 @@ $table = (new GetTable())->setName('table_name');
 $table->setId(2)->delete(); // delete item id=2
 $table->delete(6); //delete item id=6
 ```
+## Get columns list
+```php
+$columnName = null; //get single column data, default null
+$table = (new GetTable())->setName('table_name')->columnList($columnName);
+```
+Response value:
+[https://dev.mysql.com/doc/refman/8.0/en/show-columns.html](https://dev.mysql.com/doc/refman/8.0/en/show-columns.html)
 
 # Transactions
 ```php

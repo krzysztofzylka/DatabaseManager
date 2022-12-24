@@ -39,6 +39,29 @@ class AlterTable {
     }
 
     /**
+     * Add new value to enum
+     * @param string $columnName column name
+     * @param string $newValue new enum values
+     * @param ?bool $sort sort enum values
+     * @return $this
+     */
+    public function extendEnum(string $columnName, string $newValue, ?bool $sort = true) : self {
+        $columnData = (new GetTable())->setName($this->name)->columnList($columnName);
+        $columnType = $columnData['Type'];
+        $columnType = explode("','", substr($columnType, 6, -2));
+        $columnType[] = $newValue;
+
+        if ($sort) {
+            sort($columnType);
+        }
+
+        $enumValues = "'" . implode("','", $columnType) . "'";;
+        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` CHANGE `' . $columnName . '` `' . $columnName . '` ENUM(' . $enumValues . ');';
+
+        return $this;
+    }
+
+    /**
      * @param TableColumn $tableColumn
      * @return AlterTable
      */
@@ -66,7 +89,7 @@ class AlterTable {
             $this->primary[] = 'PRIMARY KEY (' . $tableColumn->getName() . ')';
         }
 
-        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` ADD ' . $column;
+        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` ADD ' . $column . ';';
 
         return $this;
     }

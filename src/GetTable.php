@@ -104,34 +104,43 @@ class GetTable {
 
     /**
      * Get column list
+     * @param ?string $columnName column name
      * @return array|bool
      */
-    public function columnList() : array|bool {
+    public function columnList(?string $columnName = null) : array|bool {
+        $return = [];
+
         if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
-            $return = [];
             $sql = 'pragma table_info("user");';
             $data = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($data as $column) {
                 $return[] = [
-                    'field' => $column['name'],
-                    'type' => $column['type'],
-                    'null' => $column['notnull'] ? 'NO' : 'YES',
-                    'key' => $column['pk'] ? 'PRI' : '',
-                    'default' => $column['dflt_value'],
-                    'extra' => ''
+                    'Field' => $column['name'],
+                    'Type' => $column['type'],
+                    'Null' => $column['notnull'] ? 'NO' : 'YES',
+                    'Key' => $column['pk'] ? 'PRI' : '',
+                    'Default' => $column['dflt_value'],
+                    'Extra' => ''
                 ];
             }
 
-             $this->setLastSql($sql);
-            return $return;
+            $this->setLastSql($sql);
         } elseif (DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
             $sql = 'DESCRIBE `' . $this->getName() . '`;';
-             $this->setLastSql($sql);
-            return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+            $this->setLastSql($sql);
+            $return = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         }
 
-        return false;
+        if (!is_null($columnName)) {
+            foreach ($return as $data) {
+                if ($data['Field'] === $columnName) {
+                    return $data;
+                }
+            }
+        }
+
+        return $return ?? false;
     }
 
     /**
