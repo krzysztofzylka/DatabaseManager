@@ -11,7 +11,7 @@ class DatabaseConnect {
     private string $host = '127.0.0.1';
     private string $name;
     private string $username;
-    private string $password;
+    private string $password = '';
     private PDO $connection;
     private DatabaseType $type = DatabaseType::mysql;
     private string $sqlitePath = 'database.sqlite';
