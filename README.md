@@ -51,13 +51,13 @@ $createTable = (new \DatabaseManager\CreateTable())
 $createTable->execute(); //create table
 ```
 ## Predefined column
-| Method                               | Description                                | Type              | 
-|--------------------------------------|--------------------------------------------|-------------------|
-| addIdColumn()                        | ID column with autoincrement (primary key) | INTEGER / INT(24) |
-| addEmailColumn(bool $null = true)    | Email column                               | VARCHAR(255)      |
-| addUsernameColumn(bool $null = true) | Username column                            | VARCHAR(255)      |
-| addPasswordColumn(bool $null = true) | Password column                            | VARCHAR(255)      |
-| addPhoneColumn(bool $null = true)    | Phone column                               | INT(26)           |
+| Method                                                           | Description                                | Type                       | 
+|------------------------------------------------------------------|--------------------------------------------|----------------------------|
+| addIdColumn()                                                    | ID column with autoincrement (primary key) | INT(24) / INTEGER (SQLite) |
+| addEmailColumn(bool $null = true, ?string $name = 'email')       | Email column                               | VARCHAR(255)               |
+| addUsernameColumn(bool $null = true, ?string $name = 'username') | Username column                            | VARCHAR(255)               |
+| addPasswordColumn(bool $null = true, ?string $name = 'password') | Password column                            | VARCHAR(255)               |
+| addPhoneColumn(bool $null = true, ?string $name = 'phone')       | Phone column                               | INT(26)                    |
 
 # Alter table
 ## Add column
@@ -71,7 +71,6 @@ $customColumn = (new \DatabaseManager\Helper\TableColumn())
     ->setDefault() //default value (default empty)
     ->setPrimary(false) //is primary (default false)
     ->setExtra(); //extra value
-
 
 $updateTable = (new \DatabaseManager\AlterTable())
     ->setName('user') //table name
