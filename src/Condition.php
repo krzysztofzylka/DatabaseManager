@@ -105,7 +105,7 @@ class Condition {
     }
 
     /**
-     * Pobranie wygenerowanej nazwy
+     * Get prepare value
      * @param mixed $value
      * @return string
      * @ignore
