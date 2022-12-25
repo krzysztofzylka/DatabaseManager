@@ -4,6 +4,7 @@ namespace DatabaseManager;
 
 use DatabaseManager\Enum\DatabaseType;
 use DatabaseManager\Exception\CreateTableException;
+use DatabaseManager\Helper\PrepareColumn;
 use DatabaseManager\Trait\TablePredefinedColumn;
 use Exception;
 
@@ -39,24 +40,7 @@ class CreateTable {
      * @return CreateTable
      */
     public function addColumn(Column $column) : self {
-        $this->columns[] = trim(
-            '`' . $column->getName() . '` '
-            . strtoupper($column->getType()->name)
-            . ($column->getTypeSize() ? '(' . $column->getTypeSize() . ') ' : ' ')
-            . ($column->isNull() ? 'NULL ' : 'NOT NULL ')
-            . ($column->isDefaultDefined()
-                ? ('DEFAULT '
-                    . (is_string($column->getDefault())
-                        ? (str_contains($column->getDefault(), "'")
-                            ? ('"' . $column->getDefault() . '"')
-                            : ("'" . $column->getDefault() . "'"))
-                        : $column->getDefault())
-                    . ' ')
-                : '')
-            . (($column->isAutoincrement() && DatabaseManager::getDatabaseType() === DatabaseType::mysql) ? 'AUTO_INCREMENT ' : ' ')
-            . (DatabaseManager::getDatabaseType() === DatabaseType::sqlite && $column->isPrimary() ? 'PRIMARY KEY ' : ' ')
-            . ($column->getExtra())
-        );
+        $this->columns[] = PrepareColumn::generateCreateColumnSql($column);
 
         if ($column->isPrimary() && DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
             $this->primary[] = 'PRIMARY KEY (' . $column->getName() . ')';
@@ -75,6 +59,9 @@ class CreateTable {
         $sql .= implode(', ', $this->columns);
         $sql .= (!empty($this->primary) ? ', ' . implode(', ', $this->primary) : '');
         $sql .= ');';
+
+        var_dump($sql);
+        exit;
 
         try {
             $databaseManager = new DatabaseManager();
