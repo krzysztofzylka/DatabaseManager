@@ -6,7 +6,7 @@ use DatabaseManager\CreateTable;
 use DatabaseManager\DatabaseManager;
 use DatabaseManager\Enum\ColumnType;
 use DatabaseManager\Enum\DatabaseType;
-use DatabaseManager\Helper\TableColumn;
+use DatabaseManager\Column;
 
 trait TablePredefinedColumn {
 
@@ -15,7 +15,7 @@ trait TablePredefinedColumn {
      * @return CreateTable
      */
     public function addIdColumn() : CreateTable {
-        $tableColumn = (new TableColumn())
+        $column = (new Column())
             ->setName('id')
             ->setType(ColumnType::int, 24)
             ->setNull(false)
@@ -23,11 +23,11 @@ trait TablePredefinedColumn {
             ->setPrimary(true);
 
         if (DatabaseManager::$connection->getType() === DatabaseType::sqlite) {
-            $tableColumn->setType(ColumnType::integer)
+            $column->setType(ColumnType::integer)
                 ->setAutoincrement(false);
         }
 
-        $this->addColumn($tableColumn);
+        $this->addColumn($column);
 
         return $this;
     }
@@ -39,12 +39,12 @@ trait TablePredefinedColumn {
      * @return CreateTable
      */
     public function addEmailColumn(bool $null = true, ?string $name = 'email') : CreateTable {
-        $tableColumn = (new TableColumn())
+        $column = (new Column())
             ->setName($name)
             ->setType(ColumnType::varchar, 255)
             ->setNull($null);
 
-        $this->addColumn($tableColumn);
+        $this->addColumn($column);
 
         return $this;
     }
@@ -56,12 +56,12 @@ trait TablePredefinedColumn {
      * @return CreateTable
      */
     public function addUsernameColumn(bool $null = true, ?string $name = 'username') : CreateTable {
-        $tableColumn = (new TableColumn())
+        $column = (new Column())
             ->setName($name)
             ->setType(ColumnType::varchar, 255)
             ->setNull($null);
 
-        $this->addColumn($tableColumn);
+        $this->addColumn($column);
 
         return $this;
     }
@@ -73,12 +73,12 @@ trait TablePredefinedColumn {
      * @return CreateTable
      */
     public function addPasswordColumn(bool $null = true, ?string $name = 'password') : CreateTable {
-        $tableColumn = (new TableColumn())
+        $column = (new Column())
             ->setName($name)
             ->setType(ColumnType::varchar, 255)
             ->setNull($null);
 
-        $this->addColumn($tableColumn);
+        $this->addColumn($column);
 
         return $this;
     }
@@ -90,12 +90,12 @@ trait TablePredefinedColumn {
      * @return CreateTable
      */
     public function addPhoneColumn(bool $null = true, ?string $name = 'phone') : CreateTable {
-        $tableColumn = (new TableColumn())
+        $column = (new Column())
             ->setName($name)
             ->setType(ColumnType::int, 26)
             ->setNull($null);
 
-        $this->addColumn($tableColumn);
+        $this->addColumn($column);
 
         return $this;
     }

@@ -4,7 +4,6 @@ namespace DatabaseManager;
 
 use DatabaseManager\Enum\DatabaseType;
 use DatabaseManager\Exception\CreateTableException;
-use DatabaseManager\Helper\TableColumn;
 use DatabaseManager\Trait\TablePredefinedColumn;
 use Exception;
 
@@ -36,31 +35,31 @@ class CreateTable {
     }
 
     /**
-     * @param TableColumn $tableColumn
+     * @param Column $column
      * @return CreateTable
      */
-    public function addColumn(TableColumn $tableColumn) : self {
+    public function addColumn(Column $column) : self {
         $this->columns[] = trim(
-            '`' . $tableColumn->getName() . '` '
-            . strtoupper($tableColumn->getType()->name)
-            . ($tableColumn->getTypeSize() ? '(' . $tableColumn->getTypeSize() . ') ' : ' ')
-            . ($tableColumn->isNull() ? 'NULL ' : 'NOT NULL ')
-            . ($tableColumn->isDefaultDefined()
+            '`' . $column->getName() . '` '
+            . strtoupper($column->getType()->name)
+            . ($column->getTypeSize() ? '(' . $column->getTypeSize() . ') ' : ' ')
+            . ($column->isNull() ? 'NULL ' : 'NOT NULL ')
+            . ($column->isDefaultDefined()
                 ? ('DEFAULT '
-                    . (is_string($tableColumn->getDefault())
-                        ? (str_contains($tableColumn->getDefault(), "'")
-                            ? ('"' . $tableColumn->getDefault() . '"')
-                            : ("'" . $tableColumn->getDefault() . "'"))
-                        : $tableColumn->getDefault())
+                    . (is_string($column->getDefault())
+                        ? (str_contains($column->getDefault(), "'")
+                            ? ('"' . $column->getDefault() . '"')
+                            : ("'" . $column->getDefault() . "'"))
+                        : $column->getDefault())
                     . ' ')
                 : '')
-            . (($tableColumn->isAutoincrement() && DatabaseManager::getDatabaseType() === DatabaseType::mysql) ? 'AUTO_INCREMENT ' : ' ')
-            . (DatabaseManager::getDatabaseType() === DatabaseType::sqlite && $tableColumn->isPrimary() ? 'PRIMARY KEY ' : ' ')
-            . ($tableColumn->getExtra())
+            . (($column->isAutoincrement() && DatabaseManager::getDatabaseType() === DatabaseType::mysql) ? 'AUTO_INCREMENT ' : ' ')
+            . (DatabaseManager::getDatabaseType() === DatabaseType::sqlite && $column->isPrimary() ? 'PRIMARY KEY ' : ' ')
+            . ($column->getExtra())
         );
 
-        if ($tableColumn->isPrimary() && DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
-            $this->primary[] = 'PRIMARY KEY (' . $tableColumn->getName() . ')';
+        if ($column->isPrimary() && DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
+            $this->primary[] = 'PRIMARY KEY (' . $column->getName() . ')';
         }
 
         return $this;

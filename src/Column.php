@@ -1,10 +1,10 @@
 <?php
 
-namespace DatabaseManager\Helper;
+namespace DatabaseManager;
 
 use DatabaseManager\Enum\ColumnType;
 
-class TableColumn {
+class Column {
 
     private string $name;
     private ColumnType $type;
@@ -19,9 +19,9 @@ class TableColumn {
     /**
      * Set name
      * @param string $name
-     * @return TableColumn
+     * @return Column
      */
-    public function setName(string $name) : TableColumn {
+    public function setName(string $name) : Column {
         $this->name = $name;
 
         return $this;
@@ -30,9 +30,9 @@ class TableColumn {
     /**
      * Set autoincrement
      * @param bool $autoincrement
-     * @return TableColumn
+     * @return Column
      */
-    public function setAutoincrement(bool $autoincrement) : TableColumn {
+    public function setAutoincrement(bool $autoincrement) : Column {
         $this->autoincrement = $autoincrement;
 
         return $this;
@@ -40,9 +40,9 @@ class TableColumn {
 
     /**
      * @param bool $primary
-     * @return TableColumn
+     * @return Column
      */
-    public function setPrimary(bool $primary) : TableColumn {
+    public function setPrimary(bool $primary) : Column {
         $this->primary = $primary;
 
         return $this;
@@ -51,9 +51,9 @@ class TableColumn {
     /**
      * Set null
      * @param bool $null
-     * @return TableColumn
+     * @return Column
      */
-    public function setNull(bool $null) : TableColumn {
+    public function setNull(bool $null) : Column {
         $this->null = $null;
 
         return $this;
@@ -62,9 +62,9 @@ class TableColumn {
     /**
      * Set default data
      * @param mixed $default
-     * @return TableColumn
+     * @return Column
      */
-    public function setDefault(mixed $default) : TableColumn {
+    public function setDefault(mixed $default) : Column {
         $this->default = $default;
         $this->defaultDefined = true;
 
@@ -74,9 +74,9 @@ class TableColumn {
     /**
      * Set extra data
      * @param ?string $extra
-     * @return TableColumn
+     * @return Column
      */
-    public function setExtra(?string $extra) : TableColumn {
+    public function setExtra(?string $extra) : Column {
         $this->extra = $extra;
 
         return $this;
@@ -86,7 +86,7 @@ class TableColumn {
      * Set type
      * @param ColumnType $type
      * @param string|int|null|array $size (array for enum)
-     * @return TableColumn
+     * @return Column
      */
     public function setType(ColumnType $type, null|string|int|array $size = null) : self {
         $this->type = $type;

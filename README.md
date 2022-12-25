@@ -32,8 +32,9 @@ $databaseManager->query('sql');
 ```
 
 # Create table
+
 ```php
-$customColumn = (new \DatabaseManager\Helper\TableColumn())
+$customColumn = (new DatabaseManager\Column())
     ->setName('name') //column name
     ->setNull(false) //null (true), not null (false) (default false)
     ->setAutoincrement(false) //is autoincrement
@@ -61,8 +62,9 @@ $createTable->execute(); //create table
 
 # Alter table
 ## Add column
+
 ```php
-$customColumn = (new \DatabaseManager\Helper\TableColumn())
+$customColumn = (new DatabaseManager\Column())
     ->setName('permission') //column name
     ->setNull(false) //null (true), not null (false) (default false)
     ->setAutoincrement(false) //is autoincrement
