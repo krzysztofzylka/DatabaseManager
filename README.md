@@ -59,7 +59,7 @@ $createTable->execute(); //create table
 | addUsernameColumn(bool $null = true, ?string $name = 'username') | Username column                            | VARCHAR(255)           |
 | addPasswordColumn(bool $null = true, ?string $name = 'password') | Password column                            | VARCHAR(255)           |
 | addPhoneColumn(bool $null = true, ?string $name = 'phone')       | Phone column                               | INT(26)                |
-
+| addDateCreatedColumn(?string $name = 'date_created')             | Created date                               | DATE_TIME              |
 # Alter table
 ## Add column
 

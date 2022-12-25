@@ -4,6 +4,7 @@ namespace DatabaseManager\Trait;
 
 use DatabaseManager\CreateTable;
 use DatabaseManager\DatabaseManager;
+use DatabaseManager\Enum\ColumnDefault;
 use DatabaseManager\Enum\ColumnType;
 use DatabaseManager\Enum\DatabaseType;
 use DatabaseManager\Column;
@@ -94,6 +95,23 @@ trait TablePredefinedColumn {
             ->setName($name)
             ->setType(ColumnType::int, 26)
             ->setNull($null);
+
+        $this->addColumn($column);
+
+        return $this;
+    }
+
+    /**
+     * Add date created column
+     * @param ?string $name column name
+     * @return CreateTable
+     */
+    public function addDateCreatedColumn(?string $name = 'date_created') : CreateTable {
+        $column = (new Column())
+            ->setName($name)
+            ->setType(ColumnType::datetime)
+            ->setDefault(ColumnDefault::currentTimestamp)
+            ->setNull(false);
 
         $this->addColumn($column);
 
