@@ -52,13 +52,13 @@ $createTable = (new \DatabaseManager\CreateTable())
 $createTable->execute(); //create table
 ```
 ## Predefined column
-| Method                                                           | Description                                | Type                       | 
-|------------------------------------------------------------------|--------------------------------------------|----------------------------|
-| addIdColumn()                                                    | ID column with autoincrement (primary key) | INT(24) / INTEGER (SQLite) |
-| addEmailColumn(bool $null = true, ?string $name = 'email')       | Email column                               | VARCHAR(255)               |
-| addUsernameColumn(bool $null = true, ?string $name = 'username') | Username column                            | VARCHAR(255)               |
-| addPasswordColumn(bool $null = true, ?string $name = 'password') | Password column                            | VARCHAR(255)               |
-| addPhoneColumn(bool $null = true, ?string $name = 'phone')       | Phone column                               | INT(26)                    |
+| Method                                                           | Description                                | Type                   | 
+|------------------------------------------------------------------|--------------------------------------------|------------------------|
+| addIdColumn()                                                    | ID column with autoincrement (primary key) | INT / INTEGER (SQLite) |
+| addEmailColumn(bool $null = true, ?string $name = 'email')       | Email column                               | VARCHAR(255)           |
+| addUsernameColumn(bool $null = true, ?string $name = 'username') | Username column                            | VARCHAR(255)           |
+| addPasswordColumn(bool $null = true, ?string $name = 'password') | Password column                            | VARCHAR(255)           |
+| addPhoneColumn(bool $null = true, ?string $name = 'phone')       | Phone column                               | INT(26)                |
 
 # Alter table
 ## Add column

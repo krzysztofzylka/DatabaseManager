@@ -17,7 +17,7 @@ trait TablePredefinedColumn {
     public function addIdColumn() : CreateTable {
         $column = (new Column())
             ->setName('id')
-            ->setType(ColumnType::int, 24)
+            ->setType(ColumnType::int)
             ->setNull(false)
             ->setAutoincrement(true)
             ->setPrimary(true);
