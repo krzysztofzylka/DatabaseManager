@@ -16,7 +16,7 @@ class DatabaseManagerException extends Exception {
         parent::__construct($message, $code, $previous);
     }
 
-    private function getHiddenMessage() : string {
+    public function getHiddenMessage() : string {
         return $this->hiddenMessage;
     }
 
