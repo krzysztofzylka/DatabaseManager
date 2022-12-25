@@ -60,9 +60,6 @@ class CreateTable {
         $sql .= (!empty($this->primary) ? ', ' . implode(', ', $this->primary) : '');
         $sql .= ');';
 
-        var_dump($sql);
-        exit;
-
         try {
             $databaseManager = new DatabaseManager();
             $databaseManager->query($sql);
