@@ -1,0 +1,1 @@
+<a href="createTable.php">Create table</a>
