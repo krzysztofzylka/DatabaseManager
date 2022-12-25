@@ -13,6 +13,8 @@ class DatabaseManager {
      */
     public static DatabaseConnect $connection;
 
+    private static ?string $lastSql = null;
+
     /**
      * Connect with database
      * @param DatabaseConnect $databaseConnect
@@ -39,6 +41,23 @@ class DatabaseManager {
      */
     public static function getDatabaseType() : DatabaseType {
         return self::$connection->getType();
+    }
+
+    /**
+     * Set last SQL
+     * @param ?string $sql
+     * @return void
+     */
+    public static function setLastSql(?string $sql) : void {
+        self::$lastSql = $sql;
+    }
+
+    /**
+     * Get last SQL
+     * @return ?string
+     */
+    public static function getLastSql() : ?string {
+        return self::$lastSql;
     }
 
 }

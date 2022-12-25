@@ -62,6 +62,7 @@ class CreateTable {
 
         try {
             $databaseManager = new DatabaseManager();
+            DatabaseManager::setLastSql($sql);
             $databaseManager->query($sql);
 
             return true;

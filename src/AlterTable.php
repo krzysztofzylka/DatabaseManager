@@ -84,10 +84,9 @@ class AlterTable {
      */
     public function execute() : void {
         try {
-            var_dump($this->sql);
-            foreach ($this->sql as $sql) {
-                $this->databaseManager->query($sql);
-            }
+            $sql = implode(PHP_EOL, $this->sql);
+            DatabaseManager::setLastSql($sql);
+            $this->databaseManager->query($sql);
         } catch (\Exception $exception) {
             var_dump($exception);
             throw new UpdateTableException($exception->getMessage());

@@ -2,6 +2,7 @@
 
 namespace DatabaseManager\Trait;
 
+use DatabaseManager\DatabaseManager;
 use DatabaseManager\Exception\UpdateException;
 
 trait TableUpdate {
@@ -14,7 +15,7 @@ trait TableUpdate {
      */
     public function update(array $data) : bool {
         if (is_null($this->getName())) {
-            throw new UpdateException('ID is not defined');
+            throw new UpdateException('Id is not defined');
         }
 
         $set = [];
@@ -24,6 +25,7 @@ trait TableUpdate {
         }
 
         $sql = 'UPDATE `' . $this->getName() . '` SET ' . implode(', ', $set) . ' WHERE id=' . $this->getId();
+        DatabaseManager::setLastSql($sql);
 
         $update = $this->pdo->prepare($sql);
 
@@ -32,8 +34,6 @@ trait TableUpdate {
         }
 
         if ($update->execute()) {
-             $this->setLastSql($sql);
-
             return true;
         } else {
             return false;
@@ -53,12 +53,11 @@ trait TableUpdate {
         }
 
         $sql = 'UPDATE `' . $this->getName() . '` SET `' . $columnName . '` = :' . $columnName . ' WHERE id=' . $this->getId();
+        DatabaseManager::setLastSql($sql);
         $update = $this->pdo->prepare($sql);
         $update->bindValue(':' . $columnName, $value);
 
         if ($update->execute()) {
-            $this->setLastSql($sql);
-
             return true;
         } else {
             return false;

@@ -3,6 +3,7 @@
 namespace DatabaseManager\Trait;
 
 use DatabaseManager\Condition;
+use DatabaseManager\DatabaseManager;
 use DatabaseManager\Exception\SelectException;
 use DatabaseManager\GetTable;
 use Exception;
@@ -23,8 +24,9 @@ trait TableSelect {
             $sql .= ' WHERE ' . $condition->getPrepareConditions();
         }
 
+        DatabaseManager::setLastSql($sql);
+
         try {
-            $this->setLastSql($sql);
             $pdo = $this->pdo->prepare($sql);
             $pdo->execute();
             $fetchData = $pdo->fetch(PDO::FETCH_ASSOC);
@@ -58,8 +60,9 @@ trait TableSelect {
             $sql .= ' LIMIT ' . $limit;
         }
 
+        DatabaseManager::setLastSql($sql);
+
         try {
-            $this->setLastSql($sql);
             $pdo = $this->pdo->prepare($sql);
             $pdo->execute();
             $fetchData = $pdo->fetchAll(PDO::FETCH_ASSOC);
@@ -83,8 +86,9 @@ trait TableSelect {
             $sql .= ' WHERE ' . $condition->getPrepareConditions();
         }
 
+        DatabaseManager::setLastSql($sql);
+
         try {
-            $this->setLastSql($sql);
             $count = $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
 
             return $count['count'] ?? 0;

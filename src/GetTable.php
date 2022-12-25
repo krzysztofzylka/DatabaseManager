@@ -18,7 +18,6 @@ class GetTable {
     private PDO $pdo;
     private array $bind;
     private ?int $id = null;
-    private ?string $lastSql = null;
 
     use TableSelect;
     use TableHelpers;
@@ -70,22 +69,6 @@ class GetTable {
     }
 
     /**
-     * Get last sql
-     * @return string|null
-     */
-    public function getLastSql() : ?string {
-        return $this->lastSql;
-    }
-
-    /**
-     * Set last sql
-     * @param ?string $lastSql
-     */
-    public function setLastSql(?string $lastSql) : void {
-        $this->lastSql = $lastSql;
-    }
-
-    /**
      * Bind table
      * @param BindType $bindType
      * @param string $tableName
@@ -125,10 +108,10 @@ class GetTable {
                 ];
             }
 
-            $this->setLastSql($sql);
+            DatabaseManager::setLastSql($sql);
         } elseif (DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
             $sql = 'DESCRIBE `' . $this->getName() . '`;';
-            $this->setLastSql($sql);
+            DatabaseManager::setLastSql($sql);
             $return = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         }
 
@@ -172,6 +155,7 @@ class GetTable {
     public function insert(array $data) : bool {
         try {
             $sql = 'INSERT INTO ' . $this->getName() . ' (`' . implode('`, `', array_keys($data)) . '`) VALUES (:' . implode(', :', array_keys($data)) . ')';
+            DatabaseManager::setLastSql($sql);
             $insert = $this->pdo->prepare($sql);
 
             foreach ($data as $name => $value) {
@@ -179,8 +163,6 @@ class GetTable {
             }
 
             if ($insert->execute()) {
-                 $this->setLastSql($sql);
-
                 $this->setId($this->pdo->lastInsertId());
 
                 return true;
@@ -208,10 +190,9 @@ class GetTable {
         }
 
         $sql = 'DELETE FROM `' . $this->getName() . '` WHERE id=' . ($id ?? $this->getId());
+        DatabaseManager::setLastSql($sql);
 
         try {
-             $this->setLastSql($sql);
-
             return (bool)$this->pdo->exec($sql);
         } catch (Exception $e) {
             throw new DeleteException($e->getMessage());
