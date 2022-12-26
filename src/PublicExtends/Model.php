@@ -3,7 +3,10 @@
 namespace DatabaseManager\PublicExtends;
 
 use DatabaseManager\Condition;
+use DatabaseManager\Enum\BindType;
 use DatabaseManager\Exception\DatabaseManagerException;
+use DatabaseManager\Exception\DeleteException;
+use DatabaseManager\Exception\InsertException;
 use DatabaseManager\Exception\SelectException;
 use DatabaseManager\Exception\UpdateException;
 use DatabaseManager\GetTable;
@@ -13,7 +16,23 @@ class Model {
     private GetTable $database;
     public string $databaseTable;
     public bool $useDatabase = true;
-    public int $id;
+
+    /**
+     * Get ID
+     * @return int
+     */
+    public function getId() : int {
+        return $this->database->getId();
+    }
+
+    /**
+     * Set ID
+     * @param ?int $id
+     * @return int
+     */
+    public function setId(?int $id = null) : int {
+        return $this->database->setId($id);
+    }
 
     /**
      * Prepare database
@@ -68,6 +87,40 @@ class Model {
      * @throws UpdateException
      */
     public function update(array $data) : bool {
-        $this->database->update($data);
+        return $this->database->update($data);
+    }
+
+    /**
+     * Insert data
+     * @param array $data
+     * @return bool
+     * @throws InsertException
+     */
+    public function insert(array $data) : bool {
+        return $this->database->insert($data);
+    }
+
+    /**
+     * Delete
+     * @param ?int $id
+     * @return bool
+     * @throws DeleteException
+     */
+    public function delete(?int $id = null) : bool {
+        return $this->database->delete($id);
+    }
+
+    /**
+     * Bind table
+     * @param BindType $bindType
+     * @param string $tableName
+     * @param ?string $primaryKey
+     * @param ?string $foreignKey
+     * @return Model
+     */
+    public function bind(BindType $bindType, string $tableName, ?string $primaryKey = null, ?string $foreignKey = null) : self {
+        $this->database->bind($bindType, $tableName, $primaryKey, $foreignKey);
+
+        return $this;
     }
 }
