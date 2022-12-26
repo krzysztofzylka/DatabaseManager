@@ -50,6 +50,10 @@ class DatabaseManager {
      */
     public static function setLastSql(?string $sql) : void {
         self::$lastSql = $sql;
+
+        if (self::$connection->isDebug()) {
+            Debug::addSql($sql);
+        }
     }
 
     /**

@@ -16,3 +16,5 @@ try {
 } catch (\DatabaseManager\Exception\CreateTableException $e) {
     var_dump($e->getHiddenMessage());
 }
+
+require('_end.php');

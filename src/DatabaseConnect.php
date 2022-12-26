@@ -16,6 +16,7 @@ class DatabaseConnect {
     private DatabaseType $type = DatabaseType::mysql;
     private string $sqlitePath = 'database.sqlite';
     private string $charset = 'utf8';
+    private bool $debug = false;
 
     /**
      * Set host
@@ -176,6 +177,26 @@ class DatabaseConnect {
      */
     public function getCharset() : string {
         return $this->charset;
+    }
+
+    /**
+     * Is debug mode
+     * @return bool
+     */
+    public function isDebug(): bool {
+        return $this->debug;
+    }
+
+    /**
+     * Set debug mode
+     * Require bootstrap 5.2.*
+     * @param bool $debug
+     * @return DatabaseConnect
+     */
+    public function setDebug(bool $debug) : self {
+        $this->debug = $debug;
+
+        return $this;
     }
 
 }

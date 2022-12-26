@@ -1,0 +1,3 @@
+<?php
+
+\DatabaseManager\Debug::showDebugModal();
