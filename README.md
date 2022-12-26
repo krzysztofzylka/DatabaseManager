@@ -7,7 +7,8 @@ $databaseConnect = (new \DatabaseManager\DatabaseConnect())
         ->setCharset('utf8') //set database charset (default utf8)
         ->setHost('127.0.0.1') //database host (default 127.0.0.1)
         ->setUsername('username') //database username
-        ->setPassword('password'); //database password (default '')
+        ->setPassword('password') //database password (default '')
+        ->setDebug(false); //set debug mode
 
 $databaseManager = new \DatabaseManager\DatabaseManager();
 $databaseManager->connect($databaseConnect);
