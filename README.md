@@ -41,6 +41,7 @@ $customColumn = (new DatabaseManager\Column())
     ->setAutoincrement(false) //is autoincrement
     ->setType(\DatabaseManager\Enum\ColumnType::varchar, 255) //table type with length
     ->setDefault() //default value (default empty)
+    ->setUnsigned(false) //unsigned attribute
     ->setPrimary(false) //is primary (default false)
     ->setExtra(); //extra value
 
@@ -53,14 +54,14 @@ $createTable = (new \DatabaseManager\CreateTable())
 $createTable->execute(); //create table
 ```
 ## Predefined column
-| Method                                                           | Description                                | Type                   | 
-|------------------------------------------------------------------|--------------------------------------------|------------------------|
-| addIdColumn()                                                    | ID column with autoincrement (primary key) | INT / INTEGER (SQLite) |
-| addEmailColumn(bool $null = true, ?string $name = 'email')       | Email column                               | VARCHAR(255)           |
-| addUsernameColumn(bool $null = true, ?string $name = 'username') | Username column                            | VARCHAR(255)           |
-| addPasswordColumn(bool $null = true, ?string $name = 'password') | Password column                            | VARCHAR(255)           |
-| addPhoneColumn(bool $null = true, ?string $name = 'phone')       | Phone column                               | INT(26)                |
-| addDateCreatedColumn(?string $name = 'date_created')             | Created date                               | DATE_TIME              |
+| Method                                                           | Description                                | Type                   | Attribute | Default           | 
+|------------------------------------------------------------------|--------------------------------------------|------------------------|-----------|-------------------|
+| addIdColumn()                                                    | ID column with autoincrement (primary key) | INT / INTEGER (SQLite) | UNSIGNED  |                   |
+| addEmailColumn(bool $null = true, ?string $name = 'email')       | Email column                               | VARCHAR(255)           |           |                   |
+| addUsernameColumn(bool $null = true, ?string $name = 'username') | Username column                            | VARCHAR(255)           |           |                   |
+| addPasswordColumn(bool $null = true, ?string $name = 'password') | Password column                            | VARCHAR(255)           |           |                   |
+| addPhoneColumn(bool $null = true, ?string $name = 'phone')       | Phone column                               | INT(26)                |           |                   |
+| addDateCreatedColumn(?string $name = 'date_created')             | Created date                               | DATE_TIME              |           | CURRENT_TIMESTAMP |
 # Alter table
 ## Add column
 

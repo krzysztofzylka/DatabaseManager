@@ -19,6 +19,7 @@ class PrepareColumn {
             '`' . $column->getName() . '` '
             . strtoupper($column->getType()->name)
             . ($column->getTypeSize() ? '(' . $column->getTypeSize() . ') ' : ' ')
+            . ($column->isUnsigned() ? 'UNSIGNED ' : '')
             . ($column->isNull() ? 'NULL ' : 'NOT NULL ')
             . self::prepareDefault($column)
             . (($column->isAutoincrement() && DatabaseManager::getDatabaseType() === DatabaseType::mysql) ? 'AUTO_INCREMENT ' : ' ')

@@ -15,6 +15,7 @@ class Column {
     private mixed $default = null;
     private bool $defaultDefined = false;
     private ?string $extra = null;
+    private bool $unsigned = false;
 
     /**
      * Set name
@@ -170,6 +171,25 @@ class Column {
      */
     public function isDefaultDefined(): bool {
         return $this->defaultDefined;
+    }
+
+    /**
+     * Is unsigned
+     * @return bool
+     */
+    public function isUnsigned() : bool {
+        return $this->unsigned;
+    }
+
+    /**
+     * Set unsigned
+     * @param bool $unsigned
+     * @return Column
+     */
+    public function setUnsigned(bool $unsigned) : self {
+        $this->unsigned = $unsigned;
+
+        return $this;
     }
 
 }

@@ -19,6 +19,7 @@ trait TablePredefinedColumn {
         $column = (new Column())
             ->setName('id')
             ->setType(ColumnType::int)
+            ->setUnsigned(true)
             ->setNull(false)
             ->setAutoincrement(true)
             ->setPrimary(true);
