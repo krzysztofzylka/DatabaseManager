@@ -11,5 +11,6 @@ enum BindType : string {
     case leftJoin = 'LEFT JOIN';
     case rightJoin = 'RIGHT JOIN';
     case crossJoin = 'CROSS JOIN';
+    case fullJoin = 'FULL OUTER JOIN';
 
 }
