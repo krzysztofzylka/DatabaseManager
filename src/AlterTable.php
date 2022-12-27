@@ -46,7 +46,7 @@ class AlterTable {
      * @return $this
      */
     public function extendEnum(string $columnName, string $newValue, ?bool $sort = true) : self {
-        $columnData = (new GetTable())->setName($this->name)->columnList($columnName);
+        $columnData = (new Table())->setName($this->name)->columnList($columnName);
         $columnType = $columnData['Type'];
         $columnType = explode("','", substr($columnType, 6, -2));
         $columnType[] = $newValue;

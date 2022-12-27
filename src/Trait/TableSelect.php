@@ -5,7 +5,7 @@ namespace DatabaseManager\Trait;
 use DatabaseManager\Condition;
 use DatabaseManager\DatabaseManager;
 use DatabaseManager\Exception\SelectException;
-use DatabaseManager\GetTable;
+use DatabaseManager\Table;
 use Exception;
 use PDO;
 
@@ -116,7 +116,7 @@ trait TableSelect {
 
         if (isset($this->bind)) {
             foreach ($this->bind as $bind) {
-                $bindTable = (new GetTable())->setName($bind['tableName']);
+                $bindTable = (new Table())->setName($bind['tableName']);
                 $columnList = array_merge($columnList, $bindTable->prepareColumnList(false));
             }
         }

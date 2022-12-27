@@ -115,14 +115,14 @@ $conditionNotAllowUser = (new Condition())
 # Table
 ## Get table
 ```php
-$table = (new GetTable())->setName('table_name');
+$table = (new Table())->setName('table_name');
 ```
 ## Select
 ### Find all
 ```php
 use DatabaseManager\Condition;
 
-$table = (new GetTable())->setName('table_name');
+$table = (new Table())->setName('table_name');
 
 $conditions = new Condition(); //conditions not required
 $find = $table->findAll($conditions);
@@ -143,7 +143,7 @@ $find = $table->findAll($conditions);
 ```php
 use DatabaseManager\Condition;
 
-$table = (new GetTable())->setName('table_name');
+$table = (new Table())->setName('table_name');
 
 $conditions = new Condition(); //conditions not required
 $find = $table->find($conditions);
@@ -162,7 +162,7 @@ $find = $table->find($conditions);
 ```php
 use DatabaseManager\Condition;
 
-$table = (new GetTable())->setName('table_name');
+$table = (new Table())->setName('table_name');
 
 $condition = new Condition();
 $count = $table->findCount($condition); // int, condition is not required
@@ -171,7 +171,7 @@ $count = $table->findCount($condition); // int, condition is not required
 ```php
 use DatabaseManager\Condition;
 
-$table = (new GetTable())->setName('table_name');
+$table = (new Table())->setName('table_name');
 
 $condition = (new Condition())->where('login', 'admin'); //isset user in database
 $isset = $table->findCount($condition); // bool, condition is not required
@@ -180,7 +180,7 @@ $isset = $table->findCount($condition); // bool, condition is not required
 ```php
 use DatabaseManager\Condition;
 
-$table = (new GetTable())->setName('table_name');
+$table = (new Table())->setName('table_name');
 
 $table->insert([
     'column1' => 'value1',
@@ -193,7 +193,7 @@ $insertId = $table->getId(); //insert ID
 ```php
 use DatabaseManager\Condition;
 
-$table = (new GetTable())->setName('table_name');
+$table = (new Table())->setName('table_name');
 
 $id = $table->getId(); //get id (insert)
 $table->setId('int'); //set id (update)
@@ -203,7 +203,7 @@ $table->setId('int'); //set id (update)
 ```php
 use DatabaseManager\Condition;
 
-$table = (new GetTable())->setName('table_name')->setId(1);
+$table = (new Table())->setName('table_name')->setId(1);
 
 $table->update([
     'column1' => 'updated column1',
@@ -214,7 +214,7 @@ $table->update([
 ```php
 use DatabaseManager\Condition;
 
-$table = (new GetTable())->setName('table_name')->setId(1);
+$table = (new Table())->setName('table_name')->setId(1);
 
 $table->updateValue('column1', 'new value'); //return bool
 ```
@@ -222,7 +222,7 @@ $table->updateValue('column1', 'new value'); //return bool
 ```php
 use DatabaseManager\Condition;
 
-$table = (new GetTable())->setName('table_name');
+$table = (new Table())->setName('table_name');
 
 $table->setId(2)->delete(); // delete item id=2
 $table->delete(6); //delete item id=6
@@ -230,7 +230,7 @@ $table->delete(6); //delete item id=6
 ## Get columns list
 ```php
 $columnName = null; //get single column data, default null
-$table = (new GetTable())->setName('table_name')->columnList($columnName);
+$table = (new Table())->setName('table_name')->columnList($columnName);
 ```
 Response value:
 [https://dev.mysql.com/doc/refman/8.0/en/show-columns.html](https://dev.mysql.com/doc/refman/8.0/en/show-columns.html)

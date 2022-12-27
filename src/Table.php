@@ -12,7 +12,7 @@ use DatabaseManager\Trait\TableUpdate;
 use Exception;
 use PDO;
 
-class GetTable {
+class Table {
 
     private string $name;
     private PDO $pdo;
@@ -41,7 +41,7 @@ class GetTable {
     /**
      * Set column name
      * @param string $name
-     * @return GetTable
+     * @return Table
      */
     public function setName(string $name) : self {
         $this->name = htmlspecialchars($name);
@@ -60,7 +60,7 @@ class GetTable {
     /**
      * Set ID
      * @param ?int $id
-     * @return GetTable
+     * @return Table
      */
     public function setId(?int $id) : self {
         $this->id = $id;

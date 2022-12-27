@@ -9,11 +9,11 @@ use DatabaseManager\Exception\DeleteException;
 use DatabaseManager\Exception\InsertException;
 use DatabaseManager\Exception\SelectException;
 use DatabaseManager\Exception\UpdateException;
-use DatabaseManager\GetTable;
+use DatabaseManager\Table;
 
 class Model {
 
-    private GetTable $database;
+    private Table $database;
     public string $databaseTable;
     public bool $useDatabase = true;
 
@@ -45,7 +45,7 @@ class Model {
             }
         }
 
-        $this->database = (new GetTable())->setName($this->databaseTable);
+        $this->database = (new Table())->setName($this->databaseTable);
     }
 
     /**
