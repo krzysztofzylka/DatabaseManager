@@ -4,6 +4,7 @@ namespace DatabaseManager\Trait;
 
 use DatabaseManager\DatabaseManager;
 use DatabaseManager\Exception\UpdateException;
+use Exception;
 
 trait TableUpdate {
 
@@ -24,19 +25,18 @@ trait TableUpdate {
             $set[] = '`' . $name . '` = :' . $name;
         }
 
-        $sql = 'UPDATE `' . $this->getName() . '` SET ' . implode(', ', $set) . ' WHERE id=' . $this->getId();
-        DatabaseManager::setLastSql($sql);
+        try {
+            $sql = 'UPDATE `' . $this->getName() . '` SET ' . implode(', ', $set) . ' WHERE id=' . $this->getId();
+            DatabaseManager::setLastSql($sql);
+            $update = $this->pdo->prepare($sql);
 
-        $update = $this->pdo->prepare($sql);
+            foreach ($data as $name => $value) {
+                $update->bindValue(':' . $name, $value);
+            }
 
-        foreach ($data as $name => $value) {
-            $update->bindValue(':' . $name, $value);
-        }
-
-        if ($update->execute()) {
-            return true;
-        } else {
-            return false;
+            return $update->execute();
+        } catch (Exception $exception) {
+            throw new UpdateException($exception->getMessage());
         }
     }
 
@@ -52,15 +52,15 @@ trait TableUpdate {
             throw new UpdateException('ID is not defined');
         }
 
-        $sql = 'UPDATE `' . $this->getName() . '` SET `' . $columnName . '` = :' . $columnName . ' WHERE id=' . $this->getId();
-        DatabaseManager::setLastSql($sql);
-        $update = $this->pdo->prepare($sql);
-        $update->bindValue(':' . $columnName, $value);
+        try {
+            $sql = 'UPDATE `' . $this->getName() . '` SET `' . $columnName . '` = :' . $columnName . ' WHERE id=' . $this->getId();
+            DatabaseManager::setLastSql($sql);
+            $update = $this->pdo->prepare($sql);
+            $update->bindValue(':' . $columnName, $value);
 
-        if ($update->execute()) {
-            return true;
-        } else {
-            return false;
+            return $update->execute();
+        } catch (Exception $exception) {
+            throw new UpdateException($exception->getMessage());
         }
     }
 

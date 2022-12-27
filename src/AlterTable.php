@@ -5,6 +5,7 @@ namespace DatabaseManager;
 use DatabaseManager\Enum\DatabaseType;
 use DatabaseManager\Exception\UpdateTableException;
 use DatabaseManager\Helper\PrepareColumn;
+use Exception;
 
 class AlterTable {
 
@@ -87,8 +88,7 @@ class AlterTable {
             $sql = implode(PHP_EOL, $this->sql);
             DatabaseManager::setLastSql($sql);
             $this->databaseManager->query($sql);
-        } catch (\Exception $exception) {
-            var_dump($exception);
+        } catch (Exception $exception) {
             throw new UpdateTableException($exception->getMessage());
         }
     }

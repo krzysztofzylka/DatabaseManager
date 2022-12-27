@@ -61,8 +61,8 @@ class Model {
     /**
      * Find all elements
      * @param ?Condition $condition
-     * @param string|null $orderBy
-     * @param string|null $limit
+     * @param ?string $orderBy
+     * @param ?string $limit
      * @return array
      * @throws SelectException
      */

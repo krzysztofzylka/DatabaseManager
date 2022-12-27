@@ -23,7 +23,7 @@ class DatabaseConnect {
      * @param string $host
      * @return DatabaseConnect
      */
-    public function setHost(string $host = '127.0.0.1') : self {
+    public function setHost(string $host) : self {
         $this->host = $host;
 
         return $this;

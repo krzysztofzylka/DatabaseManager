@@ -2,6 +2,8 @@
 
 namespace DatabaseManager;
 
+use DatabaseManager\Exception\ConditionException;
+
 class Condition {
 
     private array $conditions = [];
@@ -88,20 +90,25 @@ class Condition {
      * @param ?array $data
      * @param string $type (default AND)
      * @return string
+     * @throws ConditionException
      */
     public function getPrepareConditions(?array $data = null, string $type = 'AND') : string {
-        $data = $data ?? $this->getConditions();
-        $sqlArray = [];
+        try {
+            $data = $data ?? $this->getConditions();
+            $sqlArray = [];
 
-        foreach ($data as $nextType => $conditionValue) {
-            if (isset($conditionValue[0]) && $conditionValue[0] instanceof Condition) {
-                $sqlArray[] = $this->getPrepareConditions($conditionValue[0]->getConditions(), $nextType);
-            } else {
-                $sqlArray[] = $conditionValue['name'] . ' ' . $conditionValue['operator'] . ' ' . $this->prepareValue($conditionValue['value']);
+            foreach ($data as $nextType => $conditionValue) {
+                if (isset($conditionValue[0]) && $conditionValue[0] instanceof Condition) {
+                    $sqlArray[] = $this->getPrepareConditions($conditionValue[0]->getConditions(), $nextType);
+                } else {
+                    $sqlArray[] = $conditionValue['name'] . ' ' . $conditionValue['operator'] . ' ' . $this->prepareValue($conditionValue['value']);
+                }
             }
-        }
 
-        return '(' . implode(" $type ", $sqlArray) . ')';
+            return '(' . implode(" $type ", $sqlArray) . ')';
+        } catch (\Exception $exception) {
+            throw new ConditionException($exception->getMessage());
+        }
     }
 
     /**

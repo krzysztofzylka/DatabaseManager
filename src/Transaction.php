@@ -3,6 +3,7 @@
 namespace DatabaseManager;
 
 use DatabaseManager\Enum\DatabaseType;
+use DatabaseManager\Exception\TransactionException;
 use PDO;
 
 class Transaction {
@@ -16,6 +17,7 @@ class Transaction {
     /**
      * Begin transaction
      * @return void
+     * @throws TransactionException
      */
     public function begin() : void {
         if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
@@ -25,27 +27,44 @@ class Transaction {
         }
 
         DatabaseManager::setLastSql($sql);
-        $this->sql->query($sql);
+
+        try {
+            $this->sql->query($sql);
+        } catch (\Exception $exception) {
+            throw new TransactionException($exception->getMessage());
+        }
     }
 
     /**
      * Commit transaction
      * @return void
+     * @throws TransactionException
      */
     public function commit() : void {
         $sql = 'COMMIT;';
         DatabaseManager::setLastSql($sql);
-        $this->sql->query($sql);
+
+        try {
+            $this->sql->query($sql);
+        } catch (\Exception $exception) {
+            throw new TransactionException($exception->getMessage());
+        }
     }
 
     /**
      * Rollback transaction
      * @return void
+     * @throws TransactionException
      */
     public function rollback() : void {
         $sql = 'ROLLBACK;';
         DatabaseManager::setLastSql($sql);
-        $this->sql->query($sql);
+
+        try {
+            $this->sql->query($sql);
+        } catch (\Exception $exception) {
+            throw new TransactionException($exception->getMessage());
+        }
     }
 
 }

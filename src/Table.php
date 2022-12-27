@@ -6,6 +6,7 @@ use DatabaseManager\Enum\BindType;
 use DatabaseManager\Enum\DatabaseType;
 use DatabaseManager\Exception\DeleteException;
 use DatabaseManager\Exception\InsertException;
+use DatabaseManager\Exception\TableException;
 use DatabaseManager\Trait\TableHelpers;
 use DatabaseManager\Trait\TableSelect;
 use DatabaseManager\Trait\TableUpdate;
@@ -89,47 +90,53 @@ class Table {
      * Get column list
      * @param ?string $columnName column name
      * @return array|bool
+     * @throws TableException
      */
     public function columnList(?string $columnName = null) : array|bool {
-        $return = [];
+        try {
+            $return = [];
 
-        if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
-            $sql = 'pragma table_info("user");';
-            $data = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+            if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
+                $sql = 'pragma table_info("user");';
+                $data = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
-            foreach ($data as $column) {
-                $return[] = [
-                    'Field' => $column['name'],
-                    'Type' => $column['type'],
-                    'Null' => $column['notnull'] ? 'NO' : 'YES',
-                    'Key' => $column['pk'] ? 'PRI' : '',
-                    'Default' => $column['dflt_value'],
-                    'Extra' => ''
-                ];
+                foreach ($data as $column) {
+                    $return[] = [
+                        'Field' => $column['name'],
+                        'Type' => $column['type'],
+                        'Null' => $column['notnull'] ? 'NO' : 'YES',
+                        'Key' => $column['pk'] ? 'PRI' : '',
+                        'Default' => $column['dflt_value'],
+                        'Extra' => ''
+                    ];
+                }
+
+                DatabaseManager::setLastSql($sql);
+            } elseif (DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
+                $sql = 'DESCRIBE `' . $this->getName() . '`;';
+                DatabaseManager::setLastSql($sql);
+                $return = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
             }
 
-            DatabaseManager::setLastSql($sql);
-        } elseif (DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
-            $sql = 'DESCRIBE `' . $this->getName() . '`;';
-            DatabaseManager::setLastSql($sql);
-            $return = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-        }
-
-        if (!is_null($columnName)) {
-            foreach ($return as $data) {
-                if ($data['Field'] === $columnName) {
-                    return $data;
+            if (!is_null($columnName)) {
+                foreach ($return as $data) {
+                    if ($data['Field'] === $columnName) {
+                        return $data;
+                    }
                 }
             }
-        }
 
-        return $return ?? false;
+            return $return ?? false;
+        } catch (Exception $exception) {
+            throw new TableException($exception->getMessage());
+        }
     }
 
     /**
      * prepare column list
      * @param bool $asString
      * @return array|string
+     * @throws TableException
      */
     public function prepareColumnList(bool $asString = true) : array|string {
         $columnList = $this->columnList();
@@ -189,10 +196,9 @@ class Table {
             throw new DeleteException('ID must be integer');
         }
 
-        $sql = 'DELETE FROM `' . $this->getName() . '` WHERE id=' . ($id ?? $this->getId());
-        DatabaseManager::setLastSql($sql);
-
         try {
+            $sql = 'DELETE FROM `' . $this->getName() . '` WHERE id=' . ($id ?? $this->getId());
+            DatabaseManager::setLastSql($sql);
             return (bool)$this->pdo->exec($sql);
         } catch (Exception $e) {
             throw new DeleteException($e->getMessage());
