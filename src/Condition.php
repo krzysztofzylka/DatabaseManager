@@ -112,6 +112,8 @@ class Condition {
      */
     private function prepareValue(mixed $value) : string {
         switch (gettype($value)) {
+            case 'array':
+                return '(\'' . implode('\', \'', $value) . '\')';
             case 'integer':
                 return $value;
             case 'NULL':
