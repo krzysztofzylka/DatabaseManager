@@ -14,14 +14,19 @@ trait TableSelect {
     /**
      * Find one element
      * @param ?Condition $condition
+     * @param ?string $orderBy
      * @return array
      * @throws SelectException
      */
-    public function find(?Condition $condition = null) : array {
+    public function find(?Condition $condition = null, ?string $orderBy = null) : array {
         $sql = 'SELECT ' . $this->prepareColumnListForSql() . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
             $sql .= ' WHERE ' . $condition->getPrepareConditions();
+        }
+
+        if (!is_null($orderBy)) {
+            $sql .= ' ORDER BY ' . $orderBy;
         }
 
         DatabaseManager::setLastSql($sql);
@@ -40,16 +45,21 @@ trait TableSelect {
     /**
      * Find all elements
      * @param ?Condition $condition
-     * @param string|null $orderBy
-     * @param string|null $limit
+     * @param ?string $orderBy
+     * @param ?string $limit
+     * @param ?string $groupBy
      * @return array
      * @throws SelectException
      */
-    public function findAll(?Condition $condition = null, ?string $orderBy = null, ?string $limit = null) : array {
+    public function findAll(?Condition $condition = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
         $sql = 'SELECT ' . $this->prepareColumnListForSql() . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
             $sql .= ' WHERE ' . $condition->getPrepareConditions();
+        }
+
+        if (!is_null($groupBy)) {
+            $sql .= ' GROUP BY ' . $groupBy;
         }
 
         if (!is_null($orderBy)) {
@@ -76,14 +86,19 @@ trait TableSelect {
     /**
      * Count
      * @param ?Condition $condition
+     * @param ?string $groupBy
      * @return int
      * @throws SelectException
      */
-    public function findCount(?Condition $condition = null) : int {
+    public function findCount(?Condition $condition = null, ?string $groupBy = null) : int {
         $sql = 'SELECT COUNT(*) as `count` FROM `' . $this->getName() . '`';
 
         if (!is_null($condition)) {
             $sql .= ' WHERE ' . $condition->getPrepareConditions();
+        }
+
+        if (!is_null($groupBy)) {
+            $sql .= ' GROUP BY ' . $groupBy;
         }
 
         DatabaseManager::setLastSql($sql);
