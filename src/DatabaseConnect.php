@@ -17,6 +17,7 @@ class DatabaseConnect {
     private string $sqlitePath = 'database.sqlite';
     private string $charset = 'utf8';
     private bool $debug = false;
+    private bool $manualConnection = false;
 
     /**
      * Set host
@@ -130,6 +131,10 @@ class DatabaseConnect {
      * @throws ConnectException
      */
     public function connect() : void {
+        if ($this->manualConnection) {
+            return;
+        }
+
         try {
             if ($this->getType() === DatabaseType::mysql) {
                 $this->connection = new PDO(
@@ -195,6 +200,18 @@ class DatabaseConnect {
      */
     public function setDebug(bool $debug) : self {
         $this->debug = $debug;
+
+        return $this;
+    }
+
+    /**
+     * set PDO connection manually
+     * @param PDO $connection
+     * @return $this
+     */
+    public function setConnection(PDO $connection) : self {
+        $this->connection = $connection;
+        $this->manualConnection = true;
 
         return $this;
     }
