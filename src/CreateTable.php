@@ -3,6 +3,7 @@
 namespace DatabaseManager;
 
 use DatabaseManager\Enum\DatabaseType;
+use DatabaseManager\Enum\Trigger;
 use DatabaseManager\Exception\CreateTableException;
 use DatabaseManager\Helper\PrepareColumn;
 use DatabaseManager\Trait\TablePredefinedColumn;
@@ -15,6 +16,7 @@ class CreateTable {
     private string $name;
     private array $columns = [];
     private array $primary = [];
+    private array $additionalSql = [];
 
     /**
      * Set table name
@@ -46,6 +48,13 @@ class CreateTable {
             $this->primary[] = 'PRIMARY KEY (' . $column->getName() . ')';
         }
 
+        if (DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
+            /** @var Trigger $trigger */
+            foreach ($column->getTriggers() as $trigger) {
+                $this->additionalSql[] = $trigger->generate($this->getName(), $column->getName()) . ';';
+            }
+        }
+
         return $this;
     }
 
@@ -58,12 +67,17 @@ class CreateTable {
         $sql = 'CREATE TABLE `' . $this->name . '` (';
         $sql .= implode(', ', $this->columns);
         $sql .= (!empty($this->primary) ? ', ' . implode(', ', $this->primary) : '');
-        $sql .= ');';
+        $sql .= '); ';
 
         try {
             $databaseManager = new DatabaseManager();
             DatabaseManager::setLastSql($sql);
             $databaseManager->query($sql);
+
+            foreach ($this->additionalSql as $additionalSql) {
+                DatabaseManager::setLastSql($additionalSql);
+                $databaseManager->query($additionalSql);
+            }
 
             return true;
         } catch (Exception $e) {

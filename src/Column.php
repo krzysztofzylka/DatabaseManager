@@ -3,6 +3,7 @@
 namespace DatabaseManager;
 
 use DatabaseManager\Enum\ColumnType;
+use DatabaseManager\Enum\Trigger;
 
 class Column {
 
@@ -16,6 +17,7 @@ class Column {
     private bool $defaultDefined = false;
     private ?string $extra = null;
     private bool $unsigned = false;
+    private array $triggers = [];
 
     /**
      * Set name
@@ -186,10 +188,29 @@ class Column {
      * @param bool $unsigned
      * @return Column
      */
-    public function setUnsigned(bool $unsigned) : self {
+    public function setUnsigned(bool $unsigned) : Column {
         $this->unsigned = $unsigned;
 
         return $this;
+    }
+
+    /**
+     * Add trigger to column
+     * @param Trigger $trigger
+     * @return $this
+     */
+    public function addTrigger(Trigger $trigger) : Column {
+        $this->triggers[] = $trigger;
+
+        return $this;
+    }
+
+    /**
+     * Get triggers
+     * @return array
+     */
+    public function getTriggers() : array {
+        return $this->triggers;
     }
 
 }

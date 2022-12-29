@@ -12,6 +12,7 @@ try {
         ->addEmailColumn()
         ->addPasswordColumn()
         ->addDateCreatedColumn()
+        ->addDateModifyColumn()
         ->execute();
 } catch (\DatabaseManager\Exception\CreateTableException $e) {
     var_dump($e->getHiddenMessage());

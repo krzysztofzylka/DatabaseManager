@@ -8,6 +8,7 @@ use DatabaseManager\Enum\ColumnDefault;
 use DatabaseManager\Enum\ColumnType;
 use DatabaseManager\Enum\DatabaseType;
 use DatabaseManager\Column;
+use DatabaseManager\Enum\Trigger;
 
 trait TablePredefinedColumn {
 
@@ -113,6 +114,19 @@ trait TablePredefinedColumn {
             ->setType(ColumnType::datetime)
             ->setDefault(ColumnDefault::currentTimestamp)
             ->setNull(false);
+
+        $this->addColumn($column);
+
+        return $this;
+    }
+
+    public function addDateModifyColumn(?string $name = 'date_modify') : CreateTable {
+        $column = (new Column())
+            ->setName($name)
+            ->setType(ColumnType::datetime)
+            ->setDefault(ColumnDefault::currentTimestamp)
+            ->setNull(false)
+            ->addTrigger(Trigger::UpdateTimestampAfterUpdate);
 
         $this->addColumn($column);
 
