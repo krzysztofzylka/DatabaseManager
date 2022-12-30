@@ -1,15 +1,15 @@
 <?php
 
-namespace DatabaseManager\PublicExtends;
+namespace krzysztofzylka\DatabaseManager\PublicExtends;
 
-use DatabaseManager\Condition;
-use DatabaseManager\Enum\BindType;
-use DatabaseManager\Exception\DatabaseManagerException;
-use DatabaseManager\Exception\DeleteException;
-use DatabaseManager\Exception\InsertException;
-use DatabaseManager\Exception\SelectException;
-use DatabaseManager\Exception\UpdateException;
-use DatabaseManager\Table;
+use krzysztofzylka\DatabaseManager\Condition;
+use krzysztofzylka\DatabaseManager\Enum\BindType;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
+use krzysztofzylka\DatabaseManager\Exception\DeleteException;
+use krzysztofzylka\DatabaseManager\Exception\InsertException;
+use krzysztofzylka\DatabaseManager\Exception\SelectException;
+use krzysztofzylka\DatabaseManager\Exception\UpdateException;
+use krzysztofzylka\DatabaseManager\Table;
 
 class Model {
 

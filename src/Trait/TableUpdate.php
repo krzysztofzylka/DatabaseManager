@@ -1,9 +1,9 @@
 <?php
 
-namespace DatabaseManager\Trait;
+namespace krzysztofzylka\DatabaseManager\Trait;
 
-use DatabaseManager\DatabaseManager;
-use DatabaseManager\Exception\UpdateException;
+use krzysztofzylka\DatabaseManager\DatabaseManager;
+use krzysztofzylka\DatabaseManager\Exception\UpdateException;
 use Exception;
 
 trait TableUpdate {

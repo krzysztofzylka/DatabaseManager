@@ -1,6 +1,6 @@
 <?php
 
-namespace DatabaseManager\Exception;
+namespace krzysztofzylka\DatabaseManager\Exception;
 
 class UpdateTableException extends DatabaseManagerException {
 }

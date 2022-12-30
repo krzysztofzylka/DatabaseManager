@@ -1,11 +1,11 @@
 <?php
 
-namespace DatabaseManager\Helper;
+namespace krzysztofzylka\DatabaseManager\Helper;
 
-use DatabaseManager\Column;
-use DatabaseManager\DatabaseManager;
-use DatabaseManager\Enum\ColumnDefault;
-use DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Column;
+use krzysztofzylka\DatabaseManager\DatabaseManager;
+use krzysztofzylka\DatabaseManager\Enum\ColumnDefault;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 
 class PrepareColumn {
 

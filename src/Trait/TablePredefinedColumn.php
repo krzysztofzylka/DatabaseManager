@@ -1,14 +1,14 @@
 <?php
 
-namespace DatabaseManager\Trait;
+namespace krzysztofzylka\DatabaseManager\Trait;
 
-use DatabaseManager\CreateTable;
-use DatabaseManager\DatabaseManager;
-use DatabaseManager\Enum\ColumnDefault;
-use DatabaseManager\Enum\ColumnType;
-use DatabaseManager\Enum\DatabaseType;
-use DatabaseManager\Column;
-use DatabaseManager\Enum\Trigger;
+use krzysztofzylka\DatabaseManager\CreateTable;
+use krzysztofzylka\DatabaseManager\DatabaseManager;
+use krzysztofzylka\DatabaseManager\Enum\ColumnDefault;
+use krzysztofzylka\DatabaseManager\Enum\ColumnType;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Column;
+use krzysztofzylka\DatabaseManager\Enum\Trigger;
 
 trait TablePredefinedColumn {
 

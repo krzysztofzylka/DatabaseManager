@@ -1,6 +1,6 @@
 <?php
 
-namespace DatabaseManager\Enum;
+namespace krzysztofzylka\DatabaseManager\Enum;
 
 /**
  * Column types

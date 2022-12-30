@@ -1,3 +1,3 @@
 <?php
 
-\DatabaseManager\Debug::showDebugModal();
+\krzysztofzylka\DatabaseManager\Debug::showDebugModal();

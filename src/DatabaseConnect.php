@@ -1,9 +1,9 @@
 <?php
 
-namespace DatabaseManager;
+namespace krzysztofzylka\DatabaseManager;
 
-use DatabaseManager\Enum\DatabaseType;
-use DatabaseManager\Exception\ConnectException;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use PDO;
 
 class DatabaseConnect {

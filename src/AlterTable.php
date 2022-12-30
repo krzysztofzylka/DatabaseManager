@@ -1,10 +1,10 @@
 <?php
 
-namespace DatabaseManager;
+namespace krzysztofzylka\DatabaseManager;
 
-use DatabaseManager\Enum\DatabaseType;
-use DatabaseManager\Exception\UpdateTableException;
-use DatabaseManager\Helper\PrepareColumn;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Exception\UpdateTableException;
+use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
 use Exception;
 
 class AlterTable {

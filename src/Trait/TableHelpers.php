@@ -1,6 +1,6 @@
 <?php
 
-namespace DatabaseManager\Trait;
+namespace krzysztofzylka\DatabaseManager\Trait;
 
 trait TableHelpers {
 

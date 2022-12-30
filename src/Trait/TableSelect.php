@@ -1,11 +1,11 @@
 <?php
 
-namespace DatabaseManager\Trait;
+namespace krzysztofzylka\DatabaseManager\Trait;
 
-use DatabaseManager\Condition;
-use DatabaseManager\DatabaseManager;
-use DatabaseManager\Exception\SelectException;
-use DatabaseManager\Table;
+use krzysztofzylka\DatabaseManager\Condition;
+use krzysztofzylka\DatabaseManager\DatabaseManager;
+use krzysztofzylka\DatabaseManager\Exception\SelectException;
+use krzysztofzylka\DatabaseManager\Table;
 use Exception;
 use PDO;
 

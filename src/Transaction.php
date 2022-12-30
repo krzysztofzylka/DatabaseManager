@@ -1,9 +1,9 @@
 <?php
 
-namespace DatabaseManager;
+namespace krzysztofzylka\DatabaseManager;
 
-use DatabaseManager\Enum\DatabaseType;
-use DatabaseManager\Exception\TransactionException;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Exception\TransactionException;
 use PDO;
 
 class Transaction {

@@ -1,6 +1,6 @@
 <?php
 
-namespace DatabaseManager;
+namespace krzysztofzylka\DatabaseManager;
 
 class Debug {
 

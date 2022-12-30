@@ -1,15 +1,15 @@
 <?php
 
-namespace DatabaseManager;
+namespace krzysztofzylka\DatabaseManager;
 
-use DatabaseManager\Enum\BindType;
-use DatabaseManager\Enum\DatabaseType;
-use DatabaseManager\Exception\DeleteException;
-use DatabaseManager\Exception\InsertException;
-use DatabaseManager\Exception\TableException;
-use DatabaseManager\Trait\TableHelpers;
-use DatabaseManager\Trait\TableSelect;
-use DatabaseManager\Trait\TableUpdate;
+use krzysztofzylka\DatabaseManager\Enum\BindType;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Exception\DeleteException;
+use krzysztofzylka\DatabaseManager\Exception\InsertException;
+use krzysztofzylka\DatabaseManager\Exception\TableException;
+use krzysztofzylka\DatabaseManager\Trait\TableHelpers;
+use krzysztofzylka\DatabaseManager\Trait\TableSelect;
+use krzysztofzylka\DatabaseManager\Trait\TableUpdate;
 use Exception;
 use PDO;
 

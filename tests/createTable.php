@@ -5,7 +5,7 @@
 require('_init.php');
 
 try {
-    $createTable = (new \DatabaseManager\CreateTable())
+    $createTable = (new \krzysztofzylka\DatabaseManager\CreateTable())
         ->setName('user_test')
         ->addIdColumn()
         ->addUsernameColumn()
@@ -14,7 +14,7 @@ try {
         ->addDateCreatedColumn()
         ->addDateModifyColumn()
         ->execute();
-} catch (\DatabaseManager\Exception\CreateTableException $e) {
+} catch (\krzysztofzylka\DatabaseManager\Exception\CreateTableException $e) {
     var_dump($e->getHiddenMessage());
 }
 

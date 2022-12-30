@@ -2,10 +2,10 @@
 
 include('../vendor/autoload.php');
 
-$databaseManager = new \DatabaseManager\DatabaseManager();
+$databaseManager = new \krzysztofzylka\DatabaseManager\DatabaseManager();
 $databaseManager->connect(
-    (new \DatabaseManager\DatabaseConnect())
-        ->setType(\DatabaseManager\Enum\DatabaseType::mysql)
+    (new \krzysztofzylka\DatabaseManager\DatabaseConnect())
+        ->setType(\krzysztofzylka\DatabaseManager\Enum\DatabaseType::mysql)
         ->setDatabaseName('databasemanager')
         ->setUsername('root')
         ->setDebug(true)

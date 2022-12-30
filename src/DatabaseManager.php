@@ -1,8 +1,8 @@
 <?php
 
-namespace DatabaseManager;
+namespace krzysztofzylka\DatabaseManager;
 
-use DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use PDOStatement;
 
 class DatabaseManager {

@@ -1,9 +1,9 @@
 <?php
 
-namespace DatabaseManager;
+namespace krzysztofzylka\DatabaseManager;
 
-use DatabaseManager\Enum\ColumnType;
-use DatabaseManager\Enum\Trigger;
+use krzysztofzylka\DatabaseManager\Enum\ColumnType;
+use krzysztofzylka\DatabaseManager\Enum\Trigger;
 
 class Column {
 

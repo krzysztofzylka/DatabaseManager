@@ -1,12 +1,12 @@
 <?php
 
-namespace DatabaseManager;
+namespace krzysztofzylka\DatabaseManager;
 
-use DatabaseManager\Enum\DatabaseType;
-use DatabaseManager\Enum\Trigger;
-use DatabaseManager\Exception\CreateTableException;
-use DatabaseManager\Helper\PrepareColumn;
-use DatabaseManager\Trait\TablePredefinedColumn;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Enum\Trigger;
+use krzysztofzylka\DatabaseManager\Exception\CreateTableException;
+use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
+use krzysztofzylka\DatabaseManager\Trait\TablePredefinedColumn;
 use Exception;
 
 class CreateTable {

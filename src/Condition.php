@@ -1,8 +1,8 @@
 <?php
 
-namespace DatabaseManager;
+namespace krzysztofzylka\DatabaseManager;
 
-use DatabaseManager\Exception\ConditionException;
+use krzysztofzylka\DatabaseManager\Exception\ConditionException;
 
 class Condition {
 
