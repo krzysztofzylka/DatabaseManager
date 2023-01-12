@@ -143,7 +143,7 @@ class Table {
         $columnListString = [];
 
         foreach ($columnList as $column) {
-            $columnListString[] = '`' . $this->getName() . '`.`' . $column['field'] . '` as `' . $this->getName() . '.' . $column['field'] . '`';
+            $columnListString[] = '`' . $this->getName() . '`.`' . $column['Field'] . '` as `' . $this->getName() . '.' . $column['Field'] . '`';
         }
 
         if ($asString) {
