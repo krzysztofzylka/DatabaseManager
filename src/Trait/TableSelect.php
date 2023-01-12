@@ -4,7 +4,9 @@ namespace krzysztofzylka\DatabaseManager\Trait;
 
 use krzysztofzylka\DatabaseManager\Condition;
 use krzysztofzylka\DatabaseManager\DatabaseManager;
+use krzysztofzylka\DatabaseManager\Exception\ConditionException;
 use krzysztofzylka\DatabaseManager\Exception\SelectException;
+use krzysztofzylka\DatabaseManager\Exception\TableException;
 use krzysztofzylka\DatabaseManager\Table;
 use Exception;
 use PDO;
@@ -17,6 +19,7 @@ trait TableSelect {
      * @param ?string $orderBy
      * @return array
      * @throws SelectException
+     * @throws ConditionException
      */
     public function find(?Condition $condition = null, ?string $orderBy = null) : array {
         $sql = 'SELECT ' . $this->prepareColumnListForSql() . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
@@ -50,6 +53,7 @@ trait TableSelect {
      * @param ?string $groupBy
      * @return array
      * @throws SelectException
+     * @throws ConditionException
      */
     public function findAll(?Condition $condition = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
         $sql = 'SELECT ' . $this->prepareColumnListForSql() . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
@@ -88,6 +92,7 @@ trait TableSelect {
      * @param ?Condition $condition
      * @param ?string $groupBy
      * @return int
+     * @throws ConditionException
      * @throws SelectException
      */
     public function findCount(?Condition $condition = null, ?string $groupBy = null) : int {
@@ -116,6 +121,7 @@ trait TableSelect {
      * Isset
      * @param ?Condition $condition
      * @return bool
+     * @throws ConditionException
      * @throws SelectException
      */
     public function findIsset(?Condition $condition = null) : bool {
@@ -125,6 +131,7 @@ trait TableSelect {
     /**
      * Prepare column list for select
      * @return string
+     * @throws TableException
      */
     private function prepareColumnListForSql() : string {
         $columnList = $this->prepareColumnList(false);

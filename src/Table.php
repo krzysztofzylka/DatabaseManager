@@ -161,7 +161,7 @@ class Table {
      */
     public function insert(array $data) : bool {
         try {
-            $sql = 'INSERT INTO ' . $this->getName() . ' (`' . implode('`, `', array_keys($data)) . '`) VALUES (:' . implode(', :', array_keys($data)) . ')';
+            $sql = 'INSERT INTO `' . $this->getName() . '` (`' . implode('`, `', array_keys($data)) . '`) VALUES (:' . implode(', :', array_keys($data)) . ')';
             DatabaseManager::setLastSql($sql);
             $insert = $this->pdo->prepare($sql);
 
@@ -199,6 +199,7 @@ class Table {
         try {
             $sql = 'DELETE FROM `' . $this->getName() . '` WHERE id=' . ($id ?? $this->getId());
             DatabaseManager::setLastSql($sql);
+
             return (bool)$this->pdo->exec($sql);
         } catch (Exception $e) {
             throw new DeleteException($e->getMessage());

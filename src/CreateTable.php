@@ -32,6 +32,7 @@ class CreateTable {
     /**
      * Get table name
      * @return string
+     * @ignore
      */
     private function getName() : string {
         return $this->name;
