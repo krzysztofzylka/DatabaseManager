@@ -6,10 +6,14 @@ trait TableHelpers {
 
     /**
      * Prepare return data
-     * @param array $data
+     * @param false|array $data
      * @return array
      */
-    private function prepareReturnValue(array $data) : array {
+    private function prepareReturnValue(false|array $data) : array {
+        if (!$data) {
+            return [];
+        }
+
         $returnData = [];
 
         if (isset(array_keys($data)[0]) && is_int(array_keys($data)[0])) {

@@ -16,7 +16,9 @@ trait TableUpdate {
      */
     public function update(array $data) : bool {
         if (is_null($this->getName())) {
-            throw new UpdateException('Id is not defined');
+            throw new UpdateException('Table is not defined');
+        } elseif (is_null($this->getId())) {
+            throw new UpdateException('ID is not defined');
         }
 
         $set = [];
@@ -49,6 +51,8 @@ trait TableUpdate {
      */
     public function updateValue(string $columnName, mixed $value) : bool {
         if (is_null($this->getName())) {
+            throw new UpdateException('Table is not defined');
+        } elseif (is_null($this->getId())) {
             throw new UpdateException('ID is not defined');
         }
 
