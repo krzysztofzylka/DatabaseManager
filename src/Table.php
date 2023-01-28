@@ -15,9 +15,28 @@ use PDO;
 
 class Table {
 
+    /**
+     * Table name
+     * @var string
+     */
     private string $name;
+
+    /**
+     * PDO connection
+     * @var PDO
+     */
     private PDO $pdo;
+
+    /**
+     * Bind list
+     * @var array
+     */
     private array $bind;
+
+    /**
+     * Element id
+     * @var ?int
+     */
     private ?int $id = null;
 
     use TableSelect;
