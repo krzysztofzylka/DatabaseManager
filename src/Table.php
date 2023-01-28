@@ -63,7 +63,7 @@ class Table {
      * @param ?int $id
      * @return Table
      */
-    public function setId(?int $id) : self {
+    public function setId(?int $id = null) : self {
         $this->id = $id;
 
         return $this;
