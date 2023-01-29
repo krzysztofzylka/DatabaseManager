@@ -225,4 +225,14 @@ class Table {
         }
     }
 
+    /**
+     * Table exists in database
+     * @return bool
+     */
+    public function exists() : bool {
+        $query = $this->pdo->query('SHOW TABLES LIKE "' . $this->getName() . '";');
+
+        return !empty($query->fetchAll());
+    }
+
 }
