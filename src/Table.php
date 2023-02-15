@@ -98,7 +98,7 @@ class Table {
      */
     public function bind(BindType $bindType, string $tableName, ?string $primaryKey = null, ?string $foreignKey = null) : self {
         $primaryKey = $primaryKey ?? ('`' . $this->getName() . '`.`id`');
-        $foreignKey = $foreignKey ?? ('`' . $this->getName() . '`.`' . $this->getName() . '_id`');
+        $foreignKey = $foreignKey ?? ('`' . $tableName . '`.`' . $this->getName() . '_id`');
 
         $this->bind[] = ['type' => $bindType->value, 'tableName' => $tableName, 'primaryKey' => $primaryKey, 'foreignKey' => $foreignKey];
 
