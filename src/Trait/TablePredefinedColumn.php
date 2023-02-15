@@ -120,6 +120,11 @@ trait TablePredefinedColumn {
         return $this;
     }
 
+    /**
+     * Add date modify column
+     * @param ?string $name column name
+     * @return CreateTable
+     */
     public function addDateModifyColumn(?string $name = 'date_modify') : CreateTable {
         $column = (new Column())
             ->setName($name)
@@ -131,6 +136,41 @@ trait TablePredefinedColumn {
         $this->addColumn($column);
 
         return $this;
+    }
+
+    /**
+     * Add simple varchar column
+     * @param ?string $name column name
+     * @param int $size varchar length, default 255
+     * @param bool $null allow null value
+     * @return CreateTable
+     */
+    public function addSimpleVarcharColumn(?string $name, int $size = 255, bool $null = true) : CreateTable {
+        $column = (new Column())
+            ->setName($name)
+            ->setType(ColumnType::varchar, $size)
+            ->setNull($null);
+
+            $this->addColumn($column);
+
+            return $this;
+    }
+
+    /**
+     * Add simple int column
+     * @param ?string $name column name
+     * @param bool $null allow null value
+     * @return CreateTable
+     */
+    public function addSimpleIntColumn(?string $name, bool $null = true) : CreateTable {
+        $column = (new Column())
+            ->setName($name)
+            ->setType(ColumnType::int)
+            ->setNull($null);
+
+            $this->addColumn($column);
+
+            return $this;
     }
 
 }
