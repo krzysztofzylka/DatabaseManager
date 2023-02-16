@@ -2,6 +2,8 @@
 
 namespace krzysztofzylka\DatabaseManager\Trait;
 
+use krzysztofzylka\DatabaseManager\Enum\BindType;
+
 trait TableHelpers {
 
     /**
@@ -18,7 +20,9 @@ trait TableHelpers {
 
         if (isset(array_keys($data)[0]) && is_int(array_keys($data)[0])) {
             foreach ($data as $key => $insideData) {
+
                 foreach ($insideData as $name => $value) {
+                    //here
                     $explode = explode('.', $name, 2);
                     $returnData[$key][$explode[0]][$explode[1]] = $value;
                 }
@@ -45,6 +49,10 @@ trait TableHelpers {
         $return = [];
 
         foreach ($this->bind as $bind) {
+            if ($bind['type'] === '#HAS_ONE#') {
+                $bind['type'] = BindType::leftJoin->value;
+            }
+
             $return[] = $bind['type'] . ' `' . $bind['tableName'] . '` ON ' . $bind['primaryKey'] . ' = ' . $bind['foreignKey'];
         }
 
