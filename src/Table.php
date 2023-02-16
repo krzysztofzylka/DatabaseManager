@@ -124,6 +124,7 @@ class Table {
 
             if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
                 $sql = 'pragma table_info("user");';
+                DatabaseManager::setLastSql($sql);
                 $data = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
                 foreach ($data as $column) {
@@ -136,8 +137,6 @@ class Table {
                         'Extra' => ''
                     ];
                 }
-
-                DatabaseManager::setLastSql($sql);
             } elseif (DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
                 $sql = 'DESCRIBE `' . $this->getName() . '`;';
                 DatabaseManager::setLastSql($sql);
@@ -237,7 +236,10 @@ class Table {
      * @return bool
      */
     public function exists() : bool {
-        $query = $this->pdo->query('SHOW TABLES LIKE "' . $this->getName() . '";');
+        $sql = 'SHOW TABLES LIKE "' . $this->getName() . '";';
+        DatabaseManager::setLastSql($sql);
+
+        $query = $this->pdo->query($sql);
 
         return !empty($query->fetchAll());
     }
