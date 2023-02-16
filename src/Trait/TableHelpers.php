@@ -52,7 +52,7 @@ trait TableHelpers {
             }
         }
 
-        return $returnData;
+        return array_values($returnData);
     }
 
     /**
