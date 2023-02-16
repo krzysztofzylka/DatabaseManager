@@ -2,7 +2,9 @@
 
 namespace krzysztofzylka\DatabaseManager\Trait;
 
+use krzysztofzylka\DatabaseManager\Condition;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
+use krzysztofzylka\DatabaseManager\Exception\ConditionException;
 
 trait TableHelpers {
 
@@ -17,12 +19,28 @@ trait TableHelpers {
         }
 
         $returnData = [];
+        $hasOneBinds = [];
+        $issetData = [];
+
+        foreach ($this->bind as $bind) {
+            if ($bind['type'] === '#HAS_ONE#') {
+                $hasOneBinds[] = str_replace('`', '', $bind['primaryKey']);
+            }
+        }
 
         if (isset(array_keys($data)[0]) && is_int(array_keys($data)[0])) {
             foreach ($data as $key => $insideData) {
+                if (!empty($hasOneBinds)) {
+                    foreach ($hasOneBinds as $hasOneBind) {
+                        if (isset($issetData[$hasOneBind]) && in_array($insideData[$hasOneBind], $issetData[$hasOneBind])) {
+                            continue 2;
+                        }
+
+                        $issetData[$hasOneBind][] = $insideData[$hasOneBind];
+                    }
+                }
 
                 foreach ($insideData as $name => $value) {
-                    //here
                     $explode = explode('.', $name, 2);
                     $returnData[$key][$explode[0]][$explode[1]] = $value;
                 }
@@ -40,6 +58,7 @@ trait TableHelpers {
     /**
      * Prepare bind data
      * @return array
+     * @throws ConditionException
      */
     private function prepareBindData() : array {
         if (!isset($this->bind)) {
@@ -53,7 +72,13 @@ trait TableHelpers {
                 $bind['type'] = BindType::leftJoin->value;
             }
 
-            $return[] = $bind['type'] . ' `' . $bind['tableName'] . '` ON ' . $bind['primaryKey'] . ' = ' . $bind['foreignKey'];
+            $bindData = $bind['type'] . ' `' . $bind['tableName'] . '` ON ' . $bind['primaryKey'] . ' = ' . $bind['foreignKey'];
+
+            if ($bind['condition'] instanceof Condition) {
+                $bindData .= ' WHERE ' . $bind['condition']->getPrepareConditions();
+            }
+
+            $return[] = $bindData;
         }
 
         return $return;
