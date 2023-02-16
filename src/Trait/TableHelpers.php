@@ -22,9 +22,11 @@ trait TableHelpers {
         $hasOneBinds = [];
         $issetData = [];
 
-        foreach ($this->bind as $bind) {
-            if ($bind['type'] === '#HAS_ONE#') {
-                $hasOneBinds[] = str_replace('`', '', $bind['primaryKey']);
+        if (isset($this->bind)) {
+            foreach ($this->bind as $bind) {
+                if ($bind['type'] === '#HAS_ONE#') {
+                    $hasOneBinds[] = str_replace('`', '', $bind['primaryKey']);
+                }
             }
         }
 
