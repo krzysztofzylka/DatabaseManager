@@ -47,14 +47,16 @@ trait TableHelpers {
                     $returnData[$key][$explode[0]][$explode[1]] = $value;
                 }
             }
+
+            return array_values($returnData);
         } else {
             foreach ($data as $name => $value) {
                 $explode = explode('.', $name, 2);
                 $returnData[$explode[0]][$explode[1]] = $value;
             }
-        }
 
-        return array_values($returnData);
+            return $returnData;
+        }
     }
 
     /**
