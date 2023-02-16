@@ -101,7 +101,13 @@ class Condition {
                 if (isset($conditionValue[0]) && $conditionValue[0] instanceof Condition) {
                     $sqlArray[] = $this->getPrepareConditions($conditionValue[0]->getConditions(), $nextType);
                 } else {
-                    $sqlArray[] = $conditionValue['name'] . ' ' . $conditionValue['operator'] . ' ' . $this->prepareValue($conditionValue['value']);
+                    $operator = ' ' . $conditionValue['operator'] . ' ';
+
+                    if ($conditionValue['value'] === 'IS NULL') {
+                        $operator = ' ';
+                    }
+
+                    $sqlArray[] = $conditionValue['name'] . $operator . $this->prepareValue($conditionValue['value']);
                 }
             }
 
@@ -126,7 +132,9 @@ class Condition {
             case 'NULL':
                 return 'NULL';
             default:
-                if (str_contains($value, '"')) {
+                if ($value === 'IS NULL') {
+                    return $value;
+                } elseif (str_contains($value, '"')) {
                     return "'" . $value . "'";
                 } else {
                     return '"' . $value . '"';
