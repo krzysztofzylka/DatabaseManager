@@ -1,8 +1,8 @@
-<h1>Create test table</h1>
-
 <?php
 
 require('_init.php');
+
+echo '<h1>Create test table</h1>';
 
 try {
     $faker = Faker\Factory::create();

@@ -1,10 +1,11 @@
-<h1>Join</h1>
 <?php
 
 use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Table;
 
 require('_init.php');
+
+echo '<h1>Join</h1>';
 
 try {
     $table = new Table();
