@@ -7,8 +7,8 @@ $databaseManager->connect(
     (new \krzysztofzylka\DatabaseManager\DatabaseConnect())
         ->setType(\krzysztofzylka\DatabaseManager\Enum\DatabaseType::mysql)
         ->setDatabaseName('databasemanager')
-        ->setUsername('root')
-        ->setPassword('root')
+        ->setUsername('user')
+        ->setPassword('user')
         ->setDebug(true)
 );
 

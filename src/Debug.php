@@ -25,9 +25,9 @@ class Debug {
         $table .= '</table>';
 
         echo '
-        <button class="position-absolute btn btn-secondary btn-sm" style="right: 5px; bottom: 5px;" data-bs-toggle="modal" data-bs-target="#dbdebugmodal">DB Debug</button>
+        <button class="position-fixed float-right btn btn-secondary btn-sm" style="right: 5px; bottom: 5px;" data-bs-toggle="modal" data-bs-target="#dbdebugmodal">DB Debug</button>
             <div class="modal fade" id="dbdebugmodal" tabindex="-1" aria-labelledby="dbdebugmodallabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-scrollable modal-xl">
+                <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-lg-down">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h1 class="modal-title fs-5" id="dbdebugmodallabel">Database debug</h1>
