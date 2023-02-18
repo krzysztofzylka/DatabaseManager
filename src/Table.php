@@ -126,31 +126,31 @@ class Table {
     public function columnList(?string $columnName = null) : array|bool {
         try {
             $return = [];
-            $cacheData = Cache::getData('columnList_' . $columnName);
+            $cacheData = Cache::getData('columnList_' . $this->getName());
 
             if (!is_null($cacheData)) {
-                return $cacheData;
-            }
+                $return = $cacheData;
+            } else {
+                if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
+                    $sql = 'pragma table_info("user");';
+                    DatabaseManager::setLastSql($sql);
+                    $data = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
-            if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
-                $sql = 'pragma table_info("user");';
-                DatabaseManager::setLastSql($sql);
-                $data = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-
-                foreach ($data as $column) {
-                    $return[] = [
-                        'Field' => $column['name'],
-                        'Type' => $column['type'],
-                        'Null' => $column['notnull'] ? 'NO' : 'YES',
-                        'Key' => $column['pk'] ? 'PRI' : '',
-                        'Default' => $column['dflt_value'],
-                        'Extra' => ''
-                    ];
+                    foreach ($data as $column) {
+                        $return[] = [
+                            'Field' => $column['name'],
+                            'Type' => $column['type'],
+                            'Null' => $column['notnull'] ? 'NO' : 'YES',
+                            'Key' => $column['pk'] ? 'PRI' : '',
+                            'Default' => $column['dflt_value'],
+                            'Extra' => ''
+                        ];
+                    }
+                } elseif (DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
+                    $sql = 'DESCRIBE `' . $this->getName() . '`;';
+                    DatabaseManager::setLastSql($sql);
+                    $return = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
                 }
-            } elseif (DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
-                $sql = 'DESCRIBE `' . $this->getName() . '`;';
-                DatabaseManager::setLastSql($sql);
-                $return = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
             }
 
             if (!is_null($columnName)) {
@@ -161,7 +161,7 @@ class Table {
                 }
             }
 
-            Cache::saveData('columnList_' . $columnName, $return);
+            Cache::saveData('columnList_' . $this->getName(), $return);
 
             return $return ?? false;
         } catch (Exception $exception) {
