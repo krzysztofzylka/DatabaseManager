@@ -99,10 +99,10 @@ class Table {
      * @param string $tableName
      * @param ?string $primaryKey
      * @param ?string $foreignKey
-     * @param Condition|null $condition
+     * @param array|Condition|null $condition
      * @return $this
      */
-    public function bind(BindType $bindType, string $tableName, ?string $primaryKey = null, ?string $foreignKey = null, ?Condition $condition = null) : self {
+    public function bind(BindType $bindType, string $tableName, ?string $primaryKey = null, ?string $foreignKey = null, null|array|Condition $condition = null) : self {
         $primaryKey = $primaryKey ?? ('`' . $this->getName() . '`.`id`');
         $foreignKey = $foreignKey ?? ('`' . $tableName . '`.`' . $this->getName() . '_id`');
 
