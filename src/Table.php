@@ -45,9 +45,14 @@ class Table {
 
     /**
      * Constructor
+     * @param ?string $tableName Table name
      */
-    public function __construct() {
+    public function __construct(?string $tableName = null) {
         $this->pdo = DatabaseManager::$connection->getConnection();
+
+        if (!is_null($tableName)) {
+            $this->setName($tableName);
+        }
     }
 
     /**
@@ -121,6 +126,11 @@ class Table {
     public function columnList(?string $columnName = null) : array|bool {
         try {
             $return = [];
+            $cacheData = Cache::getData('columnList_' . $columnName);
+
+            if (!is_null($cacheData)) {
+                return $cacheData;
+            }
 
             if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
                 $sql = 'pragma table_info("user");';
@@ -150,6 +160,8 @@ class Table {
                     }
                 }
             }
+
+            Cache::saveData('columnList_' . $columnName, $return);
 
             return $return ?? false;
         } catch (Exception $exception) {

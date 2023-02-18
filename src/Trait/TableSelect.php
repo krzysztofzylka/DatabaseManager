@@ -7,6 +7,7 @@ use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Exception\ConditionException;
 use krzysztofzylka\DatabaseManager\Exception\SelectException;
 use krzysztofzylka\DatabaseManager\Exception\TableException;
+use krzysztofzylka\DatabaseManager\Helper\SimpleCondition;
 use krzysztofzylka\DatabaseManager\Table;
 use Exception;
 use PDO;
@@ -15,17 +16,24 @@ trait TableSelect {
 
     /**
      * Find one element
-     * @param ?Condition $condition
+     * @param array|Condition|null $condition
      * @param ?string $orderBy
      * @return array
-     * @throws SelectException
      * @throws ConditionException
+     * @throws SelectException
+     * @throws TableException
      */
-    public function find(?Condition $condition = null, ?string $orderBy = null) : array {
+    public function find(null|array|Condition $condition = null, ?string $orderBy = null) : array {
         $sql = 'SELECT ' . $this->prepareColumnListForSql() . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
-            $sql .= ' WHERE ' . $condition->getPrepareConditions();
+            if ($condition instanceof Condition) {
+                $condition = $condition->getPrepareConditions();
+            } elseif (is_array($condition)) {
+                $condition = (new SimpleCondition())->getPrepareConditions($condition);
+            }
+
+            $sql .= ' WHERE ' . $condition;
         }
 
         if (!is_null($orderBy)) {
@@ -47,7 +55,7 @@ trait TableSelect {
 
     /**
      * Find all elements
-     * @param ?Condition $condition
+     * @param array|Condition|null $condition
      * @param ?string $orderBy
      * @param ?string $limit
      * @param ?string $groupBy
@@ -55,11 +63,17 @@ trait TableSelect {
      * @throws SelectException
      * @throws ConditionException
      */
-    public function findAll(?Condition $condition = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
+    public function findAll(null|array|Condition $condition = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
         $sql = 'SELECT ' . $this->prepareColumnListForSql() . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
-            $sql .= ' WHERE ' . $condition->getPrepareConditions();
+            if ($condition instanceof Condition) {
+                $condition = $condition->getPrepareConditions();
+            } elseif (is_array($condition)) {
+                $condition = (new SimpleCondition())->getPrepareConditions($condition);
+            }
+
+            $sql .= ' WHERE ' . $condition;
         }
 
         if (!is_null($groupBy)) {
