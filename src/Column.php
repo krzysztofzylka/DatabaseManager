@@ -20,6 +20,18 @@ class Column {
     private array $triggers = [];
 
     /**
+     * Constructor
+     * @param ?string $name
+     * @param ColumnType $columnType
+     * @param mixed $size
+     */
+    public function __construct(?string $name = null, ColumnType $columnType = ColumnType::varchar, mixed $size = 255) {
+        if (!is_null($name)) {
+            $this->setName($name)->setType($columnType, $size);
+        }
+    }
+
+    /**
      * Set name
      * @param string $name
      * @return Column
@@ -88,10 +100,10 @@ class Column {
     /**
      * Set type
      * @param ColumnType $type
-     * @param string|int|null|array $size (array for enum)
+     * @param mixed $size (array for enum)
      * @return Column
      */
-    public function setType(ColumnType $type, null|string|int|array $size = null) : self {
+    public function setType(ColumnType $type, mixed $size = null) : self {
         $this->type = $type;
 
         if ($type === ColumnType::enum) {

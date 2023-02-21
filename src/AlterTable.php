@@ -14,10 +14,15 @@ class AlterTable {
     private array $sql = [];
 
     /**
-     * Połączenie z bazą danych
+     * Contructor
+     * @param ?string $tableName alternative for $this->setName
      */
-    public function __construct() {
+    public function __construct(?string $tableName = null) {
         $this->databaseManager = new DatabaseManager();
+
+        if (!is_null($tableName)) {
+            $this->setName($tableName);
+        }
     }
 
     /**
@@ -64,16 +69,23 @@ class AlterTable {
 
     /**
      * @param Column $column
+     * @param ?string $afterColumnName
      * @return AlterTable
      */
-    public function addColumn(Column $column) : self {
+    public function addColumn(Column $column, ?string $afterColumnName = null) : self {
         $columnString = PrepareColumn::generateCreateColumnSql($column);
 
         if ($column->isPrimary() && DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
             $this->primary[] = 'PRIMARY KEY (' . $column->getName() . ')';
         }
 
-        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` ADD ' . $columnString . ';';
+        $after = '';
+
+        if (!is_null($afterColumnName)) {
+            $after .= ' AFTER `' . $afterColumnName . '`';
+        }
+
+        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` ADD ' . $columnString . $after . ';';
 
         return $this;
     }
