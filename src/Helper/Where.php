@@ -2,6 +2,7 @@
 
 namespace krzysztofzylka\DatabaseManager\Helper;
 
+use krzysztofzylka\DatabaseManager\Condition;
 use krzysztofzylka\DatabaseManager\Exception\ConditionException;
 use krzysztofzylka\DatabaseManager\Trait\ConditionMethods;
 
@@ -21,7 +22,9 @@ class Where {
             $sqlArray = [];
 
             foreach ($data as $nextType => $conditionValue) {
-                if (is_array($conditionValue)) {
+                if ($conditionValue instanceof Condition) {
+                    $sqlArray[] = (string)$conditionValue;
+                } elseif (is_array($conditionValue)) {
                     $sqlArray[] = $this->getPrepareConditions($conditionValue, $nextType);
                 } else {
                     $sqlArray[] = $nextType . ' = ' . $this->prepareValue($conditionValue);
