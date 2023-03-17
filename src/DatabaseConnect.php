@@ -140,7 +140,8 @@ class DatabaseConnect {
                 $this->connection = new PDO(
                     'mysql:host=' . $this->getHost() . ';dbname=' . $this->getDatabaseName() . ';charset=' . $this->getCharset(),
                     $this->getUsername() ?? '',
-                    $this->getPassword() ?? '');
+                    $this->getPassword() ?? ''
+                );
             } elseif ($this->getType() === DatabaseType::sqlite) {
                 $this->connection = new PDO('sqlite:' . $this->getSqlitePath());
             }

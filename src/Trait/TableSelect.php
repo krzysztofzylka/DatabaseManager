@@ -2,12 +2,11 @@
 
 namespace krzysztofzylka\DatabaseManager\Trait;
 
-use krzysztofzylka\DatabaseManager\Condition;
 use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Exception\ConditionException;
 use krzysztofzylka\DatabaseManager\Exception\SelectException;
 use krzysztofzylka\DatabaseManager\Exception\TableException;
-use krzysztofzylka\DatabaseManager\Helper\SimpleCondition;
+use krzysztofzylka\DatabaseManager\Helper\Where;
 use krzysztofzylka\DatabaseManager\Table;
 use Exception;
 use PDO;
@@ -16,24 +15,18 @@ trait TableSelect {
 
     /**
      * Find one element
-     * @param array|Condition|null $condition
+     * @param array|null $condition
      * @param ?string $orderBy
      * @return array
      * @throws ConditionException
      * @throws SelectException
      * @throws TableException
      */
-    public function find(null|array|Condition $condition = null, ?string $orderBy = null) : array {
+    public function find(null|array $condition = null, ?string $orderBy = null) : array {
         $sql = 'SELECT ' . $this->prepareColumnListForSql() . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
-            if ($condition instanceof Condition) {
-                $condition = $condition->getPrepareConditions();
-            } elseif (is_array($condition)) {
-                $condition = (new SimpleCondition())->getPrepareConditions($condition);
-            }
-
-            $sql .= ' WHERE ' . $condition;
+            $sql .= ' WHERE ' . (new Where())->getPrepareConditions($condition);
         }
 
         if (!is_null($orderBy)) {
@@ -55,25 +48,18 @@ trait TableSelect {
 
     /**
      * Find all elements
-     * @param array|Condition|null $condition
+     * @param array|null $condition
      * @param ?string $orderBy
      * @param ?string $limit
      * @param ?string $groupBy
      * @return array
      * @throws SelectException
-     * @throws ConditionException
      */
-    public function findAll(null|array|Condition $condition = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
+    public function findAll(null|array $condition = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
         $sql = 'SELECT ' . $this->prepareColumnListForSql() . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
-            if ($condition instanceof Condition) {
-                $condition = $condition->getPrepareConditions();
-            } elseif (is_array($condition)) {
-                $condition = (new SimpleCondition())->getPrepareConditions($condition);
-            }
-
-            $sql .= ' WHERE ' . $condition;
+            $sql .= ' WHERE ' . (new Where())->getPrepareConditions($condition);
         }
 
         if (!is_null($groupBy)) {
@@ -103,17 +89,17 @@ trait TableSelect {
 
     /**
      * Count
-     * @param ?Condition $condition
+     * @param ?array $condition
      * @param ?string $groupBy
      * @return int
      * @throws ConditionException
      * @throws SelectException
      */
-    public function findCount(?Condition $condition = null, ?string $groupBy = null) : int {
+    public function findCount(?array $condition = null, ?string $groupBy = null) : int {
         $sql = 'SELECT COUNT(*) as `count` FROM `' . $this->getName() . '`';
 
         if (!is_null($condition)) {
-            $sql .= ' WHERE ' . $condition->getPrepareConditions();
+            $sql .= ' WHERE ' . (new Where())->getPrepareConditions($condition);
         }
 
         if (!is_null($groupBy)) {
@@ -133,12 +119,12 @@ trait TableSelect {
 
     /**
      * Isset
-     * @param ?Condition $condition
+     * @param ?array $condition
      * @return bool
      * @throws ConditionException
      * @throws SelectException
      */
-    public function findIsset(?Condition $condition = null) : bool {
+    public function findIsset(?array $condition = null) : bool {
         return $this->findCount($condition) > 0;
     }
 
