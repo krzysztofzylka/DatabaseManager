@@ -2,14 +2,20 @@
 
 namespace krzysztofzylka\DatabaseManager\Helper;
 
-use krzysztofzylka\DatabaseManager\Condition;
 use krzysztofzylka\DatabaseManager\Exception\ConditionException;
 use krzysztofzylka\DatabaseManager\Trait\ConditionMethods;
 
-class SimpleCondition {
+class Where {
 
     use ConditionMethods;
 
+    /**
+     * Prepare conditions
+     * @param array $data
+     * @param string $type
+     * @return string
+     * @throws ConditionException
+     */
     public function getPrepareConditions(array $data, string $type = 'AND') : string {
         try {
             $sqlArray = [];
