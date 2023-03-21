@@ -17,7 +17,7 @@ enum Trigger {
      */
     public function generate(string $tableName, string $columnName) : string {
         return match($this) {
-            Trigger::UpdateTimestampAfterUpdate => "CREATE TRIGGER `trigger_autoUpdateDateOnUpdate_{$tableName}_{$columnName}` BEFORE UPDATE ON `$tableName` FOR EACH ROW BEGIN SET NEW.`$columnName` = CURRENT_TIMESTAMP; END"
+            Trigger::UpdateTimestampAfterUpdate => "CREATE TRIGGER `trigger_audou_" . md5($tableName . $columnName) . "` BEFORE UPDATE ON `$tableName` FOR EACH ROW BEGIN SET NEW.`$columnName` = CURRENT_TIMESTAMP; END"
         };
     }
 
