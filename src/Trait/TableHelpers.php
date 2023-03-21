@@ -2,10 +2,9 @@
 
 namespace krzysztofzylka\DatabaseManager\Trait;
 
-use krzysztofzylka\DatabaseManager\Condition;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Exception\ConditionException;
-use krzysztofzylka\DatabaseManager\Helper\SimpleCondition;
+use krzysztofzylka\DatabaseManager\Helper\Where;
 
 trait TableHelpers {
 
@@ -80,13 +79,7 @@ trait TableHelpers {
             $bindData = $bind['type'] . ' `' . $bind['tableName'] . '` ON ' . $bind['primaryKey'] . ' = ' . $bind['foreignKey'];
 
             if (!is_null($bind['condition'])) {
-                if ($bind['condition'] instanceof Condition) {
-                    $condition = $bind['condition']->getPrepareConditions();
-                } elseif (is_array($bind['condition'])) {
-                    $condition = (new SimpleCondition())->getPrepareConditions($bind['condition']);
-                }
-
-                $bindData .= ' WHERE ' . $condition;
+                $bindData .= ' WHERE ' . (new Where())->getPrepareConditions($bind['condition']);
             }
 
             $return[] = $bindData;

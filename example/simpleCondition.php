@@ -1,6 +1,5 @@
 <?php
 
-use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Table;
 
 require('_init.php');

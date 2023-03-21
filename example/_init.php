@@ -3,14 +3,18 @@
 include('../vendor/autoload.php');
 
 $databaseManager = new \krzysztofzylka\DatabaseManager\DatabaseManager();
-$databaseManager->connect(
-    (new \krzysztofzylka\DatabaseManager\DatabaseConnect())
-        ->setType(\krzysztofzylka\DatabaseManager\Enum\DatabaseType::mysql)
-        ->setDatabaseName('databasemanager')
-        ->setUsername('user')
-        ->setPassword('user')
-        ->setDebug(true)
-);
+try {
+    $databaseManager->connect(
+        (new \krzysztofzylka\DatabaseManager\DatabaseConnect())
+            ->setType(\krzysztofzylka\DatabaseManager\Enum\DatabaseType::mysql)
+            ->setDatabaseName('databasemanager')
+            ->setUsername('root')
+            ->setPassword('root')
+            ->setDebug(true)
+    );
+} catch (\krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException $exception) {
+    die($exception->getHiddenMessage());
+}
 
 ?>
 
