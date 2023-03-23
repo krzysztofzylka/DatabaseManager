@@ -173,4 +173,21 @@ trait TablePredefinedColumn {
             return $this;
     }
 
+    /**
+     * Add simple bool (tinyint(1)) column
+     * @param ?string $name column name
+     * @param bool $default default
+     * @return CreateTable
+     */
+    public function addSimpleBoolColumn(?string $name, bool $default = false) : CreateTable {
+        $column = (new Column())
+            ->setName($name)
+            ->setType(ColumnType::tinyint, 1)
+            ->setDefault($default ? 1 : 0);
+
+        $this->addColumn($column);
+
+        return $this;
+    }
+
 }
