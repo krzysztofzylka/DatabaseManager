@@ -22,8 +22,8 @@ trait TableSelect {
      * @throws SelectException
      * @throws TableException
      */
-    public function find(null|array $condition = null, ?string $orderBy = null) : array {
-        $sql = 'SELECT ' . $this->prepareColumnListForSql() . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
+    public function find(null|array $condition = null, ?array $columns = null, ?string $orderBy = null) : array {
+        $sql = 'SELECT ' . ($columns ?? $this->prepareColumnListForSql()) . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
             $sql .= ' WHERE ' . (new Where())->getPrepareConditions($condition);
@@ -55,8 +55,8 @@ trait TableSelect {
      * @return array
      * @throws SelectException
      */
-    public function findAll(null|array $condition = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
-        $sql = 'SELECT ' . $this->prepareColumnListForSql() . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
+    public function findAll(null|array $condition = null, ?array $columns = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
+        $sql = 'SELECT ' . ($columns ?? $this->prepareColumnListForSql()) . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
             $sql .= ' WHERE ' . (new Where())->getPrepareConditions($condition);
