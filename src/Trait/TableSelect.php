@@ -23,7 +23,7 @@ trait TableSelect {
      * @throws TableException
      */
     public function find(null|array $condition = null, ?array $columns = null, ?string $orderBy = null) : array {
-        $sql = 'SELECT ' . ($columns ?? $this->prepareColumnListForSql()) . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
+        $sql = 'SELECT ' . ($columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql())  . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
             $sql .= ' WHERE ' . (new Where())->getPrepareConditions($condition);
@@ -56,7 +56,7 @@ trait TableSelect {
      * @throws SelectException
      */
     public function findAll(null|array $condition = null, ?array $columns = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
-        $sql = 'SELECT ' . ($columns ?? $this->prepareColumnListForSql()) . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
+        $sql = 'SELECT ' . ($columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql())  . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
             $sql .= ' WHERE ' . (new Where())->getPrepareConditions($condition);
@@ -144,6 +144,19 @@ trait TableSelect {
         }
 
         return implode(', ', $columnList);
+    }
+
+    /**
+     * Prepare custom column list
+     * @param array $columns
+     * @return string
+     */
+    public function prepareCustomColumnList(array $columns) : string {
+        foreach ($columns as $id => $column) {
+            $columns[$id] = \krzysztofzylka\DatabaseManager\Helper\Table::prepareColumnNameWithAlias($column);
+        }
+
+        return implode(', ', $columns);
     }
 
 }
