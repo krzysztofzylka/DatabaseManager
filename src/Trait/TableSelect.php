@@ -22,7 +22,7 @@ trait TableSelect {
      * @throws SelectException
      * @throws TableException
      */
-    public function find(null|array $condition = null, ?array $columns = null, ?string $orderBy = null) : array {
+    public function find(?array $condition = null, ?array $columns = null, ?string $orderBy = null) : array {
         $sql = 'SELECT ' . ($columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql())  . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
@@ -55,7 +55,7 @@ trait TableSelect {
      * @return array
      * @throws SelectException
      */
-    public function findAll(null|array $condition = null, ?array $columns = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
+    public function findAll(?array $condition = null, ?array $columns = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
         $sql = 'SELECT ' . ($columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql())  . ' FROM `' . $this->getName() . '` ' . implode(', ', $this->prepareBindData());
 
         if (!is_null($condition)) {
@@ -153,7 +153,11 @@ trait TableSelect {
      */
     public function prepareCustomColumnList(array $columns) : string {
         foreach ($columns as $id => $column) {
-            $columns[$id] = \krzysztofzylka\DatabaseManager\Helper\Table::prepareColumnNameWithAlias($column);
+            if (!str_contains($column, '.')) {
+                $column = $this->getName() . '.' . $column;
+            }
+
+            $columns[$id] = \krzysztofzylka\DatabaseManager\Helper\Table::prepareColumnNameWithAlias($column) . ' as `' . $column . '`';
         }
 
         return implode(', ', $columns);
