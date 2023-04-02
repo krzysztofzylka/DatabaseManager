@@ -256,4 +256,15 @@ class Table {
         return !empty($query->fetchAll());
     }
 
+    /**
+     * Query
+     * @param string $sql
+     * @return array
+     */
+    public function query(string $sql) : array {
+        DatabaseManager::setLastSql($sql);
+
+        return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }
