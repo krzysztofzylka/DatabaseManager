@@ -12,7 +12,7 @@ try {
     $table->setName('user');
     $table->bind(BindType::hasOne, 'user_permission');
     echo '<pre>';
-    var_dump($table->findAll(null, 'user.id ASC, user_permission.id ASC'));
+    var_dump($table->findAll(null, null, 'user.id ASC, user_permission.id ASC'));
     echo '</pre>';
 } catch (Exception) {}
 
