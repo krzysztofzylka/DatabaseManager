@@ -106,6 +106,13 @@ class Table {
         $primaryKey = $primaryKey ?? ('`' . $this->getName() . '`.`id`');
         $foreignKey = $foreignKey ?? ('`' . $tableName . '`.`' . $this->getName() . '_id`');
 
+        $bindTableNames = array_column($this->bind ?? [], 'tableName');
+        $bindSearch = array_search($tableName, $bindTableNames);
+
+        if ($bindSearch !== false) {
+            unset($this->bind[$bindSearch]);
+        }
+
         $this->bind[] = [
             'type' => $bindType->value,
             'tableName' => $tableName,
