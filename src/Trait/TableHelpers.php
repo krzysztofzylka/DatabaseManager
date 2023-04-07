@@ -5,6 +5,7 @@ namespace krzysztofzylka\DatabaseManager\Trait;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Exception\ConditionException;
 use krzysztofzylka\DatabaseManager\Helper\Where;
+use krzysztofzylka\SimpleLibraries\Library\_Array;
 
 trait TableHelpers {
 
@@ -48,6 +49,30 @@ trait TableHelpers {
                 }
             }
 
+            if (isset($this->bind)) {
+                $returnDataNew = [];
+                $hasManyIds = [];
+
+                foreach ($this->bind as $bind) {
+                    if ($bind['type'] === '#HAS_MANY#') {
+                        for ($i = 0; $i < count($returnData); $i++) {
+                            $dataId = _Array::getFromArrayUsingString(str_replace('`', '', $bind['primaryKey']), $returnData[$i]);
+
+                            if (_Array::inArrayKeys($dataId, $hasManyIds)) {
+                                $returnDataNew[$hasManyIds[$dataId]][$bind['tableName']][] = $returnData[$i][$bind['tableName']];
+                            } else {
+                                $addData = $returnData[$i];
+                                $addData[$bind['tableName']] = [$returnData[$i][$bind['tableName']]];
+                                $returnDataNew[] = $addData;
+                                $hasManyIds[$dataId] = array_key_last($returnDataNew);
+                            }
+                        }
+
+                        $returnData = $returnDataNew;
+                    }
+                }
+            }
+
             return array_values($returnData);
         } else {
             foreach ($data as $name => $value) {
@@ -73,6 +98,8 @@ trait TableHelpers {
 
         foreach ($this->bind as $bind) {
             if ($bind['type'] === '#HAS_ONE#') {
+                $bind['type'] = BindType::leftJoin->value;
+            } elseif ($bind['type'] === '#HAS_MANY#') {
                 $bind['type'] = BindType::leftJoin->value;
             }
 

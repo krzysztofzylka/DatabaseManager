@@ -16,7 +16,8 @@
     ],
     "require": {
       "ext-pdo": "*",
-      "php": ">=8.1"
+      "php": ">=8.1",
+      "krzysztofzylka/simple-libraries": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.21"
