@@ -27,7 +27,7 @@ class Where {
                 } elseif (is_array($conditionValue)) {
                     $sqlArray[] = $this->getPrepareConditions($conditionValue, $nextType);
                 } else {
-                    $sqlArray[] = $nextType . ' = ' . $this->prepareValue($conditionValue);
+                    $sqlArray[] = Table::prepareColumnNameWithAlias($nextType) . ' = ' . $this->prepareValue($conditionValue);
                 }
             }
 

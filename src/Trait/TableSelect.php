@@ -6,6 +6,7 @@ use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Exception\ConditionException;
 use krzysztofzylka\DatabaseManager\Exception\SelectException;
 use krzysztofzylka\DatabaseManager\Exception\TableException;
+use krzysztofzylka\DatabaseManager\Helper\SqlBuilder;
 use krzysztofzylka\DatabaseManager\Helper\Where;
 use krzysztofzylka\DatabaseManager\Table;
 use Exception;
@@ -23,15 +24,14 @@ trait TableSelect {
      * @throws TableException
      */
     public function find(?array $condition = null, ?array $columns = null, ?string $orderBy = null) : array {
-        $sql = 'SELECT ' . ($columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql())  . ' FROM `' . $this->getName() . '` ' . implode(' ', $this->prepareBindData());
-
-        if (!is_null($condition)) {
-            $sql .= ' WHERE ' . (new Where())->getPrepareConditions($condition);
-        }
-
-        if (!is_null($orderBy)) {
-            $sql .= ' ORDER BY ' . $orderBy;
-        }
+        $sql = SqlBuilder::select(
+            $columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql(),
+            $this->getName(),
+            trim(implode(' ', $this->prepareBindData())),
+            $condition ? (new Where())->getPrepareConditions($condition) : null,
+            null,
+            $orderBy
+        );
 
         DatabaseManager::setLastSql($sql);
 
@@ -56,23 +56,15 @@ trait TableSelect {
      * @throws SelectException
      */
     public function findAll(?array $condition = null, ?array $columns = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
-        $sql = 'SELECT ' . ($columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql())  . ' FROM `' . $this->getName() . '` ' . implode(' ', $this->prepareBindData());
-
-        if (!is_null($condition)) {
-            $sql .= ' WHERE ' . (new Where())->getPrepareConditions($condition);
-        }
-
-        if (!is_null($groupBy)) {
-            $sql .= ' GROUP BY ' . $groupBy;
-        }
-
-        if (!is_null($orderBy)) {
-            $sql .= ' ORDER BY ' . $orderBy;
-        }
-
-        if (!is_null($limit)) {
-            $sql .= ' LIMIT ' . $limit;
-        }
+        $sql = SqlBuilder::select(
+            $columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql(),
+            $this->getName(),
+            trim(implode(' ', $this->prepareBindData())),
+            $condition ? (new Where())->getPrepareConditions($condition) : null,
+            $groupBy,
+            $orderBy,
+            $limit
+        );
 
         DatabaseManager::setLastSql($sql);
 
@@ -96,15 +88,13 @@ trait TableSelect {
      * @throws SelectException
      */
     public function findCount(?array $condition = null, ?string $groupBy = null) : int {
-        $sql = 'SELECT COUNT(*) as `count` FROM `' . $this->getName() . '`';
-
-        if (!is_null($condition)) {
-            $sql .= ' WHERE ' . (new Where())->getPrepareConditions($condition);
-        }
-
-        if (!is_null($groupBy)) {
-            $sql .= ' GROUP BY ' . $groupBy;
-        }
+        $sql = SqlBuilder::select(
+            'COUNT(*) as `count`',
+            $this->getName(),
+            trim(implode(' ', $this->prepareBindData())),
+            $condition ? (new Where())->getPrepareConditions($condition) : null,
+            $groupBy
+        );
 
         DatabaseManager::setLastSql($sql);
 

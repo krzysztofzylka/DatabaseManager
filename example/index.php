@@ -3,3 +3,4 @@
 <a href="simpleCondition.php">Simple conditions</a><br />
 <a href="condition.php">Condition generator</a><br />
 <a href="query.php">Query</a><br />
+<a href="finds.php">Finds</a><br />
