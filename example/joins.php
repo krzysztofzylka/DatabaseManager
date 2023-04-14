@@ -7,10 +7,13 @@ require('_init.php');
 
 echo '<h1>Join</h1>';
 
+echo '<pre>';
 try {
     $table = new Table();
     $table->setName('user');
-    $table->bind(BindType::hasOne, 'user_permission');
+    $table->bind(['hasOne.user_permission' => ['foreignKey' => 'ass.dgsdg', 'primaryKey' => 'fff'], 'leftJoin.test']);
+    var_dump($table);
+exit;
     echo '<pre>';
     var_dump($table->findAll(null, null, 'user.id ASC, user_permission.id ASC'));
     echo '</pre>';
