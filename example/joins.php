@@ -7,7 +7,6 @@ require('_init.php');
 
 echo '<h1>Join</h1>';
 
-echo '<pre>';
 try {
     $table = new Table();
     $table->setName('user');
