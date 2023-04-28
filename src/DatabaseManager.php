@@ -2,7 +2,9 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseException;
+use krzysztofzylka\SimpleLibraries\Library\Cache;
 use PDO;
 use PDOStatement;
 
@@ -32,6 +34,22 @@ class DatabaseManager
      * @var array
      */
     private static array $lastSqlList = [];
+
+    /**
+     * Cache
+     * @var Cache
+     */
+    public static Cache $cache;
+
+    /**
+     * Initialize
+     */
+    public function __construct()
+    {
+        if (!isset(self::$cache)) {
+            self::$cache = new Cache();
+        }
+    }
 
     /**
      * Connect to database
@@ -102,12 +120,34 @@ class DatabaseManager
     }
 
     /**
+     * Prepare
+     * @param string $query
+     * @param array $options
+     * @return false|PDOStatement
+     */
+    public static function prepare(string $query, array $options = []): bool|PDOStatement
+    {
+        self::setLastSql($query);
+
+        return self::getPdoInstance()->prepare($query, $options);
+    }
+
+    /**
      * Get connection ID
      * @return int
      */
     public static function getConnectionId(): int
     {
         return self::query('SELECT CONNECTION_ID();')->fetch(PDO::FETCH_ASSOC)['CONNECTION_ID()'];
+    }
+
+    /**
+     * Get database type
+     * @return DatabaseType
+     */
+    public static function getDatabaseType(): DatabaseType
+    {
+        return self::$databaseConnect->getType();
     }
 
 }

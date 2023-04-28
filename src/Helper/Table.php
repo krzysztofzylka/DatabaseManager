@@ -21,4 +21,41 @@ class Table
         return '`' . $name . '`';
     }
 
+    /**
+     * Prepare custom column list
+     * @param array $columns
+     * @param string|null $tableName
+     * @return string
+     */
+    public static function prepareCustomColumnList(array $columns, ?string $tableName) : string {
+        foreach ($columns as $id => $column) {
+            if (!str_contains($column, '.')) {
+                $column = $tableName . '.' . $column;
+            }
+
+            $columns[$id] = Table::prepareColumnNameWithAlias($column) . ' as `' . $column . '`';
+        }
+
+        return implode(', ', $columns);
+    }
+
+    /**
+     * Prepare column list for select
+     * @return string
+     * @throws TableException
+     */
+    private function prepareColumnListForSql() : string {
+        $columnList = $this->prepareColumnList(false);
+
+        if (isset($this->bind)) {
+            foreach ($this->bind as $bind) {
+                $bindTable = (new \krzysztofzylka\DatabaseManager\Table())->setName($bind['tableName']);
+                $columnList = array_merge($columnList, $bindTable->prepareColumnList(false));
+            }
+        }
+
+        return implode(', ', $columnList);
+    }
+
+
 }
