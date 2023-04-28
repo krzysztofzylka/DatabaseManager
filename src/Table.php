@@ -2,18 +2,22 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
-use krzysztofzylka\DatabaseManager\Enum\BindType;
-use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
-use krzysztofzylka\DatabaseManager\Exception\DeleteException;
-use krzysztofzylka\DatabaseManager\Exception\InsertException;
-use krzysztofzylka\DatabaseManager\Exception\TableException;
-use krzysztofzylka\DatabaseManager\Trait\TableHelpers;
-use krzysztofzylka\DatabaseManager\Trait\TableSelect;
-use krzysztofzylka\DatabaseManager\Trait\TableUpdate;
 use Exception;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseException;
+use krzysztofzylka\DatabaseManager\Helper\SqlBuilder;
+use krzysztofzylka\DatabaseManager\Trait\TableBind;
 use PDO;
 
-class Table {
+class Table
+{
+
+    use TableBind;
+
+    /**
+     * Table PDO Instance
+     * @var PDO
+     */
+    private PDO $pdoInstance;
 
     /**
      * Table name
@@ -22,251 +26,106 @@ class Table {
     private string $name;
 
     /**
-     * PDO connection
-     * @var PDO
-     */
-    private PDO $pdo;
-
-    /**
-     * Bind list
-     * @var array
-     */
-    private array $bind;
-
-    /**
-     * Element id
+     * ID database element
      * @var ?int
      */
-    private ?int $id = null;
-
-    use TableSelect;
-    use TableHelpers;
-    use TableUpdate;
+    private ?int $id;
 
     /**
-     * Constructor
-     * @param ?string $tableName Table name
+     * Initialize
+     * @param string $name table name
      */
-    public function __construct(?string $tableName = null) {
-        $this->pdo = DatabaseManager::$connection->getConnection();
-
-        if (!is_null($tableName)) {
-            $this->setName($tableName);
-        }
+    public function __construct(string $name)
+    {
+        $this->name = $name;
+        $this->pdoInstance = DatabaseManager::getPdoInstance();
     }
 
     /**
      * Get table name
      * @return string
      */
-    private function getName() : string {
+    public function getName(): string
+    {
         return $this->name;
     }
 
     /**
-     * Set column name
-     * @param string $name
-     * @return Table
-     */
-    public function setName(string $name) : self {
-        $this->name = htmlspecialchars($name);
-
-        return $this;
-    }
-
-    /**
-     * Get ID
+     * Get id
      * @return ?int
      */
-    public function getId() : ?int {
+    public function getId(): ?int
+    {
         return $this->id;
     }
 
     /**
-     * Set ID
+     * Set id
      * @param ?int $id
      * @return Table
      */
-    public function setId(?int $id = null) : self {
+    public function setId(?int $id): Table
+    {
         $this->id = $id;
 
         return $this;
     }
 
     /**
-     * Bind table
-     * @param array|BindType $bind
-     * @param string|null $tableName
-     * @param ?string $primaryKey
-     * @param ?string $foreignKey
-     * @param array|Condition|null $condition
-     * @return $this
+     * PDO Instance
+     * @return PDO
      */
-    public function bind(BindType|array $bind, string $tableName = null, ?string $primaryKey = null, ?string $foreignKey = null, null|array|Condition $condition = null) : self {
-        if (is_array($bind)) {
-            foreach ($bind as $key => $value) {
-                if (is_string($value)) {
-                    $explodeName = explode('.', $value);
-                    $bindType = BindType::getFromName($explodeName[0]);
-
-                    $this->bind($bindType, $explodeName[1]);
-                } else {
-                    $explodeName = explode('.', $key);
-                    $bindType = BindType::getFromName($explodeName[0]);
-
-                    $this->bind($bindType, $explodeName[1], $value['primaryKey'] ?? null, $value['foreignKey'] ?? null);
-                }
-            }
-
-            return $this;
-        }
-
-        $primaryKey = $primaryKey ? Helper\Table::prepareColumnNameWithAlias($primaryKey) : ('`' . $this->getName() . '`.`id`');
-        $foreignKey = $foreignKey ? Helper\Table::prepareColumnNameWithAlias($foreignKey) : ('`' . $tableName . '`.`' . $this->getName() . '_id`');
-
-        $bindTableNames = array_column($this->bind ?? [], 'tableName');
-        $bindSearch = array_search($tableName, $bindTableNames);
-
-        if ($bindSearch !== false) {
-            unset($this->bind[$bindSearch]);
-        }
-
-        $this->bind[] = [
-            'type' => $bind->value,
-            'tableName' => $tableName,
-            'primaryKey' => $primaryKey,
-            'foreignKey' => $foreignKey,
-            'condition' => $condition
-        ];
-
-        return $this;
+    public function getPdoInstance(): PDO
+    {
+        return $this->pdoInstance;
     }
 
     /**
-     * Unbind table
-     * @param string $tableName
-     * @return $this
+     * Query
+     * @param string $sql
+     * @return array
+     * @throws DatabaseException
      */
-    public function unbind(string $tableName) : self {
-        $search = array_search($tableName, array_column($this->bind, 'tableName'));
-
-        if ($search !== false) {
-            unset($this->bind[$search]);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Unbind all table
-     * @return $this
-     */
-    public function unbindAll() : self {
-        $this->bind = [];
-
-        return $this;
-    }
-
-    /**
-     * Get column list
-     * @param ?string $columnName column name
-     * @return array|bool
-     * @throws TableException
-     */
-    public function columnList(?string $columnName = null) : array|bool {
+    public function query(string $sql): array
+    {
         try {
-            $return = [];
-            $cacheData = Cache::getData('columnList_' . $this->getName());
-
-            if (!is_null($cacheData)) {
-                $return = $cacheData;
-            } else {
-                if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
-                    $sql = 'pragma table_info("user");';
-                    DatabaseManager::setLastSql($sql);
-                    $data = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-
-                    foreach ($data as $column) {
-                        $return[] = [
-                            'Field' => $column['name'],
-                            'Type' => $column['type'],
-                            'Null' => $column['notnull'] ? 'NO' : 'YES',
-                            'Key' => $column['pk'] ? 'PRI' : '',
-                            'Default' => $column['dflt_value'],
-                            'Extra' => ''
-                        ];
-                    }
-                } elseif (DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
-                    $sql = 'DESCRIBE `' . $this->getName() . '`;';
-                    DatabaseManager::setLastSql($sql);
-                    $return = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-                }
-            }
-
-            if (!is_null($columnName)) {
-                foreach ($return as $data) {
-                    if ($data['Field'] === $columnName) {
-                        return $data;
-                    }
-                }
-            }
-
-            Cache::saveData('columnList_' . $this->getName(), $return);
-
-            return $return ?? false;
+            return DatabaseManager::query($sql)->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $exception) {
-            throw new TableException($exception->getMessage());
+            throw new DatabaseException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 
     /**
-     * prepare column list
-     * @param bool $asString
-     * @return array|string
-     * @throws TableException
+     * Exec
+     * @param string $statement
+     * @return int|false
+     * @throws DatabaseException
      */
-    public function prepareColumnList(bool $asString = true) : array|string {
-        $columnList = $this->columnList();
-        $columnListString = [];
+    public function exec(string $statement): false|int
+    {
+        try {
+            DatabaseManager::setLastSql($statement);
 
-        foreach ($columnList as $column) {
-            $columnListString[] = '`' . $this->getName() . '`.`' . $column['Field'] . '` as `' . $this->getName() . '.' . $column['Field'] . '`';
+            return DatabaseManager::getPdoInstance()->exec($statement);
+        } catch (Exception $exception) {
+            throw new DatabaseException($exception->getMessage(), $exception->getCode(), $exception);
         }
-
-        if ($asString) {
-            return implode(', ', $columnListString);
-        }
-
-        return $columnListString;
     }
 
     /**
-     * Insert data
-     * @param array $data
+     * Table exists in database
      * @return bool
-     * @throws InsertException
+     * @throws DatabaseException
      */
-    public function insert(array $data) : bool {
+    public function exists(): bool
+    {
         try {
-            $sql = 'INSERT INTO `' . $this->getName() . '` (`' . implode('`, `', array_keys($data)) . '`) VALUES (:' . implode(', :', array_keys($data)) . ')';
-            DatabaseManager::setLastSql($sql);
-            $insert = $this->pdo->prepare($sql);
+            $sql = SqlBuilder::showTables($this->getName());
+            $query = DatabaseManager::query($sql);
 
-            foreach ($data as $name => $value) {
-                $insert->bindValue(':' . $name, $value);
-            }
-
-            if ($insert->execute()) {
-                $this->setId($this->pdo->lastInsertId());
-
-                return true;
-            } else {
-                $this->setId(null);
-
-                return false;
-            }
+            return !empty($query->fetchAll());
         } catch (Exception $exception) {
-            throw new InsertException($exception->getMessage());
+            throw new DatabaseException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 
@@ -274,47 +133,104 @@ class Table {
      * Delete
      * @param ?int $id
      * @return bool
-     * @throws DeleteException
+     * @throws DatabaseException
      */
-    public function delete(?int $id = null) : bool {
-        $id = $id ?? $this->getId();
+    public function delete(?int $id = null): bool
+    {
+        $id ??= $this->getId();
 
         if (is_null($id)) {
-            throw new DeleteException('ID must be integer');
+            throw new DatabaseException('ID must be defined');
         }
 
         try {
-            $sql = 'DELETE FROM `' . $this->getName() . '` WHERE id=' . ($id ?? $this->getId());
+            $sql = SqlBuilder::delete(
+                $this->getName(),
+                Helper\Table::prepareColumnNameWithAlias($this->getName() . '.id') . ' = ' . $id
+            );
             DatabaseManager::setLastSql($sql);
 
-            return (bool)$this->pdo->exec($sql);
-        } catch (Exception $e) {
-            throw new DeleteException($e->getMessage());
+            return $this->exec($sql);
+        } catch (Exception $exception) {
+            throw new DatabaseException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 
     /**
-     * Table exists in database
+     * Save data
+     * @param array $data
      * @return bool
+     * @throws DatabaseException
      */
-    public function exists() : bool {
-        $sql = 'SHOW TABLES LIKE "' . $this->getName() . '";';
-        DatabaseManager::setLastSql($sql);
+    public function save(array $data): bool
+    {
+        if (!is_null($this->getId())) {
+            $set = [];
 
-        $query = $this->pdo->query($sql);
+            foreach (array_keys($data) as $name) {
+                $set[] = '`' . $name . '` = :' . $name;
+            }
 
-        return !empty($query->fetchAll());
+            try {
+                $sql = 'UPDATE `' . $this->getName() . '` SET ' . implode(', ', $set) . ' WHERE ' . Helper\Table::prepareColumnNameWithAlias($this->getName() . '.id') . '=' . $this->getId();
+                DatabaseManager::setLastSql($sql);
+                $update = $this->getPdoInstance()->prepare($sql);
+
+                foreach ($data as $name => $value) {
+                    $update->bindValue(':' . $name, $value);
+                }
+
+                return $update->execute();
+            } catch (Exception $exception) {
+                throw new DatabaseException($exception->getMessage(), $exception->getCode(), $exception);
+            }
+        } else {
+            try {
+                $sql = 'INSERT INTO `' . $this->getName() . '` (`' . implode('`, `', array_keys($data)) . '`) VALUES (:' . implode(', :', array_keys($data)) . ')';
+                DatabaseManager::setLastSql($sql);
+                $insert = $this->getPdoInstance()->prepare($sql);
+
+                foreach ($data as $name => $value) {
+                    $insert->bindValue(':' . $name, $value);
+                }
+
+                if ($insert->execute()) {
+                    $this->setId($this->getPdoInstance()->lastInsertId());
+
+                    return true;
+                } else {
+                    $this->setId(null);
+
+                    return false;
+                }
+            } catch (Exception $exception) {
+                throw new DatabaseException($exception->getMessage(), $exception->getCode(), $exception);
+            }
+        }
     }
 
     /**
-     * Query
-     * @param string $sql
-     * @return array
+     * Update single column
+     * @param string $columnName
+     * @param mixed $value
+     * @return bool
+     * @throws DatabaseException
      */
-    public function query(string $sql) : array {
-        DatabaseManager::setLastSql($sql);
+    public function updateValue(string $columnName, mixed $value) : bool {
+        if (is_null($this->getId())) {
+            throw new DatabaseException('ID is not defined');
+        }
 
-        return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $sql = 'UPDATE `' . $this->getName() . '` SET `' . $columnName . '` = :' . $columnName . ' WHERE ' . Helper\Table::prepareColumnNameWithAlias($this->getName() . '.id') . '=' . $this->getId();
+            DatabaseManager::setLastSql($sql);
+            $update = $this->getPdoInstance()->prepare($sql);
+            $update->bindValue(':' . $columnName, $value);
+
+            return $update->execute();
+        } catch (Exception $exception) {
+            throw new DatabaseException($exception->getMessage(), $exception->getCode(), $exception);
+        }
     }
 
 }

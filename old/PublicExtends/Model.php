@@ -4,7 +4,7 @@ namespace krzysztofzylka\DatabaseManager\PublicExtends;
 
 use krzysztofzylka\DatabaseManager\Condition;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
-use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseException;
 use krzysztofzylka\DatabaseManager\Exception\DeleteException;
 use krzysztofzylka\DatabaseManager\Exception\InsertException;
 use krzysztofzylka\DatabaseManager\Exception\SelectException;
@@ -36,12 +36,12 @@ class Model {
 
     /**
      * Prepare database
-     * @throws DatabaseManagerException
+     * @throws DatabaseException
      */
     public function __construct() {
         if ($this->useDatabase) {
             if (!isset($this->databaseTable)) {
-                throw new DatabaseManagerException('Please set table name');
+                throw new DatabaseException('Please set table name');
             }
         }
 

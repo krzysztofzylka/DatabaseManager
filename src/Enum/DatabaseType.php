@@ -5,9 +5,17 @@ namespace krzysztofzylka\DatabaseManager\Enum;
 /**
  * Database types
  */
-enum DatabaseType {
+enum DatabaseType
+{
 
+    /**
+     * Mysql
+     */
     case mysql;
+
+    /**
+     * SQLite
+     */
     case sqlite;
 
 }

@@ -4,7 +4,7 @@ namespace krzysztofzylka\DatabaseManager;
 
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Enum\Trigger;
-use krzysztofzylka\DatabaseManager\Exception\CreateTableException;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseException;
 use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
 use krzysztofzylka\DatabaseManager\Trait\TablePredefinedColumn;
 use Exception;
@@ -13,10 +13,40 @@ class CreateTable {
 
     use TablePredefinedColumn;
 
+    /**
+     * Table name
+     * @var string
+     */
     private string $name;
+
+    /**
+     * Columns
+     * @var array
+     */
     private array $columns = [];
+
+    /**
+     * Primary keys
+     * @var array
+     */
     private array $primary = [];
+
+    /**
+     * Additional sql list
+     * @var array
+     */
     private array $additionalSql = [];
+
+    /**
+     * Construct
+     * @param ?string $name
+     */
+    public function __construct(?string $name = null)
+    {
+        if (!is_null($name)) {
+            $this->setName($name);
+        }
+    }
 
     /**
      * Set table name
@@ -81,8 +111,8 @@ class CreateTable {
             }
 
             return true;
-        } catch (Exception $e) {
-            throw new CreateTableException($e->getMessage());
+        } catch (Exception $exception) {
+            throw new DatabaseException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 

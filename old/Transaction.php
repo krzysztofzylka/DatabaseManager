@@ -8,10 +8,14 @@ use PDO;
 
 class Transaction {
 
-    private PDO $sql;
+    /**
+     * PDO Instance
+     * @var PDO
+     */
+    private PDO $pdo;
 
     public function __construct() {
-        $this->sql = DatabaseManager::$connection->getConnection();
+        $this->pdo = DatabaseManager::$connection->getConnection();
     }
 
     /**
@@ -29,7 +33,7 @@ class Transaction {
         DatabaseManager::setLastSql($sql);
 
         try {
-            $this->sql->query($sql);
+            $this->pdo->query($sql);
         } catch (\Exception $exception) {
             throw new TransactionException($exception->getMessage());
         }
@@ -45,7 +49,7 @@ class Transaction {
         DatabaseManager::setLastSql($sql);
 
         try {
-            $this->sql->query($sql);
+            $this->pdo->query($sql);
         } catch (\Exception $exception) {
             throw new TransactionException($exception->getMessage());
         }
@@ -61,7 +65,7 @@ class Transaction {
         DatabaseManager::setLastSql($sql);
 
         try {
-            $this->sql->query($sql);
+            $this->pdo->query($sql);
         } catch (\Exception $exception) {
             throw new TransactionException($exception->getMessage());
         }

@@ -3,14 +3,11 @@
 namespace krzysztofzylka\DatabaseManager;
 
 use krzysztofzylka\DatabaseManager\Helper\Table as TableHelper;
-use krzysztofzylka\DatabaseManager\Trait\ConditionMethods;
 
 /**
  * Tworzenie warunków dla biblioteki Database
  */
 class Condition {
-
-    use ConditionMethods;
 
     /**
      * Column name
@@ -47,7 +44,7 @@ class Condition {
      * @return string
      */
     public function __toString() {
-        return $this->getColumn() . ' ' . $this->operator . ' ' . $this->prepareValue($this->value);
+        return $this->getColumn() . ' ' . $this->operator . ' ' . Helper\Value::prepareValue($this->value);
     }
 
     /**

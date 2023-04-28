@@ -12,7 +12,7 @@ try {
             ->setPassword('root')
             ->setDebug(true)
     );
-} catch (\krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException $exception) {
+} catch (\krzysztofzylka\DatabaseManager\Exception\DatabaseException $exception) {
     die($exception->getHiddenMessage());
 }
 

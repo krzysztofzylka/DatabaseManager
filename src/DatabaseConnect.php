@@ -3,166 +3,137 @@
 namespace krzysztofzylka\DatabaseManager;
 
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
-use krzysztofzylka\DatabaseManager\Exception\ConnectException;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseException;
 use PDO;
+use PDOException;
 
-class DatabaseConnect {
+class DatabaseConnect
+{
 
-    private string $host = '127.0.0.1';
-    private string $name;
-    private string $username;
-    private string $password = '';
-    private PDO $connection;
-    private DatabaseType $type = DatabaseType::mysql;
-    private string $sqlitePath = 'database.sqlite';
+    /**
+     * PDO Instance
+     * @var ?PDO
+     */
+    private ?PDO $pdoInstance = null;
+
+    /**
+     * Connection config
+     * @var array
+     */
+    private array $connConfig = [
+        'host' => '127.0.0.1',
+        'name' => '',
+        'username' => '',
+        'password' => '',
+        'port' => 3306
+    ];
+
+    /**
+     * Charset
+     * @var string
+     */
     private string $charset = 'utf8';
+
+    /**
+     * Database type
+     * @var DatabaseType
+     */
+    private DatabaseType $type = DatabaseType::mysql;
+
+    /**
+     * SQLite path
+     * @var string
+     */
+    private string $sqlitePath = '';
+
+    /**
+     * Debug mode
+     * @var bool
+     */
     private bool $debug = false;
-    private bool $manualConnection = false;
 
     /**
-     * Set host
-     * @param string $host
-     * @return DatabaseConnect
-     */
-    public function setHost(string $host) : self {
-        $this->host = $host;
-
-        return $this;
-    }
-
-    /**
-     * Set sqlite path
-     * @param string $path
-     * @return DatabaseConnect
-     */
-    public function setSqlitePath(string $path) : self {
-        $this->sqlitePath = $path;
-
-        return $this;
-    }
-
-    /**
-     * Get sqlite path
-     * @return string
-     */
-    public function getSqlitePath() : string {
-        return $this->sqlitePath;
-    }
-
-    /**
-     * Set database type
+     * Set connection type
      * @param DatabaseType $type
-     * @return $this
+     * @return DatabaseConnect
      */
-    public function setType(DatabaseType $type) : self {
+    public function setType(DatabaseType $type): self
+    {
         $this->type = $type;
 
         return $this;
     }
 
     /**
-     * Set database name
-     * @param string $name
+     * Set SQLite path
+     * @param string $path
      * @return DatabaseConnect
      */
-    public function setDatabaseName(string $name) : self {
-        $this->name = $name;
+    public function setSqlitePath(string $path): self
+    {
+        $this->sqlitePath = $path;
 
         return $this;
     }
 
     /**
-     * Set username
+     * @param string $host
+     * @param string $databaseName
      * @param string $username
-     * @return DatabaseConnect
-     */
-    public function setUsername(string $username) : self {
-        $this->username = $username;
-
-        return $this;
-    }
-
-    /**
-     * Set password
      * @param string $password
+     * @param int $port
      * @return DatabaseConnect
      */
-    public function setPassword(string $password) : self {
-        $this->password = $password;
+    public function setConnection(string $databaseName, string $username, string $password, string $host = '127.0.0.1', int $port = 3306): self
+    {
+        $this->connConfig = [
+            'host' => $host,
+            'name' => $databaseName,
+            'username' => $username,
+            'password' => $password,
+            'port' => $port
+        ];
 
         return $this;
     }
 
     /**
-     * Get database
-     * @return string
-     */
-    public function getDatabaseName() : string {
-        return $this->name;
-    }
-
-    /**
-     * Get password
-     * @return string
-     */
-    public function getPassword() : string {
-        return $this->password;
-    }
-
-    /**
-     * Get username
-     * @return string
-     */
-    public function getUsername() : string {
-        return $this->username;
-    }
-
-    /**
-     * Get host
-     * @return string
-     */
-    public function getHost() : string {
-        return $this->host;
-    }
-
-    /**
-     * Connect to database
+     * Connect
      * @return void
-     * @throws ConnectException
+     * @throws DatabaseException
      */
-    public function connect() : void {
-        if ($this->manualConnection) {
-            return;
-        }
-
+    public function connect(): void
+    {
         try {
             if ($this->getType() === DatabaseType::mysql) {
-                $this->connection = new PDO(
-                    'mysql:host=' . $this->getHost() . ';dbname=' . $this->getDatabaseName() . ';charset=' . $this->getCharset(),
-                    $this->getUsername() ?? '',
-                    $this->getPassword() ?? ''
+                $this->pdoInstance = new PDO(
+                    'mysql:host=' . $this->connConfig['host'] . ';dbname=' . $this->connConfig['name'] . ';charset=' . $this->charset,
+                    $this->connConfig['username'] ?? '',
+                    $this->connConfig['password'] ?? ''
                 );
             } elseif ($this->getType() === DatabaseType::sqlite) {
-                $this->connection = new PDO('sqlite:' . $this->getSqlitePath());
+                $this->pdoInstance = new PDO('sqlite:' . $this->sqlitePath);
             }
-        } catch (\PDOException $e) {
-            throw new ConnectException($e->getMessage());
+        } catch (PDOException $exception) {
+            throw new DatabaseException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 
     /**
-     * Get PDO connection
-     * @return PDO
+     * Get PDO instance
+     * @return PDO|null
      */
-    public function getConnection() : PDO {
-        return $this->connection;
+    public function getPdoInstance(): ?PDO
+    {
+        return $this->pdoInstance;
     }
 
     /**
      * Get database type
      * @return DatabaseType
      */
-    public function getType() : DatabaseType {
+    public function getType(): DatabaseType
+    {
         return $this->type;
     }
 
@@ -171,48 +142,30 @@ class DatabaseConnect {
      * @param string $charset
      * @return DatabaseConnect
      */
-    public function setCharset(string $charset) : self {
+    public function setCharset(string $charset): self
+    {
         $this->charset = $charset;
 
         return $this;
     }
 
     /**
-     * Get charset
-     * @return string
-     */
-    public function getCharset() : string {
-        return $this->charset;
-    }
-
-    /**
      * Is debug mode
      * @return bool
      */
-    public function isDebug(): bool {
+    public function isDebug(): bool
+    {
         return $this->debug;
     }
 
     /**
-     * Set debug mode
-     * Require bootstrap 5.2.*
+     * Set database mode
      * @param bool $debug
-     * @return DatabaseConnect
-     */
-    public function setDebug(bool $debug) : self {
-        $this->debug = $debug;
-
-        return $this;
-    }
-
-    /**
-     * set PDO connection manually
-     * @param PDO $connection
      * @return $this
      */
-    public function setConnection(PDO $connection) : self {
-        $this->connection = $connection;
-        $this->manualConnection = true;
+    public function setDebug(bool $debug): DatabaseConnect
+    {
+        $this->debug = $debug;
 
         return $this;
     }

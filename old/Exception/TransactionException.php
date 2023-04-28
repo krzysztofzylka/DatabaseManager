@@ -2,5 +2,5 @@
 
 namespace krzysztofzylka\DatabaseManager\Exception;
 
-class DeleteException extends DatabaseManagerException {
+class TransactionException extends DatabaseException {
 }

@@ -3,15 +3,18 @@
 namespace krzysztofzylka\DatabaseManager;
 
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
-use krzysztofzylka\DatabaseManager\Exception\UpdateTableException;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseException;
 use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
 use Exception;
+use krzysztofzylka\DatabaseManager\Trait\TablePredefinedColumn;
 
 class AlterTable {
 
     private ?string $name = null;
     private DatabaseManager $databaseManager;
     private array $sql = [];
+
+    use TablePredefinedColumn;
 
     /**
      * Contructor
@@ -93,7 +96,7 @@ class AlterTable {
     /**
      * Execute update table
      * @return void
-     * @throws UpdateTableException
+     * @throws DatabaseException
      */
     public function execute() : void {
         try {
@@ -101,7 +104,7 @@ class AlterTable {
             DatabaseManager::setLastSql($sql);
             $this->databaseManager->query($sql);
         } catch (Exception $exception) {
-            throw new UpdateTableException($exception->getMessage());
+            throw new DatabaseException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 

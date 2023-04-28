@@ -2,27 +2,35 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
-use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
-use krzysztofzylka\DatabaseManager\Enum\Trigger;
-use krzysztofzylka\DatabaseManager\Exception\CreateTableException;
-use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
-use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
-use krzysztofzylka\DatabaseManager\Trait\TablePredefinedColumn;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseException;
 use Exception;
+use krzysztofzylka\DatabaseManager\Helper\SqlBuilder;
 
 class CreateIndex {
 
+    /**
+     * Table name
+     * @var string
+     */
     private string $tableName;
 
+    /**
+     * Index name
+     * @var string
+     */
     private string $name;
 
+    /**
+     * Columns list
+     * @var array
+     */
     private array $columns;
 
     /**
      * Constructor
-     * @param string $tableName table name
+     * @param ?string $tableName table name
      */
-    public function __construct(string $tableName) {
+    public function __construct(?string $tableName = null) {
         $this->setTableName($tableName);
     }
 
@@ -62,18 +70,17 @@ class CreateIndex {
     /**
      * Execute sql
      * @return bool
-     * @throws DatabaseManagerException
+     * @throws DatabaseException
      */
     public function execute() : bool {
-        $sql = 'CREATE INDEX ' . $this->name . ' ON ' . $this->tableName . '(' . implode(',', $this->columns) . ')';
-
         try {
+            $sql = SqlBuilder::createIndex($this->name, $this->tableName, $this->columns);
             $databaseManager = new DatabaseManager();
             DatabaseManager::setLastSql($sql);
             $databaseManager->query($sql);
             return true;
-        } catch (Exception $e) {
-            throw new DatabaseManagerException($e->getMessage());
+        } catch (Exception $exception) {
+            throw new DatabaseException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 

@@ -14,7 +14,7 @@ try {
     echo '<pre>';
     var_dump($table->findCount(['user_permission.id' => 2]));
     echo '</pre>';
-} catch (\krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException $exception) {
+} catch (\krzysztofzylka\DatabaseManager\Exception\DatabaseException $exception) {
     echo $exception->getHiddenMessage();
 }
 
@@ -27,7 +27,7 @@ try {
     echo '<pre>';
     var_dump($table->findIsset(['user_permission.id' => 2]));
     echo '</pre>';
-} catch (\krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException $exception) {
+} catch (\krzysztofzylka\DatabaseManager\Exception\DatabaseException $exception) {
     echo $exception->getHiddenMessage();
 }
 

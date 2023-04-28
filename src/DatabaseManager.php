@@ -2,66 +2,103 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
-use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseException;
+use PDO;
 use PDOStatement;
 
-class DatabaseManager {
+class DatabaseManager
+{
 
     /**
-     * Database connection
+     * Database connect instance
      * @var DatabaseConnect
      */
-    public static DatabaseConnect $connection;
+    private static DatabaseConnect $databaseConnect;
 
+    /**
+     * PDO Instance
+     * @var PDO
+     */
+    private static PDO $pdoInstance;
+
+    /**
+     * Last SQL
+     * @var string|null
+     */
     private static ?string $lastSql = null;
 
     /**
-     * Connect with database
-     * @param DatabaseConnect $databaseConnect
+     * Last SQL list
+     * @var array
+     */
+    private static array $lastSqlList = [];
+
+    /**
+     * Connect to database
+     * @param DatabaseConnect $databaseConnect database connect instance
      * @return void
-     * @throws Exception\ConnectException
+     * @throws DatabaseException
      */
-    public function connect(DatabaseConnect $databaseConnect) : void {
-        $databaseConnect->connect();
-        self::$connection = $databaseConnect;
+    public function connect(DatabaseConnect $databaseConnect): void
+    {
+        self::$databaseConnect = $databaseConnect;
+        self::$databaseConnect->connect();
+        self::$pdoInstance = self::$databaseConnect->getPdoInstance();
     }
 
     /**
-     * Query
-     * @param string $query
-     * @return PDOStatement|bool
+     * Get PDO instance
+     * @return PDO
      */
-    public function query(string $query) : PDOStatement|bool {
-        return self::$connection->getConnection()->query($query);
+    public static function getPdoInstance(): PDO
+    {
+        return self::$pdoInstance;
     }
 
     /**
-     * Get database type
-     * @return DatabaseType
-     */
-    public static function getDatabaseType() : DatabaseType {
-        return self::$connection->getType();
-    }
-
-    /**
-     * Set last SQL
-     * @param ?string $sql
+     * Set last sql list
+     * @param string $sql
      * @return void
      */
-    public static function setLastSql(?string $sql) : void {
+    public static function setLastSql(string $sql): void
+    {
         self::$lastSql = $sql;
 
-        if (self::$connection->isDebug()) {
-            Debug::addSql($sql);
+        if (self::$databaseConnect->isDebug()) {
+            self::$lastSqlList[] = $sql;
         }
     }
 
     /**
-     * Get last SQL
-     * @return ?string
+     * Get last sql
+     * @return string|null
      */
-    public static function getLastSql() : ?string {
+    public static function getLastSql(): ?string
+    {
         return self::$lastSql;
+    }
+
+    /**
+     * Get last sql lists
+     * @return array
+     */
+    public static function getLastSqlList(): array
+    {
+        return self::$lastSqlList;
+    }
+
+    /**
+     * Query
+     * @param string $sql
+     * @param int|null $fetchMode
+     * @param mixed ...$fetch_mode_args
+     * @return false|PDOStatement
+     */
+    public static function query(string $sql, int|null $fetchMode = null, mixed ...$fetch_mode_args): bool|PDOStatement
+    {
+        self::setLastSql($sql);
+
+        return self::getPdoInstance()->query($sql, $fetchMode, $fetch_mode_args);
     }
 
 }
