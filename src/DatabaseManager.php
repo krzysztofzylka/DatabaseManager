@@ -101,4 +101,13 @@ class DatabaseManager
         return self::getPdoInstance()->query($sql, $fetchMode, $fetch_mode_args);
     }
 
+    /**
+     * Get connection ID
+     * @return int
+     */
+    public static function getConnectionId(): int
+    {
+        return self::query('SELECT CONNECTION_ID();')->fetch(PDO::FETCH_ASSOC)['CONNECTION_ID()'];
+    }
+
 }

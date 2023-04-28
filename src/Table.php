@@ -14,12 +14,6 @@ class Table
     use TableBind;
 
     /**
-     * Table PDO Instance
-     * @var PDO
-     */
-    private PDO $pdoInstance;
-
-    /**
      * Table name
      * @var string
      */
@@ -38,7 +32,6 @@ class Table
     public function __construct(string $name)
     {
         $this->name = $name;
-        $this->pdoInstance = DatabaseManager::getPdoInstance();
     }
 
     /**
@@ -56,6 +49,10 @@ class Table
      */
     public function getId(): ?int
     {
+        if (!isset($this->id)) {
+            return null;
+        }
+
         return $this->id;
     }
 
@@ -64,7 +61,7 @@ class Table
      * @param ?int $id
      * @return Table
      */
-    public function setId(?int $id): Table
+    public function setId(?int $id = null): Table
     {
         $this->id = $id;
 
@@ -77,7 +74,7 @@ class Table
      */
     public function getPdoInstance(): PDO
     {
-        return $this->pdoInstance;
+        return DatabaseManager::getPdoInstance();
     }
 
     /**
@@ -195,7 +192,11 @@ class Table
                 }
 
                 if ($insert->execute()) {
-                    $this->setId($this->getPdoInstance()->lastInsertId());
+                    $lastInsertId = (int)$this->getPdoInstance()->lastInsertId();
+
+                    if ($lastInsertId > 0) {
+                        $this->setId($lastInsertId);
+                    }
 
                     return true;
                 } else {
