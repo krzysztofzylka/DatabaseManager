@@ -216,7 +216,8 @@ class Table
      * @return bool
      * @throws DatabaseException
      */
-    public function updateValue(string $columnName, mixed $value) : bool {
+    public function updateValue(string $columnName, mixed $value): bool
+    {
         if (is_null($this->getId())) {
             throw new DatabaseException('ID is not defined');
         }

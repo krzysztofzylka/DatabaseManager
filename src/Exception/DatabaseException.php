@@ -5,7 +5,8 @@ namespace krzysztofzylka\DatabaseManager\Exception;
 use Exception;
 use Throwable;
 
-class DatabaseException extends Exception {
+class DatabaseException extends Exception
+{
 
     /**
      * Hidden message
@@ -25,7 +26,8 @@ class DatabaseException extends Exception {
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(string $message = "", int $code = 0, ?Throwable $previous = null) {
+    public function __construct(string $message = "", int $code = 0, ?Throwable $previous = null)
+    {
         $this->hiddenMessage = $message;
         $this->previousException = $previous;
         $message = 'Database error';
@@ -37,7 +39,8 @@ class DatabaseException extends Exception {
      * Get hidden message
      * @return string
      */
-    public function getHiddenMessage() : string {
+    public function getHiddenMessage(): string
+    {
         return $this->hiddenMessage;
     }
 
@@ -45,7 +48,8 @@ class DatabaseException extends Exception {
      * Get previous Excepton
      * @return ?Throwable
      */
-    public function getPreviousException() : ?Throwable {
+    public function getPreviousException(): ?Throwable
+    {
         return $this->previousException;
     }
 

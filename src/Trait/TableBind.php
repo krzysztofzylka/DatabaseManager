@@ -23,9 +23,10 @@ trait TableBind
      * @param ?string $primaryKey
      * @param ?string $foreignKey
      * @param array|Condition|null $condition
-     * @return $this
+     * @return TableBind|\krzysztofzylka\DatabaseManager\Table
      */
-    public function bind(BindType|array $bind, string $tableName = null, ?string $primaryKey = null, ?string $foreignKey = null, null|array|Condition $condition = null) : self {
+    public function bind(BindType|array $bind, string $tableName = null, ?string $primaryKey = null, ?string $foreignKey = null, null|array|Condition $condition = null): self
+    {
         if (is_array($bind)) {
             foreach ($bind as $key => $value) {
                 if (is_string($value)) {
@@ -68,9 +69,10 @@ trait TableBind
     /**
      * Unbind table
      * @param string $tableName
-     * @return $this
+     * @return TableBind|\krzysztofzylka\DatabaseManager\Table
      */
-    public function unbind(string $tableName) : self {
+    public function unbind(string $tableName): self
+    {
         $search = array_search($tableName, array_column($this->bind, 'tableName'));
 
         if ($search !== false) {
@@ -82,9 +84,10 @@ trait TableBind
 
     /**
      * Unbind all table
-     * @return $this
+     * @return TableBind|\krzysztofzylka\DatabaseManager\Table
      */
-    public function unbindAll() : self {
+    public function unbindAll(): self
+    {
         $this->bind = [];
 
         return $this;

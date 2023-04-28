@@ -2,7 +2,8 @@
 
 namespace krzysztofzylka\DatabaseManager\Helper;
 
-class SqlBuilder {
+class SqlBuilder
+{
 
     /**
      * Select generator
@@ -63,7 +64,7 @@ class SqlBuilder {
      */
     public static function createIndex(string $name, string $tableName, array $columns = ['id']): string
     {
-        return 'CREATE INDEX ' . $name . ' ON ' . $tableName . '(' . implode(', ' , $columns) . ')';
+        return 'CREATE INDEX ' . $name . ' ON ' . $tableName . '(' . implode(', ', $columns) . ')';
     }
 
     /**

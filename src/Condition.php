@@ -7,7 +7,8 @@ use krzysztofzylka\DatabaseManager\Helper\Table as TableHelper;
 /**
  * Tworzenie warunków dla biblioteki Database
  */
-class Condition {
+class Condition
+{
 
     /**
      * Column name
@@ -33,7 +34,8 @@ class Condition {
      * @param string $operator
      * @param mixed $value
      */
-    public function __construct(string $column, string $operator, mixed $value = null) {
+    public function __construct(string $column, string $operator, mixed $value = null)
+    {
         $this->column = $column;
         $this->operator = $operator;
         $this->value = $value;
@@ -43,7 +45,8 @@ class Condition {
      * Generate conditions
      * @return string
      */
-    public function __toString() {
+    public function __toString()
+    {
         return $this->getColumn() . ' ' . $this->operator . ' ' . Helper\Value::prepareValue($this->value);
     }
 
@@ -51,7 +54,8 @@ class Condition {
      * Get column name
      * @return string
      */
-    public function getColumn() : string {
+    public function getColumn(): string
+    {
         return TableHelper::prepareColumnNameWithAlias($this->column);
     }
 

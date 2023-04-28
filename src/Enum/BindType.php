@@ -5,7 +5,8 @@ namespace krzysztofzylka\DatabaseManager\Enum;
 /**
  * Bond types
  */
-enum BindType : string {
+enum BindType: string
+{
 
     case innerJoin = 'INNER JOIN';
     case leftJoin = 'LEFT JOIN';
@@ -20,9 +21,10 @@ enum BindType : string {
      * @param string $name
      * @return BindType
      */
-    public static function getFromName(string $name) : BindType {
+    public static function getFromName(string $name): BindType
+    {
         foreach (self::cases() as $status) {
-            if($name === $status->name){
+            if ($name === $status->name) {
                 return constant("self::$status->name");
             }
         }
