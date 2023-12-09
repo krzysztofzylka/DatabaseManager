@@ -2,10 +2,10 @@
 
 namespace krzysztofzylka\DatabaseManager\Trait;
 
+use Krzysztofzylka\Arrays\Arrays;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Exception\ConditionException;
 use krzysztofzylka\DatabaseManager\Helper\Where;
-use krzysztofzylka\SimpleLibraries\Library\_Array;
 
 trait TableHelpers {
 
@@ -56,9 +56,9 @@ trait TableHelpers {
                 foreach ($this->bind as $bind) {
                     if ($bind['type'] === '#HAS_MANY#') {
                         for ($i = 0; $i < count($returnData); $i++) {
-                            $dataId = _Array::getFromArrayUsingString(str_replace('`', '', $bind['primaryKey']), $returnData[$i]);
+                            $dataId = Arrays::getFromArrayUsingString(str_replace('`', '', $bind['primaryKey']), $returnData[$i]);
 
-                            if (_Array::inArrayKeys($dataId, $hasManyIds)) {
+                            if (Arrays::inArrayKeys($dataId, $hasManyIds)) {
                                 $returnDataNew[$hasManyIds[$dataId]][$bind['tableName']][] = $returnData[$i][$bind['tableName']];
                             } else {
                                 $addData = $returnData[$i];
