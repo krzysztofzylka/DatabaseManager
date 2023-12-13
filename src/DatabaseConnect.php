@@ -18,6 +18,7 @@ class DatabaseConnect {
     private string $charset = 'utf8';
     private bool $debug = false;
     private bool $manualConnection = false;
+    private int $port = 3306;
 
     /**
      * Set host
@@ -83,6 +84,26 @@ class DatabaseConnect {
     }
 
     /**
+     * Set port
+     * @param int $port
+     * @return $this
+     */
+    public function setPort(int $port) : self {
+        $this->port = $port;
+
+        return $this;
+    }
+
+    /**
+     * Get port
+     * @return int
+     */
+    public function getPort(): int
+    {
+        return $this->port;
+    }
+
+    /**
      * Set password
      * @param string $password
      * @return DatabaseConnect
@@ -138,7 +159,7 @@ class DatabaseConnect {
         try {
             if ($this->getType() === DatabaseType::mysql) {
                 $this->connection = new PDO(
-                    'mysql:host=' . $this->getHost() . ';dbname=' . $this->getDatabaseName() . ';charset=' . $this->getCharset(),
+                    'mysql:host=' . $this->getHost() . ';dbname=' . $this->getDatabaseName() . ';charset=' . $this->getCharset() . ';port=' . $this->getPort(),
                     $this->getUsername() ?? '',
                     $this->getPassword() ?? ''
                 );
