@@ -2,6 +2,8 @@
 
 namespace krzysztofzylka\DatabaseManager\Enum;
 
+use ValueError;
+
 /**
  * Bond types
  */
@@ -24,11 +26,11 @@ enum BindType: string
     public static function getFromName(string $name): BindType
     {
         foreach (self::cases() as $status) {
-            if($name === $status->name){
+            if ($name === $status->name) {
                 return constant("self::$status->name");
             }
         }
-        throw new \ValueError();
+        throw new ValueError();
     }
 
 }

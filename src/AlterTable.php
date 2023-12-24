@@ -68,7 +68,7 @@ class AlterTable
             sort($columnType);
         }
 
-        $enumValues = "'" . implode("','", $columnType) . "'";;
+        $enumValues = "'" . implode("','", $columnType) . "'";
         $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` CHANGE `' . $columnName . '` `' . $columnName . '` ENUM(' . $enumValues . ');';
 
         return $this;

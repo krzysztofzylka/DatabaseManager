@@ -2,6 +2,7 @@
 
 namespace krzysztofzylka\DatabaseManager\Helper;
 
+use Exception;
 use krzysztofzylka\DatabaseManager\Condition;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Trait\ConditionMethods;
@@ -34,7 +35,7 @@ class Where
             }
 
             return '(' . implode(" $type ", $sqlArray) . ')';
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new DatabaseManagerException($exception->getMessage());
         }
     }

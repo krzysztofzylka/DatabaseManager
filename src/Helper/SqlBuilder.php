@@ -16,7 +16,7 @@ class SqlBuilder
      * @param $limit
      * @return string
      */
-    public static function select($columns, $from, $join = null, $where = null, $groupBy = null, $orderBy = null, $limit = null) : string
+    public static function select($columns, $from, $join = null, $where = null, $groupBy = null, $orderBy = null, $limit = null): string
     {
         if (!str_starts_with($from, '`') && !str_ends_with($from, '`')) {
             $from = '`' . $from . '`';

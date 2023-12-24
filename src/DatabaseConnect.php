@@ -5,6 +5,7 @@ namespace krzysztofzylka\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use PDO;
+use PDOException;
 
 class DatabaseConnect
 {
@@ -190,7 +191,7 @@ class DatabaseConnect
             } elseif ($this->getType() === DatabaseType::sqlite) {
                 $this->connection = new PDO('sqlite:' . $this->getSqlitePath());
             }
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             throw new ConnectException($e->getMessage());
         }
     }

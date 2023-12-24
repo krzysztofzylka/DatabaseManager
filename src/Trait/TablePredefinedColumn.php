@@ -160,9 +160,9 @@ trait TablePredefinedColumn
             ->setType(ColumnType::varchar, $size)
             ->setNull($null);
 
-            $this->addColumn($column);
+        $this->addColumn($column);
 
-            return $this;
+        return $this;
     }
 
     /**
@@ -178,9 +178,9 @@ trait TablePredefinedColumn
             ->setType(ColumnType::int)
             ->setNull($null);
 
-            $this->addColumn($column);
+        $this->addColumn($column);
 
-            return $this;
+        return $this;
     }
 
     /**
