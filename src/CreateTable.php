@@ -4,18 +4,22 @@ namespace krzysztofzylka\DatabaseManager;
 
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Enum\Trigger;
-use krzysztofzylka\DatabaseManager\Exception\CreateTableException;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
 use krzysztofzylka\DatabaseManager\Trait\TablePredefinedColumn;
 use Exception;
 
-class CreateTable {
+class CreateTable
+{
 
     use TablePredefinedColumn;
 
     private string $name;
+
     private array $columns = [];
+
     private array $primary = [];
+
     private array $additionalSql = [];
 
     /**
@@ -23,7 +27,8 @@ class CreateTable {
      * @param string $name
      * @return CreateTable
      */
-    public function setName(string $name) : self {
+    public function setName(string $name): self
+    {
         $this->name = $name;
 
         return $this;
@@ -34,7 +39,8 @@ class CreateTable {
      * @return string
      * @ignore
      */
-    private function getName() : string {
+    private function getName(): string
+    {
         return $this->name;
     }
 
@@ -42,7 +48,8 @@ class CreateTable {
      * @param Column $column
      * @return CreateTable
      */
-    public function addColumn(Column $column) : self {
+    public function addColumn(Column $column): self
+    {
         $this->columns[] = PrepareColumn::generateCreateColumnSql($column);
 
         if ($column->isPrimary() && DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
@@ -62,9 +69,10 @@ class CreateTable {
     /**
      * Execute create table script
      * @return bool
-     * @throws CreateTableException
+     * @throws DatabaseManagerException
      */
-    public function execute() : bool {
+    public function execute(): bool
+    {
         $sql = 'CREATE TABLE `' . $this->name . '` (';
         $sql .= implode(', ', $this->columns);
         $sql .= (!empty($this->primary) ? ', ' . implode(', ', $this->primary) : '');
@@ -82,7 +90,7 @@ class CreateTable {
 
             return true;
         } catch (Exception $e) {
-            throw new CreateTableException($e->getMessage());
+            throw new DatabaseManagerException($e->getMessage());
         }
     }
 

@@ -3,10 +3,11 @@
 namespace krzysztofzylka\DatabaseManager\Helper;
 
 use krzysztofzylka\DatabaseManager\Condition;
-use krzysztofzylka\DatabaseManager\Exception\ConditionException;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Trait\ConditionMethods;
 
-class Where {
+class Where
+{
 
     use ConditionMethods;
 
@@ -15,9 +16,10 @@ class Where {
      * @param array $data
      * @param string $type
      * @return string
-     * @throws ConditionException
+     * @throws DatabaseManagerException
      */
-    public function getPrepareConditions(array $data, string $type = 'AND') : string {
+    public function getPrepareConditions(array $data, string $type = 'AND'): string
+    {
         try {
             $sqlArray = [];
 
@@ -33,7 +35,7 @@ class Where {
 
             return '(' . implode(" $type ", $sqlArray) . ')';
         } catch (\Exception $exception) {
-            throw new ConditionException($exception->getMessage());
+            throw new DatabaseManagerException($exception->getMessage());
         }
     }
 

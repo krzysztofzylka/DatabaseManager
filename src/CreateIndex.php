@@ -2,15 +2,11 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
-use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
-use krzysztofzylka\DatabaseManager\Enum\Trigger;
-use krzysztofzylka\DatabaseManager\Exception\CreateTableException;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
-use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
-use krzysztofzylka\DatabaseManager\Trait\TablePredefinedColumn;
 use Exception;
 
-class CreateIndex {
+class CreateIndex
+{
 
     private string $tableName;
 
@@ -22,7 +18,8 @@ class CreateIndex {
      * Constructor
      * @param string $tableName table name
      */
-    public function __construct(string $tableName) {
+    public function __construct(string $tableName)
+    {
         $this->setTableName($tableName);
     }
 
@@ -31,7 +28,8 @@ class CreateIndex {
      * @param string $tableName table name
      * @return CreateIndex
      */
-    public function setTableName(string $tableName) : CreateIndex {
+    public function setTableName(string $tableName): CreateIndex
+    {
         $this->tableName = $tableName;
 
         return $this;
@@ -42,7 +40,8 @@ class CreateIndex {
      * @param string $name
      * @return CreateIndex
      */
-    public function setName(string $name) : CreateIndex {
+    public function setName(string $name): CreateIndex
+    {
         $this->name = $name;
 
         return $this;
@@ -53,7 +52,8 @@ class CreateIndex {
      * @param string $name
      * @return $this
      */
-    public function addColumn(string $name) : CreateIndex {
+    public function addColumn(string $name): CreateIndex
+    {
         $this->columns[] = $name;
 
         return $this;
@@ -64,7 +64,8 @@ class CreateIndex {
      * @return bool
      * @throws DatabaseManagerException
      */
-    public function execute() : bool {
+    public function execute(): bool
+    {
         $sql = 'CREATE INDEX ' . $this->name . ' ON ' . $this->tableName . '(' . implode(',', $this->columns) . ')';
 
         try {

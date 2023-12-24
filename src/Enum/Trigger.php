@@ -5,7 +5,8 @@ namespace krzysztofzylka\DatabaseManager\Enum;
 /**
  * Triggers
  */
-enum Trigger {
+enum Trigger
+{
 
     case UpdateTimestampAfterUpdate;
 
@@ -15,7 +16,8 @@ enum Trigger {
      * @param string $columnName
      * @return string
      */
-    public function generate(string $tableName, string $columnName) : string {
+    public function generate(string $tableName, string $columnName): string
+    {
         return match($this) {
             Trigger::UpdateTimestampAfterUpdate => "CREATE TRIGGER `trigger_audou_" . md5($tableName . $columnName) . "` BEFORE UPDATE ON `$tableName` FOR EACH ROW BEGIN SET NEW.`$columnName` = CURRENT_TIMESTAMP; END"
         };

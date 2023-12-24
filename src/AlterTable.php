@@ -3,21 +3,25 @@
 namespace krzysztofzylka\DatabaseManager;
 
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
-use krzysztofzylka\DatabaseManager\Exception\UpdateTableException;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
 use Exception;
 
-class AlterTable {
+class AlterTable
+{
 
     private ?string $name = null;
+
     private DatabaseManager $databaseManager;
+
     private array $sql = [];
 
     /**
      * Contructor
      * @param ?string $tableName alternative for $this->setName
      */
-    public function __construct(?string $tableName = null) {
+    public function __construct(?string $tableName = null)
+    {
         $this->databaseManager = new DatabaseManager();
 
         if (!is_null($tableName)) {
@@ -29,7 +33,8 @@ class AlterTable {
      * Get table name
      * @return ?string
      */
-    public function getName() : ?string {
+    public function getName(): ?string
+    {
         return $this->name;
     }
 
@@ -38,7 +43,8 @@ class AlterTable {
      * @param ?string $name
      * @return AlterTable
      */
-    public function setName(?string $name) : self {
+    public function setName(?string $name): self
+    {
         $this->name = $name;
 
         return $this;
@@ -51,7 +57,8 @@ class AlterTable {
      * @param ?bool $sort sort enum values
      * @return $this
      */
-    public function extendEnum(string $columnName, string $newValue, ?bool $sort = true) : self {
+    public function extendEnum(string $columnName, string $newValue, ?bool $sort = true): self
+    {
         $columnData = (new Table())->setName($this->name)->columnList($columnName);
         $columnType = $columnData['Type'];
         $columnType = explode("','", substr($columnType, 6, -2));
@@ -72,7 +79,8 @@ class AlterTable {
      * @param ?string $afterColumnName
      * @return AlterTable
      */
-    public function addColumn(Column $column, ?string $afterColumnName = null) : self {
+    public function addColumn(Column $column, ?string $afterColumnName = null): self
+    {
         $columnString = PrepareColumn::generateCreateColumnSql($column);
 
         if ($column->isPrimary() && DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
@@ -93,15 +101,16 @@ class AlterTable {
     /**
      * Execute update table
      * @return void
-     * @throws UpdateTableException
+     * @throws DatabaseManagerException
      */
-    public function execute() : void {
+    public function execute(): void
+    {
         try {
             $sql = implode(PHP_EOL, $this->sql);
             DatabaseManager::setLastSql($sql);
             $this->databaseManager->query($sql);
         } catch (Exception $exception) {
-            throw new UpdateTableException($exception->getMessage());
+            throw new DatabaseManagerException($exception->getMessage());
         }
     }
 

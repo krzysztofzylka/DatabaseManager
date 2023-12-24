@@ -2,7 +2,8 @@
 
 namespace krzysztofzylka\DatabaseManager\Trait;
 
-trait ConditionMethods {
+trait ConditionMethods
+{
 
     /**
      * Get prepare value
@@ -10,7 +11,8 @@ trait ConditionMethods {
      * @return string
      * @ignore
      */
-    private function prepareValue(mixed $value) : string {
+    private function prepareValue(mixed $value): string
+    {
         switch (gettype($value)) {
             case 'array':
                 return '(\'' . implode('\', \'', $value) . '\')';

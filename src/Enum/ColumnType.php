@@ -5,7 +5,8 @@ namespace krzysztofzylka\DatabaseManager\Enum;
 /**
  * Column types
  */
-enum ColumnType {
+enum ColumnType
+{
 
     //string
     case char;

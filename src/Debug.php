@@ -2,15 +2,21 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
-class Debug {
+class Debug
+{
 
+    /**
+     * SQL list
+     * @var array
+     */
     private static array $sql = [];
 
     /**
      * Show debug modal
      * @return void
      */
-    public static function showDebugModal() : void {
+    public static function showDebugModal(): void
+    {
         if (!DatabaseManager::$connection->isDebug()) {
             return;
         }
@@ -50,7 +56,8 @@ class Debug {
      * @param string $sql
      * @return void
      */
-    public static function addSql(string $sql) {
+    public static function addSql(string $sql): void
+    {
         self::$sql[] = $sql;
     }
 
@@ -58,7 +65,8 @@ class Debug {
      * Get SQL list
      * @return array
      */
-    public static function getSql() : array {
+    public static function getSql(): array
+    {
         return self::$sql;
     }
 

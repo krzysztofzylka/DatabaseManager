@@ -2,7 +2,8 @@
 
 namespace krzysztofzylka\DatabaseManager\Enum;
 
-enum ColumnDefault : string {
+enum ColumnDefault: string
+{
 
     case currentTimestamp = 'CURRENT_TIMESTAMP';
 

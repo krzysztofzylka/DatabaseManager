@@ -8,7 +8,8 @@ use krzysztofzylka\DatabaseManager\Trait\ConditionMethods;
 /**
  * Tworzenie warunków dla biblioteki Database
  */
-class Condition {
+class Condition
+{
 
     use ConditionMethods;
 
@@ -36,26 +37,29 @@ class Condition {
      * @param string $operator
      * @param mixed $value
      */
-    public function __construct(string $column, string $operator, mixed $value = null) {
+    public function __construct(string $column, string $operator, mixed $value = null)
+    {
         $this->column = $column;
         $this->operator = $operator;
         $this->value = $value;
     }
 
     /**
-     * Generate conditions
-     * @return string
-     */
-    public function __toString() {
-        return $this->getColumn() . ' ' . $this->operator . ' ' . $this->prepareValue($this->value);
-    }
-
-    /**
      * Get column name
      * @return string
      */
-    public function getColumn() : string {
+    public function getColumn(): string
+    {
         return TableHelper::prepareColumnNameWithAlias($this->column);
+    }
+
+    /**
+     * Generate conditions
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getColumn() . ' ' . $this->operator . ' ' . $this->prepareValue($this->value);
     }
 
 }

@@ -3,22 +3,24 @@
 namespace krzysztofzylka\DatabaseManager\Trait;
 
 use krzysztofzylka\DatabaseManager\DatabaseManager;
-use krzysztofzylka\DatabaseManager\Exception\UpdateException;
 use Exception;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 
-trait TableUpdate {
+trait TableUpdate
+{
 
     /**
      * Update
      * @param array $data
      * @return bool
-     * @throws UpdateException
+     * @throws DatabaseManagerException
      */
-    public function update(array $data) : bool {
+    public function update(array $data): bool
+    {
         if (is_null($this->getName())) {
-            throw new UpdateException('Table is not defined');
+            throw new DatabaseManagerException('Table is not defined');
         } elseif (is_null($this->getId())) {
-            throw new UpdateException('ID is not defined');
+            throw new DatabaseManagerException('ID is not defined');
         }
 
         $set = [];
@@ -38,7 +40,7 @@ trait TableUpdate {
 
             return $update->execute();
         } catch (Exception $exception) {
-            throw new UpdateException($exception->getMessage());
+            throw new DatabaseManagerException($exception->getMessage());
         }
     }
 
@@ -47,13 +49,14 @@ trait TableUpdate {
      * @param string $columnName
      * @param mixed $value
      * @return bool
-     * @throws UpdateException
+     * @throws DatabaseManagerException
      */
-    public function updateValue(string $columnName, mixed $value) : bool {
+    public function updateValue(string $columnName, mixed $value): bool
+    {
         if (is_null($this->getName())) {
-            throw new UpdateException('Table is not defined');
+            throw new DatabaseManagerException('Table is not defined');
         } elseif (is_null($this->getId())) {
-            throw new UpdateException('ID is not defined');
+            throw new DatabaseManagerException('ID is not defined');
         }
 
         try {
@@ -64,7 +67,7 @@ trait TableUpdate {
 
             return $update->execute();
         } catch (Exception $exception) {
-            throw new UpdateException($exception->getMessage());
+            throw new DatabaseManagerException($exception->getMessage());
         }
     }
 
