@@ -33,6 +33,15 @@ class DatabaseConnect
     private int $port = 3306;
 
     /**
+     * Create database connect instance
+     * @return self
+     */
+    public static function create(): self
+    {
+        return new DatabaseConnect();
+    }
+
+    /**
      * Set host
      * @param string $host
      * @return DatabaseConnect
