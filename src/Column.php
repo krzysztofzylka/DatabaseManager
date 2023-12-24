@@ -31,6 +31,18 @@ class Column
     private array $triggers = [];
 
     /**
+     * Creates a new instance of the class.
+     * @param string|null $name The name of the column (optional)
+     * @param ColumnType $columnType The type of the column (default: ColumnType::varchar)
+     * @param mixed $size The size of the column (default: 255)
+     * @return self The new instance of the class
+     */
+    public static function create(?string $name = null, ColumnType $columnType = ColumnType::varchar, mixed $size = 255): self
+    {
+        return new self($name, $columnType, $size);
+    }
+
+    /**
      * Constructor
      * @param ?string $name
      * @param ColumnType $columnType
