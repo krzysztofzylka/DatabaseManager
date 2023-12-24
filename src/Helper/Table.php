@@ -2,14 +2,16 @@
 
 namespace krzysztofzylka\DatabaseManager\Helper;
 
-class Table {
+class Table
+{
 
     /**
      * Prepare column name with alias
      * @param string $name
      * @return string
      */
-    public static function prepareColumnNameWithAlias(string $name) : string {
+    public static function prepareColumnNameWithAlias(string $name): string
+    {
         if (str_contains($name, '.')) {
             $explode = explode('.', $name);
 

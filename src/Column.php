@@ -5,18 +5,29 @@ namespace krzysztofzylka\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 use krzysztofzylka\DatabaseManager\Enum\Trigger;
 
-class Column {
+class Column
+{
 
     private string $name;
+
     private ColumnType $type;
+
     private null|string|int $typeSize = null;
+
     private bool $autoincrement = false;
+
     private bool $primary = false;
+
     private bool $null = true;
+
     private mixed $default = null;
+
     private bool $defaultDefined = false;
+
     private ?string $extra = null;
+
     private bool $unsigned = false;
+
     private array $triggers = [];
 
     /**
@@ -25,7 +36,8 @@ class Column {
      * @param ColumnType $columnType
      * @param mixed $size
      */
-    public function __construct(?string $name = null, ColumnType $columnType = ColumnType::varchar, mixed $size = 255) {
+    public function __construct(?string $name = null, ColumnType $columnType = ColumnType::varchar, mixed $size = 255)
+    {
         if (!is_null($name)) {
             $this->setName($name)->setType($columnType, $size);
         }
@@ -36,7 +48,8 @@ class Column {
      * @param string $name
      * @return Column
      */
-    public function setName(string $name) : Column {
+    public function setName(string $name): Column
+    {
         $this->name = $name;
 
         return $this;
@@ -47,7 +60,8 @@ class Column {
      * @param bool $autoincrement
      * @return Column
      */
-    public function setAutoincrement(bool $autoincrement) : Column {
+    public function setAutoincrement(bool $autoincrement): Column
+    {
         $this->autoincrement = $autoincrement;
 
         return $this;
@@ -57,7 +71,8 @@ class Column {
      * @param bool $primary
      * @return Column
      */
-    public function setPrimary(bool $primary) : Column {
+    public function setPrimary(bool $primary): Column
+    {
         $this->primary = $primary;
 
         return $this;
@@ -68,7 +83,8 @@ class Column {
      * @param bool $null
      * @return Column
      */
-    public function setNull(bool $null) : Column {
+    public function setNull(bool $null): Column
+    {
         $this->null = $null;
 
         return $this;
@@ -79,7 +95,8 @@ class Column {
      * @param mixed $default
      * @return Column
      */
-    public function setDefault(mixed $default) : Column {
+    public function setDefault(mixed $default): Column
+    {
         $this->default = $default;
         $this->defaultDefined = true;
 
@@ -91,7 +108,8 @@ class Column {
      * @param ?string $extra
      * @return Column
      */
-    public function setExtra(?string $extra) : Column {
+    public function setExtra(?string $extra): Column
+    {
         $this->extra = $extra;
 
         return $this;
@@ -103,7 +121,8 @@ class Column {
      * @param mixed $size (array for enum)
      * @return Column
      */
-    public function setType(ColumnType $type, mixed $size = null) : self {
+    public function setType(ColumnType $type, mixed $size = null): self
+    {
         $this->type = $type;
 
         if ($type === ColumnType::enum) {
@@ -119,7 +138,8 @@ class Column {
      * get name
      * @return string
      */
-    public function getName() : string {
+    public function getName(): string
+    {
         return $this->name;
     }
 
@@ -127,7 +147,8 @@ class Column {
      * Is autoincrement
      * @return bool
      */
-    public function isAutoincrement() : bool {
+    public function isAutoincrement(): bool
+    {
         return $this->autoincrement;
     }
 
@@ -135,7 +156,8 @@ class Column {
      * Is primary
      * @return bool
      */
-    public function isPrimary() : bool {
+    public function isPrimary(): bool
+    {
         return $this->primary;
     }
 
@@ -143,7 +165,8 @@ class Column {
      * Is null
      * @return bool
      */
-    public function isNull() : bool {
+    public function isNull(): bool
+    {
         return $this->null;
     }
 
@@ -151,7 +174,8 @@ class Column {
      * Get default data
      * @return int|string|null
      */
-    public function getDefault(): mixed {
+    public function getDefault(): mixed
+    {
         return $this->default;
     }
 
@@ -159,7 +183,8 @@ class Column {
      * Get extra
      * @return ?string
      */
-    public function getExtra() : ?string {
+    public function getExtra(): ?string
+    {
         return $this->extra;
     }
 
@@ -167,7 +192,8 @@ class Column {
      * Get type
      * @return ColumnType
      */
-    public function getType() : ColumnType {
+    public function getType(): ColumnType
+    {
         return $this->type;
     }
 
@@ -175,7 +201,8 @@ class Column {
      * Get type size
      * @return int|string|null
      */
-    public function getTypeSize() : int|string|null {
+    public function getTypeSize(): int|string|null
+    {
         return $this->typeSize;
     }
 
@@ -183,7 +210,8 @@ class Column {
      * Is default defined
      * @return bool
      */
-    public function isDefaultDefined(): bool {
+    public function isDefaultDefined(): bool
+    {
         return $this->defaultDefined;
     }
 
@@ -191,7 +219,8 @@ class Column {
      * Is unsigned
      * @return bool
      */
-    public function isUnsigned() : bool {
+    public function isUnsigned(): bool
+    {
         return $this->unsigned;
     }
 
@@ -200,7 +229,8 @@ class Column {
      * @param bool $unsigned
      * @return Column
      */
-    public function setUnsigned(bool $unsigned) : Column {
+    public function setUnsigned(bool $unsigned): Column
+    {
         $this->unsigned = $unsigned;
 
         return $this;
@@ -211,7 +241,8 @@ class Column {
      * @param Trigger $trigger
      * @return $this
      */
-    public function addTrigger(Trigger $trigger) : Column {
+    public function addTrigger(Trigger $trigger): Column
+    {
         $this->triggers[] = $trigger;
 
         return $this;
@@ -221,7 +252,8 @@ class Column {
      * Get triggers
      * @return array
      */
-    public function getTriggers() : array {
+    public function getTriggers(): array
+    {
         return $this->triggers;
     }
 

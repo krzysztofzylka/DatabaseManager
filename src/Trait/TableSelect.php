@@ -2,28 +2,27 @@
 
 namespace krzysztofzylka\DatabaseManager\Trait;
 
+use Exception;
 use krzysztofzylka\DatabaseManager\DatabaseManager;
-use krzysztofzylka\DatabaseManager\Exception\ConditionException;
-use krzysztofzylka\DatabaseManager\Exception\SelectException;
-use krzysztofzylka\DatabaseManager\Exception\TableException;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\SqlBuilder;
 use krzysztofzylka\DatabaseManager\Helper\Where;
 use krzysztofzylka\DatabaseManager\Table;
-use Exception;
 use PDO;
 
-trait TableSelect {
+trait TableSelect
+{
 
     /**
      * Find one element
      * @param array|null $condition
+     * @param array|null $columns
      * @param ?string $orderBy
      * @return array
-     * @throws ConditionException
-     * @throws SelectException
-     * @throws TableException
+     * @throws DatabaseManagerException
      */
-    public function find(?array $condition = null, ?array $columns = null, ?string $orderBy = null) : array {
+    public function find(?array $condition = null, ?array $columns = null, ?string $orderBy = null): array
+    {
         $sql = SqlBuilder::select(
             $columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql(),
             $this->getName(),
@@ -42,20 +41,22 @@ trait TableSelect {
 
             return $this->prepareReturnValue($fetchData);
         } catch (Exception $exception) {
-            throw new SelectException($exception->getMessage());
+            throw new DatabaseManagerException($exception->getMessage());
         }
     }
 
     /**
      * Find all elements
      * @param array|null $condition
+     * @param array|null $columns
      * @param ?string $orderBy
      * @param ?string $limit
      * @param ?string $groupBy
      * @return array
-     * @throws SelectException
+     * @throws DatabaseManagerException
      */
-    public function findAll(?array $condition = null, ?array $columns = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null) : array {
+    public function findAll(?array $condition = null, ?array $columns = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null): array
+    {
         $sql = SqlBuilder::select(
             $columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql(),
             $this->getName(),
@@ -75,7 +76,7 @@ trait TableSelect {
 
             return $this->prepareReturnValue($fetchData);
         } catch (Exception $exception) {
-            throw new SelectException($exception->getMessage());
+            throw new DatabaseManagerException($exception->getMessage());
         }
     }
 
@@ -84,10 +85,10 @@ trait TableSelect {
      * @param ?array $condition
      * @param ?string $groupBy
      * @return int
-     * @throws ConditionException
-     * @throws SelectException
+     * @throws DatabaseManagerException
      */
-    public function findCount(?array $condition = null, ?string $groupBy = null) : int {
+    public function findCount(?array $condition = null, ?string $groupBy = null): int
+    {
         $sql = SqlBuilder::select(
             'COUNT(*) as `count`',
             $this->getName(),
@@ -103,7 +104,7 @@ trait TableSelect {
 
             return $count['count'] ?? 0;
         } catch (Exception $e) {
-            throw new SelectException($e->getMessage());
+            throw new DatabaseManagerException($e->getMessage());
         }
     }
 
@@ -111,19 +112,19 @@ trait TableSelect {
      * Isset
      * @param ?array $condition
      * @return bool
-     * @throws ConditionException
-     * @throws SelectException
+     * @throws DatabaseManagerException
      */
-    public function findIsset(?array $condition = null) : bool {
+    public function findIsset(?array $condition = null): bool
+    {
         return $this->findCount($condition) > 0;
     }
 
     /**
      * Prepare column list for select
      * @return string
-     * @throws TableException
      */
-    private function prepareColumnListForSql() : string {
+    private function prepareColumnListForSql(): string
+    {
         $columnList = $this->prepareColumnList(false);
 
         if (isset($this->bind)) {
@@ -141,7 +142,8 @@ trait TableSelect {
      * @param array $columns
      * @return string
      */
-    public function prepareCustomColumnList(array $columns) : string {
+    public function prepareCustomColumnList(array $columns): string
+    {
         foreach ($columns as $id => $column) {
             if (!str_contains($column, '.')) {
                 $column = $this->getName() . '.' . $column;

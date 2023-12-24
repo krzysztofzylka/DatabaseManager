@@ -7,14 +7,16 @@ use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Enum\ColumnDefault;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 
-class PrepareColumn {
+class PrepareColumn
+{
 
     /**
      * Generate column sql
      * @param Column $column
      * @return string
      */
-    public static function generateCreateColumnSql(Column $column) : string {
+    public static function generateCreateColumnSql(Column $column): string
+    {
         return trim(
             '`' . $column->getName() . '` '
             . strtoupper($column->getType()->name)
@@ -33,7 +35,8 @@ class PrepareColumn {
      * @param Column $column
      * @return ?string
      */
-    private static function prepareDefault(Column $column) : ?string {
+    private static function prepareDefault(Column $column): ?string
+    {
         if (!$column->isDefaultDefined()) {
             return '';
         }

@@ -2,18 +2,17 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
+use Exception;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
-use krzysztofzylka\DatabaseManager\Exception\DeleteException;
-use krzysztofzylka\DatabaseManager\Exception\InsertException;
-use krzysztofzylka\DatabaseManager\Exception\TableException;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Trait\TableHelpers;
 use krzysztofzylka\DatabaseManager\Trait\TableSelect;
 use krzysztofzylka\DatabaseManager\Trait\TableUpdate;
-use Exception;
 use PDO;
 
-class Table {
+class Table
+{
 
     /**
      * Table name
@@ -47,7 +46,8 @@ class Table {
      * Constructor
      * @param ?string $tableName Table name
      */
-    public function __construct(?string $tableName = null) {
+    public function __construct(?string $tableName = null)
+    {
         $this->pdo = DatabaseManager::$connection->getConnection();
 
         if (!is_null($tableName)) {
@@ -59,7 +59,8 @@ class Table {
      * Get table name
      * @return string
      */
-    private function getName() : string {
+    private function getName(): string
+    {
         return $this->name;
     }
 
@@ -68,7 +69,8 @@ class Table {
      * @param string $name
      * @return Table
      */
-    public function setName(string $name) : self {
+    public function setName(string $name): self
+    {
         $this->name = htmlspecialchars($name);
 
         return $this;
@@ -78,7 +80,8 @@ class Table {
      * Get ID
      * @return ?int
      */
-    public function getId() : ?int {
+    public function getId(): ?int
+    {
         return $this->id;
     }
 
@@ -87,7 +90,8 @@ class Table {
      * @param ?int $id
      * @return Table
      */
-    public function setId(?int $id = null) : self {
+    public function setId(?int $id = null): self
+    {
         $this->id = $id;
 
         return $this;
@@ -102,7 +106,14 @@ class Table {
      * @param array|Condition|null $condition
      * @return $this
      */
-    public function bind(BindType|array $bind, string $tableName = null, ?string $primaryKey = null, ?string $foreignKey = null, null|array|Condition $condition = null) : self {
+    public function bind(
+        BindType|array $bind,
+        string $tableName = null,
+        ?string $primaryKey = null,
+        ?string $foreignKey = null,
+        null|array|Condition $condition = null
+    ): self
+    {
         if (is_array($bind)) {
             foreach ($bind as $key => $value) {
                 if (is_string($value)) {
@@ -147,7 +158,8 @@ class Table {
      * @param string $tableName
      * @return $this
      */
-    public function unbind(string $tableName) : self {
+    public function unbind(string $tableName): self
+    {
         $search = array_search($tableName, array_column($this->bind, 'tableName'));
 
         if ($search !== false) {
@@ -161,7 +173,8 @@ class Table {
      * Unbind all table
      * @return $this
      */
-    public function unbindAll() : self {
+    public function unbindAll(): self
+    {
         $this->bind = [];
 
         return $this;
@@ -171,9 +184,10 @@ class Table {
      * Get column list
      * @param ?string $columnName column name
      * @return array|bool
-     * @throws TableException
+     * @throws DatabaseManagerException
      */
-    public function columnList(?string $columnName = null) : array|bool {
+    public function columnList(?string $columnName = null): array|bool
+    {
         try {
             $return = [];
             $cacheData = Cache::getData('columnList_' . $this->getName());
@@ -215,7 +229,7 @@ class Table {
 
             return $return ?? false;
         } catch (Exception $exception) {
-            throw new TableException($exception->getMessage());
+            throw new DatabaseManagerException($exception->getMessage());
         }
     }
 
@@ -225,7 +239,8 @@ class Table {
      * @return array|string
      * @throws TableException
      */
-    public function prepareColumnList(bool $asString = true) : array|string {
+    public function prepareColumnList(bool $asString = true): array|string
+    {
         $columnList = $this->columnList();
         $columnListString = [];
 
@@ -244,9 +259,10 @@ class Table {
      * Insert data
      * @param array $data
      * @return bool
-     * @throws InsertException
+     * @throws DatabaseManagerException
      */
-    public function insert(array $data) : bool {
+    public function insert(array $data): bool
+    {
         try {
             $sql = 'INSERT INTO `' . $this->getName() . '` (`' . implode('`, `', array_keys($data)) . '`) VALUES (:' . implode(', :', array_keys($data)) . ')';
             DatabaseManager::setLastSql($sql);
@@ -261,12 +277,12 @@ class Table {
 
                 return true;
             } else {
-                $this->setId(null);
+                $this->setId();
 
                 return false;
             }
         } catch (Exception $exception) {
-            throw new InsertException($exception->getMessage());
+            throw new DatabaseManagerException($exception->getMessage());
         }
     }
 
@@ -274,13 +290,14 @@ class Table {
      * Delete
      * @param ?int $id
      * @return bool
-     * @throws DeleteException
+     * @throws DatabaseManagerException
      */
-    public function delete(?int $id = null) : bool {
+    public function delete(?int $id = null): bool
+    {
         $id = $id ?? $this->getId();
 
         if (is_null($id)) {
-            throw new DeleteException('ID must be integer');
+            throw new DatabaseManagerException('ID must be integer');
         }
 
         try {
@@ -289,7 +306,7 @@ class Table {
 
             return (bool)$this->pdo->exec($sql);
         } catch (Exception $e) {
-            throw new DeleteException($e->getMessage());
+            throw new DatabaseManagerException($e->getMessage());
         }
     }
 
@@ -297,7 +314,8 @@ class Table {
      * Table exists in database
      * @return bool
      */
-    public function exists() : bool {
+    public function exists(): bool
+    {
         $sql = 'SHOW TABLES LIKE "' . $this->getName() . '";';
         DatabaseManager::setLastSql($sql);
 
@@ -311,7 +329,8 @@ class Table {
      * @param string $sql
      * @return array
      */
-    public function query(string $sql) : array {
+    public function query(string $sql): array
+    {
         DatabaseManager::setLastSql($sql);
 
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);

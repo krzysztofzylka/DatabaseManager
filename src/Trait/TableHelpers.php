@@ -4,17 +4,18 @@ namespace krzysztofzylka\DatabaseManager\Trait;
 
 use Krzysztofzylka\Arrays\Arrays;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
-use krzysztofzylka\DatabaseManager\Exception\ConditionException;
 use krzysztofzylka\DatabaseManager\Helper\Where;
 
-trait TableHelpers {
+trait TableHelpers
+{
 
     /**
      * Prepare return data
      * @param false|array $data
      * @return array
      */
-    private function prepareReturnValue(false|array $data) : array {
+    private function prepareReturnValue(false|array $data): array
+    {
         if (!$data) {
             return [];
         }
@@ -87,9 +88,9 @@ trait TableHelpers {
     /**
      * Prepare bind data
      * @return array
-     * @throws ConditionException
      */
-    private function prepareBindData() : array {
+    private function prepareBindData(): array
+    {
         if (!isset($this->bind)) {
             return [];
         }

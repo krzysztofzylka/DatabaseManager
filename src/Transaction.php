@@ -2,15 +2,22 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
+use Exception;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\TransactionException;
 use PDO;
 
-class Transaction {
+class Transaction
+{
 
+    /**
+     * PDO instance
+     * @var PDO
+     */
     private PDO $sql;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->sql = DatabaseManager::$connection->getConnection();
     }
 
@@ -19,7 +26,8 @@ class Transaction {
      * @return void
      * @throws TransactionException
      */
-    public function begin() : void {
+    public function begin(): void
+    {
         if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
             $sql = 'BEGIN TRANSACTION;';
         } else {
@@ -30,7 +38,7 @@ class Transaction {
 
         try {
             $this->sql->query($sql);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new TransactionException($exception->getMessage());
         }
     }
@@ -40,13 +48,14 @@ class Transaction {
      * @return void
      * @throws TransactionException
      */
-    public function commit() : void {
+    public function commit(): void
+    {
         $sql = 'COMMIT;';
         DatabaseManager::setLastSql($sql);
 
         try {
             $this->sql->query($sql);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new TransactionException($exception->getMessage());
         }
     }
@@ -56,13 +65,14 @@ class Transaction {
      * @return void
      * @throws TransactionException
      */
-    public function rollback() : void {
+    public function rollback(): void
+    {
         $sql = 'ROLLBACK;';
         DatabaseManager::setLastSql($sql);
 
         try {
             $this->sql->query($sql);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new TransactionException($exception->getMessage());
         }
     }

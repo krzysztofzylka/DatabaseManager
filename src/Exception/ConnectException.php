@@ -2,5 +2,6 @@
 
 namespace krzysztofzylka\DatabaseManager\Exception;
 
-class ConnectException extends DatabaseManagerException {
+class ConnectException extends DatabaseManagerException
+{
 }

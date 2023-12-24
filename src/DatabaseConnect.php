@@ -5,19 +5,31 @@ namespace krzysztofzylka\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use PDO;
+use PDOException;
 
-class DatabaseConnect {
+class DatabaseConnect
+{
 
     private string $host = '127.0.0.1';
+
     private string $name;
+
     private string $username;
+
     private string $password = '';
+
     private PDO $connection;
+
     private DatabaseType $type = DatabaseType::mysql;
+
     private string $sqlitePath = 'database.sqlite';
+
     private string $charset = 'utf8';
+
     private bool $debug = false;
+
     private bool $manualConnection = false;
+
     private int $port = 3306;
 
     /**
@@ -25,7 +37,8 @@ class DatabaseConnect {
      * @param string $host
      * @return DatabaseConnect
      */
-    public function setHost(string $host) : self {
+    public function setHost(string $host): self
+    {
         $this->host = $host;
 
         return $this;
@@ -36,7 +49,8 @@ class DatabaseConnect {
      * @param string $path
      * @return DatabaseConnect
      */
-    public function setSqlitePath(string $path) : self {
+    public function setSqlitePath(string $path): self
+    {
         $this->sqlitePath = $path;
 
         return $this;
@@ -46,7 +60,8 @@ class DatabaseConnect {
      * Get sqlite path
      * @return string
      */
-    public function getSqlitePath() : string {
+    public function getSqlitePath(): string
+    {
         return $this->sqlitePath;
     }
 
@@ -55,7 +70,8 @@ class DatabaseConnect {
      * @param DatabaseType $type
      * @return $this
      */
-    public function setType(DatabaseType $type) : self {
+    public function setType(DatabaseType $type): self
+    {
         $this->type = $type;
 
         return $this;
@@ -66,7 +82,8 @@ class DatabaseConnect {
      * @param string $name
      * @return DatabaseConnect
      */
-    public function setDatabaseName(string $name) : self {
+    public function setDatabaseName(string $name): self
+    {
         $this->name = $name;
 
         return $this;
@@ -77,7 +94,8 @@ class DatabaseConnect {
      * @param string $username
      * @return DatabaseConnect
      */
-    public function setUsername(string $username) : self {
+    public function setUsername(string $username): self
+    {
         $this->username = $username;
 
         return $this;
@@ -88,7 +106,8 @@ class DatabaseConnect {
      * @param int $port
      * @return $this
      */
-    public function setPort(int $port) : self {
+    public function setPort(int $port): self
+    {
         $this->port = $port;
 
         return $this;
@@ -108,7 +127,8 @@ class DatabaseConnect {
      * @param string $password
      * @return DatabaseConnect
      */
-    public function setPassword(string $password) : self {
+    public function setPassword(string $password): self
+    {
         $this->password = $password;
 
         return $this;
@@ -118,7 +138,8 @@ class DatabaseConnect {
      * Get database
      * @return string
      */
-    public function getDatabaseName() : string {
+    public function getDatabaseName(): string
+    {
         return $this->name;
     }
 
@@ -126,7 +147,8 @@ class DatabaseConnect {
      * Get password
      * @return string
      */
-    public function getPassword() : string {
+    public function getPassword(): string
+    {
         return $this->password;
     }
 
@@ -134,7 +156,8 @@ class DatabaseConnect {
      * Get username
      * @return string
      */
-    public function getUsername() : string {
+    public function getUsername(): string
+    {
         return $this->username;
     }
 
@@ -142,7 +165,8 @@ class DatabaseConnect {
      * Get host
      * @return string
      */
-    public function getHost() : string {
+    public function getHost(): string
+    {
         return $this->host;
     }
 
@@ -151,7 +175,8 @@ class DatabaseConnect {
      * @return void
      * @throws ConnectException
      */
-    public function connect() : void {
+    public function connect(): void
+    {
         if ($this->manualConnection) {
             return;
         }
@@ -166,7 +191,7 @@ class DatabaseConnect {
             } elseif ($this->getType() === DatabaseType::sqlite) {
                 $this->connection = new PDO('sqlite:' . $this->getSqlitePath());
             }
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             throw new ConnectException($e->getMessage());
         }
     }
@@ -175,7 +200,8 @@ class DatabaseConnect {
      * Get PDO connection
      * @return PDO
      */
-    public function getConnection() : PDO {
+    public function getConnection(): PDO
+    {
         return $this->connection;
     }
 
@@ -183,7 +209,8 @@ class DatabaseConnect {
      * Get database type
      * @return DatabaseType
      */
-    public function getType() : DatabaseType {
+    public function getType(): DatabaseType
+    {
         return $this->type;
     }
 
@@ -192,7 +219,8 @@ class DatabaseConnect {
      * @param string $charset
      * @return DatabaseConnect
      */
-    public function setCharset(string $charset) : self {
+    public function setCharset(string $charset): self
+    {
         $this->charset = $charset;
 
         return $this;
@@ -202,7 +230,8 @@ class DatabaseConnect {
      * Get charset
      * @return string
      */
-    public function getCharset() : string {
+    public function getCharset(): string
+    {
         return $this->charset;
     }
 
@@ -210,7 +239,8 @@ class DatabaseConnect {
      * Is debug mode
      * @return bool
      */
-    public function isDebug(): bool {
+    public function isDebug(): bool
+    {
         return $this->debug;
     }
 
@@ -220,7 +250,8 @@ class DatabaseConnect {
      * @param bool $debug
      * @return DatabaseConnect
      */
-    public function setDebug(bool $debug) : self {
+    public function setDebug(bool $debug): self
+    {
         $this->debug = $debug;
 
         return $this;
@@ -231,7 +262,8 @@ class DatabaseConnect {
      * @param PDO $connection
      * @return $this
      */
-    public function setConnection(PDO $connection) : self {
+    public function setConnection(PDO $connection): self
+    {
         $this->connection = $connection;
         $this->manualConnection = true;
 
