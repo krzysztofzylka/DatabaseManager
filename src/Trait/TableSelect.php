@@ -2,12 +2,12 @@
 
 namespace krzysztofzylka\DatabaseManager\Trait;
 
+use Exception;
 use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\SqlBuilder;
 use krzysztofzylka\DatabaseManager\Helper\Where;
 use krzysztofzylka\DatabaseManager\Table;
-use Exception;
 use PDO;
 
 trait TableSelect

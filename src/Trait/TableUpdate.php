@@ -2,8 +2,8 @@
 
 namespace krzysztofzylka\DatabaseManager\Trait;
 
-use krzysztofzylka\DatabaseManager\DatabaseManager;
 use Exception;
+use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 
 trait TableUpdate

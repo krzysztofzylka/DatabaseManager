@@ -2,12 +2,12 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
+use Exception;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Enum\Trigger;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
 use krzysztofzylka\DatabaseManager\Trait\TablePredefinedColumn;
-use Exception;
 
 class CreateTable
 {

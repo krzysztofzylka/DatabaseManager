@@ -2,10 +2,10 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
+use Exception;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
-use Exception;
 
 class AlterTable
 {

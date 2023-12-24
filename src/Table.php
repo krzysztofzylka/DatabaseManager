@@ -2,13 +2,13 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
+use Exception;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Trait\TableHelpers;
 use krzysztofzylka\DatabaseManager\Trait\TableSelect;
 use krzysztofzylka\DatabaseManager\Trait\TableUpdate;
-use Exception;
 use PDO;
 
 class Table

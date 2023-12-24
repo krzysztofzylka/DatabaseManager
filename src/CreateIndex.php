@@ -2,8 +2,8 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
-use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use Exception;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 
 class CreateIndex
 {
