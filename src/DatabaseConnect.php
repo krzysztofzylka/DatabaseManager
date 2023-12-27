@@ -26,8 +26,6 @@ class DatabaseConnect
 
     private string $charset = 'utf8';
 
-    private bool $debug = false;
-
     private bool $manualConnection = false;
 
     private int $port = 3306;
@@ -242,28 +240,6 @@ class DatabaseConnect
     public function getCharset(): string
     {
         return $this->charset;
-    }
-
-    /**
-     * Is debug mode
-     * @return bool
-     */
-    public function isDebug(): bool
-    {
-        return $this->debug;
-    }
-
-    /**
-     * Set debug mode
-     * Require bootstrap 5.2.*
-     * @param bool $debug
-     * @return DatabaseConnect
-     */
-    public function setDebug(bool $debug): self
-    {
-        $this->debug = $debug;
-
-        return $this;
     }
 
     /**
