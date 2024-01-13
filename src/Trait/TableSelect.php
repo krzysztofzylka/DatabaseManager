@@ -29,7 +29,8 @@ trait TableSelect
             trim(implode(' ', $this->prepareBindData())),
             $condition ? (new Where())->getPrepareConditions($condition) : null,
             null,
-            $orderBy
+            $orderBy,
+            1
         );
 
         DatabaseManager::setLastSql($sql);
