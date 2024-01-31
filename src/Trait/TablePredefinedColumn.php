@@ -148,12 +148,12 @@ trait TablePredefinedColumn
 
     /**
      * Add simple varchar column
-     * @param ?string $name column name
+     * @param string $name column name
      * @param int $size varchar length, default 255
      * @param bool $null allow null value
      * @return CreateTable
      */
-    public function addSimpleVarcharColumn(?string $name, int $size = 255, bool $null = true): CreateTable
+    public function addSimpleVarcharColumn(string $name, int $size = 255, bool $null = true): CreateTable
     {
         $column = (new Column())
             ->setName($name)
@@ -167,11 +167,11 @@ trait TablePredefinedColumn
 
     /**
      * Add simple int column
-     * @param ?string $name column name
+     * @param string $name column name
      * @param bool $null allow null value
      * @return CreateTable
      */
-    public function addSimpleIntColumn(?string $name, bool $null = true): CreateTable
+    public function addSimpleIntColumn(string $name, bool $null = true): CreateTable
     {
         $column = (new Column())
             ->setName($name)
@@ -185,16 +185,90 @@ trait TablePredefinedColumn
 
     /**
      * Add simple bool (tinyint(1)) column
-     * @param ?string $name column name
+     * @param string $name column name
      * @param bool $default default
      * @return CreateTable
      */
-    public function addSimpleBoolColumn(?string $name, bool $default = false): CreateTable
+    public function addSimpleBoolColumn(string $name, bool $default = false): CreateTable
     {
         $column = (new Column())
             ->setName($name)
             ->setType(ColumnType::tinyint, 1)
             ->setDefault($default ? 1 : 0);
+
+        $this->addColumn($column);
+
+        return $this;
+    }
+
+    /**
+     * Add simple float column
+     * @param string $name
+     * @param string $size
+     * @param float|null $default
+     * @return CreateTable
+     */
+    public function addSimpleFloatColumn(string $name, string $size = '16,2', ?float $default = null): CreateTable
+    {
+        $column = (new Column())
+            ->setName($name)
+            ->setType(ColumnType::float, $size)
+            ->setDefault($default);
+
+        $this->addColumn($column);
+
+        return $this;
+    }
+
+    /**
+     * Add simple text column
+     * @param string $name
+     * @param string|null $default
+     * @return CreateTable
+     */
+    public function addSimpleTextColumn(string $name, ?string $default = null): CreateTable
+    {
+        $column = (new Column())
+            ->setName($name)
+            ->setType(ColumnType::text)
+            ->setDefault($default);
+
+        $this->addColumn($column);
+
+        return $this;
+    }
+
+    /**
+     * Add simple date column
+     * @param string $name
+     * @param string|null $default
+     * @return CreateTable
+     */
+    public function addSimpleDateColumn(string $name, ?string $default = null): CreateTable
+    {
+        $column = (new Column())
+            ->setName($name)
+            ->setType(ColumnType::date)
+            ->setDefault($default);
+
+        $this->addColumn($column);
+
+        return $this;
+    }
+
+    /**
+     * Add simple enum column
+     * @param string $name
+     * @param array $values
+     * @param string|null $default
+     * @return CreateTable
+     */
+    public function addSimpleEnumColumn(string $name, array $values, ?string $default = null): CreateTable
+    {
+        $column = (new Column())
+            ->setName($name)
+            ->setType(ColumnType::enum, $values)
+            ->setDefault($default);
 
         $this->addColumn($column);
 

@@ -56,6 +56,7 @@ class AlterTable
      * @param string $newValue new enum values
      * @param ?bool $sort sort enum values
      * @return $this
+     * @throws DatabaseManagerException
      */
     public function extendEnum(string $columnName, string $newValue, ?bool $sort = true): self
     {
