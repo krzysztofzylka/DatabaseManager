@@ -6,6 +6,7 @@ use Exception;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
+use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 
 class AlterTable
 {
@@ -95,6 +96,47 @@ class AlterTable
         }
 
         $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` ADD ' . $columnString . $after . ';';
+
+        return $this;
+    }
+
+
+    /**
+     * Delete column
+     * @param string $columnName
+     * @return $this
+     */
+    public function removeColumn(string $columnName): self
+    {
+        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` DROP COLUMN `' . $columnName . '`;';
+
+        return $this;
+    }
+
+    /**
+     * Modify column
+     * @param string $columnName
+     * @param ColumnType $columnType
+     * @param mixed $size
+     * @return $this
+     */
+    public function modifyColumn(string $columnName, ColumnType $columnType, mixed $size = '255'): self
+    {
+        $size = $size ? '(' . $size . ') ' : '';
+        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` MODIFY `' . $columnName . '` ' . $columnType->name . $size . ';';
+
+        return $this;
+    }
+
+    /**
+     * Rename column name
+     * @param string $oldName
+     * @param string $newName
+     * @return $this
+     */
+    public function renameColumn(string $oldName, string $newName): self
+    {
+        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` RENAME `' . $oldName . '` TO `' . $newName . '`;';
 
         return $this;
     }
