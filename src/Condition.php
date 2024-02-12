@@ -59,7 +59,9 @@ class Condition
      */
     public function __toString()
     {
-        return $this->getColumn() . ' ' . $this->operator . ' ' . $this->prepareValue($this->value);
+        return trim(
+            string: $this->getColumn() . ' ' . $this->operator . ' ' . $this->prepareValue($this->value)
+        );
     }
 
 }
