@@ -316,7 +316,12 @@ class Table
      */
     public function exists(): bool
     {
-        $sql = 'SHOW TABLES LIKE "' . $this->getName() . '";';
+        if (DatabaseManager::$connection->getType() === DatabaseType::sqlite) {
+            $sql = 'SELECT sql FROM sqlite_master WHERE type="table" AND name LIKE "%' . $this->getName() . '%";';
+        } else {
+            $sql = 'SHOW TABLES LIKE "' . $this->getName() . '";';
+        }
+
         DatabaseManager::setLastSql($sql);
 
         $query = $this->pdo->query($sql);
