@@ -22,10 +22,11 @@ class PrepareColumn
             . strtoupper($column->getType()->name)
             . ($column->getTypeSize() ? '(' . $column->getTypeSize() . ') ' : ' ')
             . ($column->isUnsigned() ? 'UNSIGNED ' : '')
-            . ($column->isNull() ? 'NULL ' : 'NOT NULL ')
+            . (!is_null($column->isNull()) ? ($column->isNull() ? 'NULL ' : 'NOT NULL ') : '')
             . self::prepareDefault($column)
             . (($column->isAutoincrement() && DatabaseManager::getDatabaseType() === DatabaseType::mysql) ? 'AUTO_INCREMENT ' : ' ')
             . (DatabaseManager::getDatabaseType() === DatabaseType::sqlite && $column->isPrimary() ? 'PRIMARY KEY ' : ' ')
+            . (($column->isAutoincrement() && DatabaseManager::getDatabaseType() === DatabaseType::sqlite) ? 'AUTOINCREMENT ' : ' ')
             . ($column->getExtra())
         );
     }

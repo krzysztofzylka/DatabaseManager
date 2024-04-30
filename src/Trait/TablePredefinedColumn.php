@@ -27,9 +27,12 @@ trait TablePredefinedColumn
             ->setAutoincrement(true)
             ->setPrimary(true);
 
-        if (DatabaseManager::$connection->getType() === DatabaseType::sqlite) {
-            $column->setType(ColumnType::integer)
-                ->setAutoincrement(false);
+        if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
+            $column = (new Column())
+                ->setName('id')
+                ->setType(ColumnType::integer)
+                ->setPrimary(true)
+                ->setAutoincrement(true);
         }
 
         $this->addColumn($column);

@@ -18,7 +18,7 @@ class Column
 
     private bool $primary = false;
 
-    private bool $null = true;
+    private ?bool $null = null;
 
     private mixed $default = null;
 
@@ -175,9 +175,9 @@ class Column
 
     /**
      * Is null
-     * @return bool
+     * @return ?bool
      */
-    public function isNull(): bool
+    public function isNull(): ?bool
     {
         return $this->null;
     }
