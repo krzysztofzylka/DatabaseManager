@@ -44,6 +44,14 @@ class SqlBuilder
             $sql .= ' LIMIT ' . $limit;
         }
 
+        while (true) {
+            if (!str_contains($sql, '  ')) {
+                break;
+            }
+
+            $sql = str_replace('  ', ' ', $sql);
+        }
+
         return $sql;
     }
 
