@@ -69,7 +69,7 @@ class DatabaseConnect
      */
     public function getSqlitePath(): string
     {
-        return $this->sqlitePath;
+        return trim($this->sqlitePath);
     }
 
     /**
@@ -147,7 +147,7 @@ class DatabaseConnect
      */
     public function getDatabaseName(): string
     {
-        return $this->name;
+        return trim($this->name);
     }
 
     /**
@@ -156,7 +156,7 @@ class DatabaseConnect
      */
     public function getPassword(): string
     {
-        return $this->password;
+        return trim($this->password);
     }
 
     /**
@@ -165,7 +165,7 @@ class DatabaseConnect
      */
     public function getUsername(): string
     {
-        return $this->username;
+        return trim($this->username);
     }
 
     /**
@@ -174,7 +174,7 @@ class DatabaseConnect
      */
     public function getHost(): string
     {
-        return $this->host;
+        return trim($this->host);
     }
 
     /**
@@ -239,7 +239,7 @@ class DatabaseConnect
      */
     public function getCharset(): string
     {
-        return $this->charset;
+        return trim($this->charset);
     }
 
     /**
