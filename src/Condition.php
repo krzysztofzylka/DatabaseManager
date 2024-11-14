@@ -46,10 +46,15 @@ class Condition
 
     /**
      * Get column name
+     * @param bool $raw
      * @return string
      */
-    public function getColumn(): string
+    public function getColumn(bool $raw = false): string
     {
+        if ($raw) {
+            return $this->column;
+        }
+
         return TableHelper::prepareColumnNameWithAlias($this->column);
     }
 
@@ -62,6 +67,36 @@ class Condition
         return trim(
             string: $this->getColumn() . ' ' . $this->operator . ' ' . $this->prepareValue($this->value)
         );
+    }
+
+    /**
+     * Get value
+     * @return mixed
+     */
+    public function getValue(): mixed
+    {
+        return $this->value;
+    }
+
+    /**
+     * Set value
+     * @param mixed $value
+     * @return $this
+     */
+    public function setValue(mixed $value): self
+    {
+        $this->value = $value;
+
+        return $this;
+    }
+
+    /**
+     * Get operator
+     * @return string
+     */
+    public function getOperator(): string
+    {
+        return $this->operator;
     }
 
 }
