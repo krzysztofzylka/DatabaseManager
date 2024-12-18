@@ -42,7 +42,9 @@ class PrepareColumn
             return '';
         }
 
-        if ($column->getDefault() instanceof ColumnDefault) {
+        if (is_null($column->getDefault())) {
+            return 'DEFAULT NULL';
+        } elseif ($column->getDefault() instanceof ColumnDefault) {
             return 'DEFAULT ' . $column->getDefault()->value . ' ';
         } elseif (is_string($column->getDefault())) {
             if (str_contains($column->getDefault(), "'")) {

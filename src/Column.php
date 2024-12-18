@@ -20,7 +20,7 @@ class Column
 
     private ?bool $null = null;
 
-    private mixed $default = null;
+    private mixed $default;
 
     private bool $defaultDefined = false;
 

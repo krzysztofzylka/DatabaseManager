@@ -76,7 +76,7 @@ class CreateTable
         $sql = 'CREATE TABLE `' . $this->name . '` (';
         $sql .= implode(', ', $this->columns);
         $sql .= (!empty($this->primary) ? ', ' . implode(', ', $this->primary) : '');
-        $sql .= '); ';
+        $sql .= ');';
 
         try {
             $databaseManager = new DatabaseManager();
