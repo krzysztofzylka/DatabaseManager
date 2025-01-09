@@ -108,7 +108,7 @@ class Table
      */
     public function bind(
         BindType|array $bind,
-        string $tableName = null,
+        ?string $tableName = null,
         ?string $primaryKey = null,
         ?string $foreignKey = null,
         null|array|Condition $condition = null
@@ -119,12 +119,10 @@ class Table
                 if (is_string($value)) {
                     $explodeName = explode('.', $value);
                     $bindType = BindType::getFromName($explodeName[0]);
-
                     $this->bind($bindType, $explodeName[1]);
                 } else {
                     $explodeName = explode('.', $key);
                     $bindType = BindType::getFromName($explodeName[0]);
-
                     $this->bind($bindType, $explodeName[1], $value['primaryKey'] ?? null, $value['foreignKey'] ?? null);
                 }
             }
