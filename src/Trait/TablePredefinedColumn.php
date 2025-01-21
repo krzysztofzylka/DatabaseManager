@@ -44,13 +44,14 @@ trait TablePredefinedColumn
      * Add email column
      * @param bool $null is nullable
      * @param ?string $name column name
+     * @param int $size size
      * @return CreateTable
      */
-    public function addEmailColumn(bool $null = true, ?string $name = 'email'): CreateTable
+    public function addEmailColumn(bool $null = true, ?string $name = 'email', int $size = 255): CreateTable
     {
         $column = (new Column())
             ->setName($name)
-            ->setType(ColumnType::varchar, 255)
+            ->setType(ColumnType::varchar, $size)
             ->setNull($null);
 
         $this->addColumn($column);
@@ -62,13 +63,14 @@ trait TablePredefinedColumn
      * Add username column
      * @param bool $null is nullable
      * @param ?string $name column name
+     * @param int $size
      * @return CreateTable
      */
-    public function addUsernameColumn(bool $null = true, ?string $name = 'username'): CreateTable
+    public function addUsernameColumn(bool $null = true, ?string $name = 'username', int $size = 255): CreateTable
     {
         $column = (new Column())
             ->setName($name)
-            ->setType(ColumnType::varchar, 255)
+            ->setType(ColumnType::varchar, $size)
             ->setNull($null);
 
         $this->addColumn($column);
@@ -80,13 +82,14 @@ trait TablePredefinedColumn
      * Add password column
      * @param bool $null is nullable
      * @param ?string $name column name
+     * @param int $size
      * @return CreateTable
      */
-    public function addPasswordColumn(bool $null = true, ?string $name = 'password'): CreateTable
+    public function addPasswordColumn(bool $null = true, ?string $name = 'password', int $size = 255): CreateTable
     {
         $column = (new Column())
             ->setName($name)
-            ->setType(ColumnType::varchar, 255)
+            ->setType(ColumnType::varchar, $size)
             ->setNull($null);
 
         $this->addColumn($column);
@@ -154,14 +157,19 @@ trait TablePredefinedColumn
      * @param string $name column name
      * @param int $size varchar length, default 255
      * @param bool $null allow null value
+     * @param string|null $default
      * @return CreateTable
      */
-    public function addSimpleVarcharColumn(string $name, int $size = 255, bool $null = true): CreateTable
+    public function addSimpleVarcharColumn(string $name, int $size = 255, bool $null = true, ?string $default = null): CreateTable
     {
         $column = (new Column())
             ->setName($name)
             ->setType(ColumnType::varchar, $size)
             ->setNull($null);
+
+        if (!is_null($default)) {
+            $column->setDefault($default);
+        }
 
         $this->addColumn($column);
 
@@ -172,14 +180,16 @@ trait TablePredefinedColumn
      * Add simple int column
      * @param string $name column name
      * @param bool $null allow null value
+     * @param bool $unsigned
      * @return CreateTable
      */
-    public function addSimpleIntColumn(string $name, bool $null = true): CreateTable
+    public function addSimpleIntColumn(string $name, bool $null = true, bool $unsigned = false): CreateTable
     {
         $column = (new Column())
             ->setName($name)
             ->setType(ColumnType::int)
-            ->setNull($null);
+            ->setNull($null)
+            ->setUnsigned($unsigned);
 
         $this->addColumn($column);
 
@@ -223,6 +233,24 @@ trait TablePredefinedColumn
         return $this;
     }
 
+    /**
+     * Add simple float column
+     * @param string $name
+     * @param string $size
+     * @param float|null $default
+     * @return CreateTable
+     */
+    public function addSimpleDecimalColumn(string $name, string $size = '16,2', ?float $default = null): CreateTable
+    {
+        $column = (new Column())
+            ->setName($name)
+            ->setType(ColumnType::decimal, $size)
+            ->setDefault($default);
+
+        $this->addColumn($column);
+
+        return $this;
+    }
     /**
      * Add simple text column
      * @param string $name
