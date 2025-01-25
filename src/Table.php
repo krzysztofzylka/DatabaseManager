@@ -316,15 +316,17 @@ class Table
     {
         if (DatabaseManager::$connection->getType() === DatabaseType::sqlite) {
             $sql = 'SELECT sql FROM sqlite_master WHERE type="table" AND name LIKE "%' . $this->getName() . '%";';
+            DatabaseManager::setLastSql($sql);
+
+            return !empty($sql->fetchAll());
         } else {
-            $sql = 'SHOW TABLES LIKE "' . $this->getName() . '";';
+            $sql = 'SELECT 1 FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? LIMIT 1;';
+            DatabaseManager::setLastSql($sql);
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$this->getName()]);
+
+            return $stmt->fetchColumn() >= 1;
         }
-
-        DatabaseManager::setLastSql($sql);
-
-        $query = $this->pdo->query($sql);
-
-        return !empty($query->fetchAll());
     }
 
     /**
