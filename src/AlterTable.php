@@ -123,7 +123,7 @@ class AlterTable
     public function modifyColumn(string $columnName, ColumnType $columnType, mixed $size = '255'): self
     {
         $size = $size ? '(' . $size . ') ' : '';
-        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` MODIFY `' . $columnName . '` ' . $columnType->name . $size . ';';
+        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` MODIFY `' . $columnName . '` ' . $columnType->name . trim($size) . ';';
 
         return $this;
     }
@@ -150,6 +150,11 @@ class AlterTable
     {
         try {
             $sql = implode(PHP_EOL, $this->sql);
+
+            if (empty($sql)) {
+                return;
+            }
+
             DatabaseManager::setLastSql($sql);
             $this->databaseManager->query($sql);
         } catch (Exception $exception) {
