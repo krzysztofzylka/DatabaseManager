@@ -59,7 +59,7 @@ class Table
      * Get table name
      * @return string
      */
-    private function getName(): string
+    public function getName(): string
     {
         return $this->name;
     }
