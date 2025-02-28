@@ -49,4 +49,16 @@ enum ColumnType
     //special
     case json;
 
+    /**
+     * Get column enum by name
+     * @param string $name
+     * @return ColumnType|null
+     */
+    public static function getColumnTypeByName(string $name): ?ColumnType
+    {
+        $fullyQualifiedName = ColumnType::class . "::$name";
+
+        return defined($fullyQualifiedName) ? constant($fullyQualifiedName) : null;
+    }
+
 }
