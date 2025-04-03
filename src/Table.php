@@ -235,7 +235,7 @@ class Table
      * prepare column list
      * @param bool $asString
      * @return array|string
-     * @throws TableException
+     * @throws DatabaseManagerException
      */
     public function prepareColumnList(bool $asString = true): array|string
     {
@@ -339,6 +339,15 @@ class Table
         DatabaseManager::setLastSql($sql);
 
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get PDO instance
+     * @return PDO
+     */
+    public function getPdoInstance(): PDO
+    {
+        return $this->pdo;
     }
 
 }
