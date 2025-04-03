@@ -255,4 +255,15 @@ class DatabaseConnect
         return $this;
     }
 
+    /**
+     * Get connection id
+     * @return int
+     */
+    public function getConnectionId(): int
+    {
+        $result = $this->connection->query('SELECT CONNECTION_ID() AS conn_id')->fetch();
+
+        return $result['conn_id'] ?? 0;
+    }
+
 }
