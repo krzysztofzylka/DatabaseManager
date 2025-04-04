@@ -25,7 +25,7 @@ class DatabaseLock
      * Server identifier
      * @var ?string
      */
-    private ?string $serverIdentifier = null;
+    private ?string $serverIdentifier;
 
     /**
      * Constructor
@@ -67,43 +67,45 @@ class DatabaseLock
         $timeout = $timeout ?? $this->defaultTimeout;
         $this->cleanExpiredLocks();
 
-        if ($this->table->findIsset(['database_locks.lock_name' => $name])) {
+        if ($this->lockExists($name)) {
             return false;
         }
 
-        $stmt = $this->table->getPdoInstance()->prepare("
-            INSERT INTO database_locks (lock_name, lock_time, lock_expiration, server_identifier) 
-            VALUES (:name, NOW(), DATE_ADD(NOW(), INTERVAL :timeout SECOND), :server)
-            ON DUPLICATE KEY UPDATE
-                lock_name = IF(lock_expiration < NOW(), VALUES(lock_name), lock_name),
-                lock_time = IF(lock_expiration < NOW(), VALUES(lock_time), lock_time),
-                lock_expiration = IF(lock_expiration < NOW(), VALUES(lock_expiration), lock_expiration),
-                server_identifier = IF(lock_expiration < NOW(), VALUES(server_identifier), server_identifier)
-        ");
-        $stmt->execute([':name' => $name, ':timeout' => $timeout, ':server' => $this->serverIdentifier]);
-        $stmt = $this->table->getPdoInstance()->prepare("SELECT COUNT(*) FROM database_locks WHERE lock_name = :name AND server_identifier = :server");
-        $stmt->execute([':name' => $name, ':server' => $this->serverIdentifier]);
-
-        return $stmt->fetchColumn() > 0;
+        return $this->table->insert([
+            'lock_name' => $name,
+            'lock_time' => date('Y-m-d H:i:s'),
+            'lock_expiration' => date('Y-m-d H:i:s', strtotime("+$timeout seconds")),
+            'server_identifier' => $this->serverIdentifier
+        ]);
     }
 
     /**
      * Unlock
      * @param string $name
      * @return bool
+     * @throws DatabaseManagerException
      */
     public function unlock(string $name): bool {
-        $stmt = $this->table->getPdoInstance()->prepare("DELETE FROM database_locks WHERE lock_name = :name AND server_identifier = :server");
-        $stmt->execute([':name' => $name, ':server' => $this->serverIdentifier]);
+        return $this->table->deleteByConditions(['lock_name' => $name, 'server_identifier' => $this->serverIdentifier]);
+    }
 
-        return $stmt->rowCount() > 0;
+    /**
+     * Lock exists
+     * @param string $name
+     * @return bool
+     * @throws DatabaseManagerException
+     */
+    public function lockExists(string $name): bool {
+        return $this->table->findIsset(['database_locks.lock_name' => $name]);
     }
 
     /**
      * Delete expired locks
+     * @return void
+     * @throws DatabaseManagerException
      */
     private function cleanExpiredLocks(): void {
-        $this->table->getPdoInstance()->exec("DELETE FROM database_locks WHERE lock_expiration < NOW()");
+        $this->table->deleteByConditions([new Condition('lock_expiration', '<', date('Y-m-d H:i:s'))]);
     }
 
 }
