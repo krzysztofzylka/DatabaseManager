@@ -28,16 +28,9 @@ class Transaction
      */
     public function begin(): void
     {
-        if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
-            $sql = 'BEGIN TRANSACTION;';
-        } else {
-            $sql = 'START TRANSACTION;';
-        }
-
-        DatabaseManager::setLastSql($sql);
-
         try {
-            $this->sql->query($sql);
+            $this->sql->beginTransaction();
+            DatabaseManager::setLastSql('[begin transaction]');
         } catch (Exception $exception) {
             throw new TransactionException($exception->getMessage());
         }
@@ -50,11 +43,9 @@ class Transaction
      */
     public function commit(): void
     {
-        $sql = 'COMMIT;';
-        DatabaseManager::setLastSql($sql);
-
         try {
-            $this->sql->query($sql);
+            $this->sql->commit();
+            DatabaseManager::setLastSql('[commit]');
         } catch (Exception $exception) {
             throw new TransactionException($exception->getMessage());
         }
@@ -67,14 +58,13 @@ class Transaction
      */
     public function rollback(): void
     {
-        $sql = 'ROLLBACK;';
-        DatabaseManager::setLastSql($sql);
-
         try {
-            $this->sql->query($sql);
+            $this->sql->rollBack();
+            DatabaseManager::setLastSql('[rollback]');
         } catch (Exception $exception) {
             throw new TransactionException($exception->getMessage());
         }
+
     }
 
 }
