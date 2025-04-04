@@ -6,6 +6,7 @@ use Exception;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
+use krzysztofzylka\DatabaseManager\Helper\Where;
 use krzysztofzylka\DatabaseManager\Trait\TableHelpers;
 use krzysztofzylka\DatabaseManager\Trait\TableSelect;
 use krzysztofzylka\DatabaseManager\Trait\TableUpdate;
@@ -300,6 +301,24 @@ class Table
 
         try {
             $sql = 'DELETE FROM `' . $this->getName() . '` WHERE id=' . ($id ?? $this->getId());
+            DatabaseManager::setLastSql($sql);
+
+            return (bool)$this->pdo->exec($sql);
+        } catch (Exception $e) {
+            throw new DatabaseManagerException($e->getMessage());
+        }
+    }
+
+    /**
+     * Delete by condition
+     * @param array $condition
+     * @return bool
+     * @throws DatabaseManagerException
+     */
+    public function deleteByConditions(array $condition): bool
+    {
+        try {
+            $sql = 'DELETE FROM `' . $this->getName() . '` WHERE ' . (new Where())->getPrepareConditions($condition);
             DatabaseManager::setLastSql($sql);
 
             return (bool)$this->pdo->exec($sql);
