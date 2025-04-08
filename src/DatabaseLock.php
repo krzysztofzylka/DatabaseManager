@@ -2,6 +2,7 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
+use Exception;
 use krzysztofzylka\DatabaseManager\Enum\ColumnDefault;
 use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
@@ -30,6 +31,7 @@ class DatabaseLock
     /**
      * Constructor
      * @throws DatabaseManagerException
+     * @throws Exception
      */
     public function __construct() {
         $this->serverIdentifier = gethostname();
@@ -53,6 +55,10 @@ class DatabaseLock
             $createTable->addSimpleVarcharColumn('server_identifier');
             $createTable->execute();
         }
+
+        if (!$this->table->isColumnUnique('lock_name')) {
+            $this->makeColumnUnique('lock_name', 'database_locks');
+        }
     }
 
     /**
@@ -71,12 +77,18 @@ class DatabaseLock
             return false;
         }
 
-        return $this->table->insert([
-            'lock_name' => $name,
-            'lock_time' => date('Y-m-d H:i:s'),
-            'lock_expiration' => date('Y-m-d H:i:s', strtotime("+$timeout seconds")),
-            'server_identifier' => $this->serverIdentifier
-        ]);
+        try {
+            $this->table->insert([
+                'lock_name' => $name,
+                'lock_time' => date('Y-m-d H:i:s'),
+                'lock_expiration' => date('Y-m-d H:i:s', strtotime("+$timeout seconds")),
+                'server_identifier' => $this->serverIdentifier
+            ]);
+
+            return true;
+        } catch (Exception) {
+            return false;
+        }
     }
 
     /**
@@ -106,6 +118,18 @@ class DatabaseLock
      */
     private function cleanExpiredLocks(): void {
         $this->table->deleteByConditions([new Condition('lock_expiration', '<', date('Y-m-d H:i:s'))]);
+    }
+
+    /**
+     * Set unique column
+     * @param string $columnName
+     * @param string $tableName
+     * @return void
+     */
+    private function makeColumnUnique(string $columnName, string $tableName): void
+    {
+        $query = "ALTER TABLE {$tableName} ADD UNIQUE ({$columnName})";
+        $this->table->query($query);
     }
 
 }
