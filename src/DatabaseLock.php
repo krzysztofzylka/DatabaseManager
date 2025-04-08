@@ -68,7 +68,7 @@ class DatabaseLock
      * @return bool
      * @throws DatabaseManagerException
      */
-    public function lock(string $name, int $timeout = null): bool
+    public function lock(string $name, ?int $timeout = null): bool
     {
         $timeout = $timeout ?? $this->defaultTimeout;
         $this->cleanExpiredLocks();
