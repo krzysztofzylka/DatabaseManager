@@ -179,28 +179,37 @@ class DatabaseConnect
 
     /**
      * Connect to database
-     * @return void
+     * @param bool $setConnection
+     * @return false|PDO
      * @throws ConnectException
      */
-    public function connect(): void
+    public function connect(bool $setConnection = true): false|PDO
     {
         if ($this->manualConnection) {
-            return;
+            return false;
         }
+
+        $connection = null;
 
         try {
             if ($this->getType() === DatabaseType::mysql) {
-                $this->connection = new PDO(
+                $connection = new PDO(
                     'mysql:host=' . $this->getHost() . ';dbname=' . $this->getDatabaseName() . ';charset=' . $this->getCharset() . ';port=' . $this->getPort(),
                     $this->getUsername() ?? '',
                     $this->getPassword() ?? ''
                 );
             } elseif ($this->getType() === DatabaseType::sqlite) {
-                $this->connection = new PDO('sqlite:' . $this->getSqlitePath());
+                $connection = new PDO('sqlite:' . $this->getSqlitePath());
             }
         } catch (PDOException $e) {
             throw new ConnectException($e->getMessage());
         }
+
+        if ($setConnection) {
+            $this->connection = $connection;
+        }
+
+        return $connection;
     }
 
     /**
