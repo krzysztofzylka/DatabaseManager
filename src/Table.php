@@ -369,4 +369,28 @@ class Table
         return $this->pdo;
     }
 
+    /**
+     * Check if a column in a table has a UNIQUE constraint
+     * @param string $columnName The name of the column
+     * @return bool True if the column has a UNIQUE constraint, otherwise false
+     * @throws Exception
+     */
+    public function isColumnUnique(string $columnName): bool
+    {
+        $tablesDetails = DatabaseManager::getTableDetails();
+
+        if (!isset($tablesDetails[$this->getName()])) {
+            return false;
+        }
+
+        foreach ($tablesDetails[$this->getName()] as $columnDetails) {
+            if ($columnDetails['COLUMN_NAME'] === $columnName && $columnDetails['COLUMN_KEY'] === 'UNI') {
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
 }
