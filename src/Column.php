@@ -137,7 +137,7 @@ class Column
     {
         $this->type = $type;
 
-        if ($type === ColumnType::enum) {
+        if ($type === ColumnType::enum || $type === ColumnType::set) {
             $this->typeSize = "'" . implode("','", $size) . "'";
         } else {
             $this->typeSize = $size;
