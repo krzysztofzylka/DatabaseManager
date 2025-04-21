@@ -7,8 +7,8 @@
          convertWarningsToExceptions="true"
          stopOnFailure="false">
     <testsuites>
-        <testsuite name="Helper">
-            <directory>tests/Unit/Helper</directory>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
         </testsuite>
     </testsuites>
     <filter>
