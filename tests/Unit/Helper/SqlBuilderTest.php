@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class SqlBuilderTest extends TestCase
 {
+
     public function testBasicSelect(): void
     {
         $sql = SqlBuilder::select('*', 'users');
@@ -70,6 +71,7 @@ class SqlBuilderTest extends TestCase
             'users',
             '  LEFT JOIN  orders ON users.id = orders.user_id  '
         );
-        $this->assertEquals('SELECT id, name FROM `users` LEFT JOIN orders ON users.id = orders.user_id ', $sql);
+        $this->assertEquals('SELECT id, name FROM `users` LEFT JOIN orders ON users.id = orders.user_id', $sql);
     }
+
 }
