@@ -9,6 +9,7 @@ use krzysztofzylka\DatabaseManager\Enum\ColumnDefault;
 use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Enum\Trigger;
+use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 
 trait TablePredefinedColumn
 {
@@ -16,12 +17,13 @@ trait TablePredefinedColumn
     /**
      * Add ID column
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addIdColumn(): CreateTable
     {
         $column = (new Column())
             ->setName('id')
-            ->setType(ColumnType::int)
+            ->setType(ColumnType::bigint)
             ->setUnsigned(true)
             ->setNull(false)
             ->setAutoincrement(true)
@@ -251,6 +253,7 @@ trait TablePredefinedColumn
 
         return $this;
     }
+
     /**
      * Add simple text column
      * @param string $name

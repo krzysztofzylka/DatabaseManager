@@ -3,7 +3,9 @@
 namespace krzysztofzylka\DatabaseManager\Trait;
 
 use Exception;
+use krzysztofzylka\DatabaseManager\ConnectionManager;
 use krzysztofzylka\DatabaseManager\DatabaseManager;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\SqlBuilder;
 use krzysztofzylka\DatabaseManager\Helper\Where;
@@ -12,6 +14,38 @@ use PDO;
 
 trait TableSelect
 {
+
+    /**
+     * Get database type for the current connection
+     * @return DatabaseType
+     */
+    private function getDatabaseType(): DatabaseType
+    {
+        if (isset($this->databaseType)) {
+            return $this->databaseType;
+        }
+
+        if (isset($this->connectionName) && !is_null($this->connectionName)) {
+            try {
+                return ConnectionManager::getConnection($this->connectionName)->getType();
+            } catch (Exception $e) {
+            }
+        }
+
+        return DatabaseManager::$connection->getType();
+    }
+
+    /**
+     * Get SQL identifier quote character
+     * @return string
+     */
+    private function getIdQuote(): string
+    {
+        if ($this->getDatabaseType() === DatabaseType::postgres) {
+            return '"';
+        }
+        return '`';
+    }
 
     /**
      * Find one element
@@ -23,14 +57,18 @@ trait TableSelect
      */
     public function find(?array $condition = null, ?array $columns = null, ?string $orderBy = null): array
     {
+        $whereHelper = new Where();
+        $whereHelper->setDatabaseType($this->getDatabaseType());
+
         $sql = SqlBuilder::select(
             $columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql(),
             $this->getName(),
             trim(implode(' ', $this->prepareBindData())),
-            $condition ? (new Where())->getPrepareConditions($condition) : null,
+            $condition ? $whereHelper->getPrepareConditions($condition) : null,
             null,
             $orderBy,
-            1
+            1,
+            $this->getDatabaseType()
         );
 
         DatabaseManager::setLastSql($sql);
@@ -58,14 +96,18 @@ trait TableSelect
      */
     public function findAll(?array $condition = null, ?array $columns = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null): array
     {
+        $whereHelper = new Where();
+        $whereHelper->setDatabaseType($this->getDatabaseType());
+
         $sql = SqlBuilder::select(
             $columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql(),
             $this->getName(),
             trim(implode(' ', $this->prepareBindData())),
-            $condition ? (new Where())->getPrepareConditions($condition) : null,
+            $condition ? $whereHelper->getPrepareConditions($condition) : null,
             $groupBy,
             $orderBy,
-            $limit
+            $limit,
+            $this->getDatabaseType()
         );
 
         DatabaseManager::setLastSql($sql);
@@ -90,12 +132,18 @@ trait TableSelect
      */
     public function findCount(?array $condition = null, ?string $groupBy = null): int
     {
+        $whereHelper = new Where();
+        $whereHelper->setDatabaseType($this->getDatabaseType());
+
         $sql = SqlBuilder::select(
             'COUNT(*) as `count`',
             $this->getName(),
             trim(implode(' ', $this->prepareBindData())),
-            $condition ? (new Where())->getPrepareConditions($condition) : null,
-            $groupBy
+            $condition ? $whereHelper->getPrepareConditions($condition) : null,
+            $groupBy,
+            null,
+            null,
+            $this->getDatabaseType()
         );
 
         DatabaseManager::setLastSql($sql);
@@ -123,6 +171,7 @@ trait TableSelect
     /**
      * Prepare column list for select
      * @return string
+     * @throws DatabaseManagerException
      */
     private function prepareColumnListForSql(): string
     {
@@ -130,7 +179,7 @@ trait TableSelect
 
         if (isset($this->bind)) {
             foreach ($this->bind as $bind) {
-                $bindTable = (new Table())->setName($bind['tableName']);
+                $bindTable = (new Table($bind['tableName'], $this->connectionName));
                 $columnList = array_merge($columnList, $bindTable->prepareColumnList(false));
             }
         }
@@ -145,12 +194,14 @@ trait TableSelect
      */
     public function prepareCustomColumnList(array $columns): string
     {
+        $quote = $this->getIdQuote();
+
         foreach ($columns as $id => $column) {
             if (!str_contains($column, '.')) {
                 $column = $this->getName() . '.' . $column;
             }
 
-            $columns[$id] = \krzysztofzylka\DatabaseManager\Helper\Table::prepareColumnNameWithAlias($column) . ' as `' . $column . '`';
+            $columns[$id] = \krzysztofzylka\DatabaseManager\Helper\Table::prepareColumnNameWithAlias($column, $quote) . ' as ' . $quote . $column . $quote;
         }
 
         return implode(', ', $columns);

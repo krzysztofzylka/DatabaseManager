@@ -2,6 +2,8 @@
 
 namespace krzysztofzylka\DatabaseManager\Helper;
 
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+
 class SqlBuilder
 {
 
@@ -18,6 +20,7 @@ class SqlBuilder
      * @param string|null $groupBy GROUP BY clause
      * @param string|null $orderBy ORDER BY clause
      * @param string|null $limit LIMIT clause
+     * @param DatabaseType $databaseType Database type
      * @return string Generated SQL query
      */
     public static function select(
@@ -27,15 +30,18 @@ class SqlBuilder
         ?string $where = null,
         ?string $groupBy = null,
         ?string $orderBy = null,
-        ?string $limit = null
+        ?string $limit = null,
+        ?DatabaseType $databaseType = null
     ): string {
+        $databaseType = $databaseType ?? DatabaseType::mysql;
         $cacheKey = md5(serialize(func_get_args()));
 
         if (isset(self::$cache[$cacheKey])) {
             return self::$cache[$cacheKey];
         }
 
-        $sql = 'SELECT ' . $columns . ' FROM ' . self::prepareTableName($from);
+        $quote = $databaseType === DatabaseType::postgres ? '"' : '`';
+        $sql = 'SELECT ' . $columns . ' FROM ' . self::prepareTableName($from, $quote);
 
         if ($join !== null) {
             $sql .= ' ' . self::cleanSql($join);
@@ -68,18 +74,21 @@ class SqlBuilder
      * @param string $table Table name
      * @param array $columns Column names
      * @param array $values Values or placeholders
+     * @param DatabaseType $databaseType Database type
      * @return string Generated SQL query
      */
-    public static function insert(string $table, array $columns, array $values): string
+    public static function insert(string $table, array $columns, array $values, ?DatabaseType $databaseType = null): string
     {
-        $cacheKey = md5('insert_' . $table . serialize($columns) . serialize($values));
+        $databaseType = $databaseType ?? DatabaseType::mysql;
+        $cacheKey = md5('insert_' . $table . serialize($columns) . serialize($values) . ($databaseType ? $databaseType->name : 'mysql'));
 
         if (isset(self::$cache[$cacheKey])) {
             return self::$cache[$cacheKey];
         }
 
-        $sql = 'INSERT INTO ' . self::prepareTableName($table);
-        $sql .= ' (' . implode(', ', array_map(fn($col) => "`$col`", $columns)) . ')';
+        $quote = $databaseType === DatabaseType::postgres ? '"' : '`';
+        $sql = 'INSERT INTO ' . self::prepareTableName($table, $quote);
+        $sql .= ' (' . implode(', ', array_map(fn($col) => $quote . $col . $quote, $columns)) . ')';
         $sql .= ' VALUES (' . implode(', ', $values) . ')';
 
         self::addToCache($cacheKey, $sql);
@@ -92,22 +101,26 @@ class SqlBuilder
      * @param string $table Table name
      * @param array $setValues Column => value/placeholder pairs
      * @param string|null $where WHERE clause
+     * @param DatabaseType $databaseType Database type
      * @return string Generated SQL query
      */
-    public static function update(string $table, array $setValues, ?string $where = null): string
+    public static function update(string $table, array $setValues, string $where = null, DatabaseType $databaseType = null): string
     {
-        $cacheKey = md5('update_' . $table . serialize($setValues) . $where);
+        $databaseType = $databaseType ?? DatabaseType::mysql;
+        $cacheKey = md5('update_' . $table . serialize($setValues) . $where . ($databaseType ? $databaseType->name : 'mysql'));
 
         if (isset(self::$cache[$cacheKey])) {
             return self::$cache[$cacheKey];
         }
 
+        $quote = $databaseType === DatabaseType::postgres ? '"' : '`';
         $setParts = [];
+
         foreach ($setValues as $column => $value) {
-            $setParts[] = "`$column` = $value";
+            $setParts[] = $quote . $column . $quote . " = $value";
         }
 
-        $sql = 'UPDATE ' . self::prepareTableName($table);
+        $sql = 'UPDATE ' . self::prepareTableName($table, $quote);
         $sql .= ' SET ' . implode(', ', $setParts);
 
         if ($where !== null) {
@@ -123,17 +136,20 @@ class SqlBuilder
      * Generates DELETE query
      * @param string $table Table name
      * @param string|null $where WHERE clause
+     * @param DatabaseType $databaseType Database type
      * @return string Generated SQL query
      */
-    public static function delete(string $table, ?string $where = null): string
+    public static function delete(string $table, ?string $where = null, ?DatabaseType $databaseType = null): string
     {
-        $cacheKey = md5('delete_' . $table . $where);
+        $databaseType = $databaseType ?? DatabaseType::mysql;
+        $cacheKey = md5('delete_' . $table . $where . ($databaseType ? $databaseType->name : 'mysql'));
 
         if (isset(self::$cache[$cacheKey])) {
             return self::$cache[$cacheKey];
         }
 
-        $sql = 'DELETE FROM ' . self::prepareTableName($table);
+        $quote = $databaseType === DatabaseType::postgres ? '"' : '`';
+        $sql = 'DELETE FROM ' . self::prepareTableName($table, $quote);
 
         if ($where !== null) {
             $sql .= ' WHERE ' . self::cleanSql($where);
@@ -164,12 +180,20 @@ class SqlBuilder
         self::$cache = [];
     }
 
-    private static function prepareTableName(string $name): string
+    /**
+     * @param string $name Table name
+     * @param string $quote Quote character
+     * @return string
+     */
+    private static function prepareTableName(string $name, string $quote = '`'): string
     {
-        if (str_starts_with($name, '`') && str_ends_with($name, '`')) {
+        if ((str_starts_with($name, '`') && str_ends_with($name, '`')) ||
+            (str_starts_with($name, '"') && str_ends_with($name, '"'))) {
+
             return $name;
         }
-        return '`' . $name . '`';
+
+        return $quote . $name . $quote;
     }
 
     private static function cleanSql(string $sql): string

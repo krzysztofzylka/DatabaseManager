@@ -3,7 +3,7 @@
 namespace krzysztofzylka\DatabaseManager;
 
 use Exception;
-use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Exception\TransactionException;
 use PDO;
 
@@ -16,9 +16,26 @@ class Transaction
      */
     private PDO $sql;
 
-    public function __construct()
+    /**
+     * Connection name
+     * @var string|null
+     */
+    private ?string $connectionName;
+
+    /**
+     * Constructor
+     * @param string|null $connectionName
+     * @throws ConnectException
+     */
+    public function __construct(?string $connectionName = null)
     {
-        $this->sql = DatabaseManager::$connection->getConnection();
+        $this->connectionName = $connectionName;
+
+        if (!is_null($connectionName)) {
+            $this->sql = ConnectionManager::getConnection($connectionName)->getConnection();
+        } else {
+            $this->sql = DatabaseManager::$connection->getConnection();
+        }
     }
 
     /**
@@ -64,7 +81,15 @@ class Transaction
         } catch (Exception $exception) {
             throw new TransactionException($exception->getMessage());
         }
+    }
 
+    /**
+     * Get connection name
+     * @return string|null
+     */
+    public function getConnectionName(): ?string
+    {
+        return $this->connectionName;
     }
 
 }

@@ -9,6 +9,9 @@ enum DatabaseType
 {
 
     case mysql;
+
     case sqlite;
+
+    case postgres;
 
 }

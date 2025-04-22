@@ -39,6 +39,18 @@ class Table
      */
     private ?int $id = null;
 
+    /**
+     * Connection name
+     * @var string|null
+     */
+    private ?string $connectionName = null;
+
+    /**
+     * Database type
+     * @var DatabaseType|null
+     */
+    private ?DatabaseType $databaseType = null;
+
     use TableSelect;
     use TableHelpers;
     use TableUpdate;
@@ -46,10 +58,25 @@ class Table
     /**
      * Constructor
      * @param ?string $tableName Table name
+     * @param ?string $connectionName Connection name
      */
-    public function __construct(?string $tableName = null)
+    public function __construct(?string $tableName = null, ?string $connectionName = null)
     {
-        $this->pdo = DatabaseManager::$connection->getConnection();
+        if (!is_null($connectionName)) {
+            try {
+                $this->connectionName = $connectionName;
+                $connection = ConnectionManager::getConnection($connectionName);
+                $this->pdo = $connection->getConnection();
+                $this->databaseType = $connection->getType();
+            } catch (Exception\ConnectException $e) {
+                $this->pdo = DatabaseManager::$connection->getConnection();
+                $this->connectionName = null;
+                $this->databaseType = DatabaseManager::$connection->getType();
+            }
+        } else {
+            $this->pdo = DatabaseManager::$connection->getConnection();
+            $this->databaseType = DatabaseManager::$connection->getType();
+        }
 
         if (!is_null($tableName)) {
             $this->setName($tableName);
@@ -99,6 +126,69 @@ class Table
     }
 
     /**
+     * Get connection name
+     * @return string|null
+     */
+    public function getConnectionName(): ?string
+    {
+        return $this->connectionName;
+    }
+
+    /**
+     * Set connection by name
+     * @param string $connectionName
+     * @return $this
+     * @throws Exception\DatabaseManagerException
+     */
+    public function setConnection(string $connectionName): self
+    {
+        try {
+            $connection = ConnectionManager::getConnection($connectionName);
+            $this->pdo = $connection->getConnection();
+            $this->connectionName = $connectionName;
+            $this->databaseType = $connection->getType();
+        } catch (Exception\ConnectException $e) {
+            throw new Exception\DatabaseManagerException("Connection '$connectionName' not found");
+        }
+
+        return $this;
+    }
+
+    /**
+     * Reset to default connection
+     * @return $this
+     */
+    public function useDefaultConnection(): self
+    {
+        $this->pdo = DatabaseManager::$connection->getConnection();
+        $this->connectionName = null;
+        $this->databaseType = DatabaseManager::$connection->getType();
+
+        return $this;
+    }
+
+    /**
+     * Get database type
+     * @return DatabaseType
+     */
+    private function getDatabaseType(): DatabaseType
+    {
+        return $this->databaseType ?? DatabaseManager::$connection->getType();
+    }
+
+    /**
+     * Get SQL identifier quote character
+     * @return string
+     */
+    private function getIdQuote(): string
+    {
+        if ($this->getDatabaseType() === DatabaseType::postgres) {
+            return '"';
+        }
+        return '`';
+    }
+
+    /**
      * Bind table
      * @param array|BindType $bind
      * @param string|null $tableName
@@ -131,8 +221,9 @@ class Table
             return $this;
         }
 
-        $primaryKey = $primaryKey ? Helper\Table::prepareColumnNameWithAlias($primaryKey) : ('`' . $this->getName() . '`.`id`');
-        $foreignKey = $foreignKey ? Helper\Table::prepareColumnNameWithAlias($foreignKey) : ('`' . $tableName . '`.`' . $this->getName() . '_id`');
+        $quote = $this->getIdQuote();
+        $primaryKey = $primaryKey ? Helper\Table::prepareColumnNameWithAlias($primaryKey, $quote) : ($quote . $this->getName() . $quote . '.' . $quote . 'id' . $quote);
+        $foreignKey = $foreignKey ? Helper\Table::prepareColumnNameWithAlias($foreignKey, $quote) : ($quote . $tableName . $quote . '.' . $quote . $this->getName() . '_id' . $quote);
 
         $bindTableNames = array_column($this->bind ?? [], 'tableName');
         $bindSearch = array_search($tableName, $bindTableNames);
@@ -194,7 +285,7 @@ class Table
             if (!is_null($cacheData)) {
                 $return = $cacheData;
             } else {
-                if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
+                if ($this->getDatabaseType() === DatabaseType::sqlite) {
                     $sql = 'pragma table_info("user");';
                     DatabaseManager::setLastSql($sql);
                     $data = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
@@ -209,8 +300,21 @@ class Table
                             'Extra' => ''
                         ];
                     }
-                } elseif (DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
+                } elseif ($this->getDatabaseType() === DatabaseType::mysql) {
                     $sql = 'DESCRIBE `' . $this->getName() . '`;';
+                    DatabaseManager::setLastSql($sql);
+                    $return = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+                } elseif ($this->getDatabaseType() === DatabaseType::postgres) {
+                    $sql = "SELECT
+                        column_name AS \"Field\",
+                        data_type AS \"Type\",
+                        CASE WHEN is_nullable = 'YES' THEN 'YES' ELSE 'NO' END AS \"Null\",
+                        CASE WHEN column_default IS NOT NULL THEN column_default ELSE '' END AS \"Default\",
+                        CASE WHEN column_name IN (SELECT column_name FROM information_schema.key_column_usage WHERE table_name = '" . $this->getName() . "') THEN 'PRI' ELSE '' END AS \"Key\",
+                        '' AS \"Extra\"
+                    FROM information_schema.columns
+                    WHERE table_name = '" . $this->getName() . "'
+                    ORDER BY ordinal_position;";
                     DatabaseManager::setLastSql($sql);
                     $return = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
                 }
@@ -242,9 +346,10 @@ class Table
     {
         $columnList = $this->columnList();
         $columnListString = [];
+        $quote = $this->getIdQuote();
 
         foreach ($columnList as $column) {
-            $columnListString[] = '`' . $this->getName() . '`.`' . $column['Field'] . '` as `' . $this->getName() . '.' . $column['Field'] . '`';
+            $columnListString[] = $quote . $this->getName() . $quote . '.' . $quote . $column['Field'] . $quote . ' as ' . $quote . $this->getName() . '.' . $column['Field'] . $quote;
         }
 
         if ($asString) {
@@ -263,7 +368,16 @@ class Table
     public function insert(array $data): bool
     {
         try {
-            $sql = 'INSERT INTO `' . $this->getName() . '` (`' . implode('`, `', array_keys($data)) . '`) VALUES (:' . implode(', :', array_keys($data)) . ')';
+            $quote = $this->getIdQuote();
+            $sql = 'INSERT INTO ' . $quote . $this->getName() . $quote . ' (' .
+                $quote . implode($quote . ', ' . $quote, array_keys($data)) . $quote .
+                ') VALUES (:' . implode(', :', array_keys($data)) . ')';
+
+            // Dla PostgreSQL, dodaj RETURNING id dla auto-generowanych kluczy
+            if ($this->getDatabaseType() === DatabaseType::postgres) {
+                $sql .= ' RETURNING id';
+            }
+
             DatabaseManager::setLastSql($sql);
             $insert = $this->pdo->prepare($sql);
 
@@ -272,7 +386,13 @@ class Table
             }
 
             if ($insert->execute()) {
-                $this->setId($this->pdo->lastInsertId());
+                if ($this->getDatabaseType() === DatabaseType::postgres) {
+                    // Dla PostgreSQL, pobierz ID z zapytania RETURNING
+                    $idResult = $insert->fetch(PDO::FETCH_ASSOC);
+                    $this->setId($idResult['id'] ?? null);
+                } else {
+                    $this->setId($this->pdo->lastInsertId());
+                }
 
                 return true;
             } else {
@@ -300,7 +420,8 @@ class Table
         }
 
         try {
-            $sql = 'DELETE FROM `' . $this->getName() . '` WHERE id=' . ($id ?? $this->getId());
+            $quote = $this->getIdQuote();
+            $sql = 'DELETE FROM ' . $quote . $this->getName() . $quote . ' WHERE id=' . ($id ?? $this->getId());
             DatabaseManager::setLastSql($sql);
 
             return (bool)$this->pdo->exec($sql);
@@ -318,7 +439,11 @@ class Table
     public function deleteByConditions(array $condition): bool
     {
         try {
-            $sql = 'DELETE FROM `' . $this->getName() . '` WHERE ' . (new Where())->getPrepareConditions($condition);
+            $quote = $this->getIdQuote();
+            $whereHelper = new Where();
+            $whereHelper->setDatabaseType($this->getDatabaseType());
+
+            $sql = 'DELETE FROM ' . $quote . $this->getName() . $quote . ' WHERE ' . $whereHelper->getPrepareConditions($condition);
             DatabaseManager::setLastSql($sql);
 
             return (bool)$this->pdo->exec($sql);
@@ -333,13 +458,20 @@ class Table
      */
     public function exists(): bool
     {
-        if (DatabaseManager::$connection->getType() === DatabaseType::sqlite) {
+        if ($this->getDatabaseType() === DatabaseType::sqlite) {
             $sql = 'SELECT sql FROM sqlite_master WHERE type="table" AND name LIKE "%' . $this->getName() . '%";';
             DatabaseManager::setLastSql($sql);
 
             return !empty($sql->fetchAll());
+        } elseif ($this->getDatabaseType() === DatabaseType::postgres) {
+            $sql = "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ? LIMIT 1;";
+            DatabaseManager::setLastSql($sql);
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$this->getName()]);
+
+            return $stmt->fetchColumn() >= 1;
         } else {
-            $sql = 'SELECT 1 FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? LIMIT 1;';
+            $sql = 'SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? LIMIT 1;';
             DatabaseManager::setLastSql($sql);
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$this->getName()]);
@@ -377,20 +509,30 @@ class Table
      */
     public function isColumnUnique(string $columnName): bool
     {
-        $tablesDetails = DatabaseManager::getTableDetails();
+        if ($this->getDatabaseType() === DatabaseType::postgres) {
+            $query = "SELECT COUNT(*) FROM pg_constraint c
+                     JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
+                     WHERE c.conrelid = '" . $this->getName() . "'::regclass
+                     AND c.contype = 'u'
+                     AND a.attname = '" . $columnName . "'";
 
-        if (!isset($tablesDetails[$this->getName()])) {
-            return false;
-        }
+            $result = $this->pdo->query($query)->fetchColumn();
+            return (int)$result > 0;
+        } else {
+            $tablesDetails = DatabaseManager::getTableDetails();
 
-        foreach ($tablesDetails[$this->getName()] as $columnDetails) {
-            if ($columnDetails['COLUMN_NAME'] === $columnName && $columnDetails['COLUMN_KEY'] === 'UNI') {
-                return true;
+            if (!isset($tablesDetails[$this->getName()])) {
+                return false;
+            }
+
+            foreach ($tablesDetails[$this->getName()] as $columnDetails) {
+                if ($columnDetails['COLUMN_NAME'] === $columnName && $columnDetails['COLUMN_KEY'] === 'UNI') {
+                    return true;
+                }
             }
         }
 
         return false;
-
     }
 
 }

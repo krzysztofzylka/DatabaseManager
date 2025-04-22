@@ -2,12 +2,10 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Helper\Table as TableHelper;
 use krzysztofzylka\DatabaseManager\Trait\ConditionMethods;
 
-/**
- * Tworzenie warunków dla biblioteki Database
- */
 class Condition
 {
 
@@ -32,6 +30,12 @@ class Condition
     protected mixed $value;
 
     /**
+     * Database type
+     * @var DatabaseType
+     */
+    protected DatabaseType $databaseType = DatabaseType::mysql;
+
+    /**
      * Create condition
      * @param string $column
      * @param string $operator
@@ -45,6 +49,18 @@ class Condition
     }
 
     /**
+     * Set database type
+     * @param DatabaseType $databaseType
+     * @return $this
+     */
+    public function setDatabaseType(DatabaseType $databaseType): self
+    {
+        $this->databaseType = $databaseType;
+
+        return $this;
+    }
+
+    /**
      * Get column name
      * @param bool $raw
      * @return string
@@ -55,7 +71,8 @@ class Condition
             return $this->column;
         }
 
-        return TableHelper::prepareColumnNameWithAlias($this->column);
+        $quote = $this->databaseType === DatabaseType::postgres ? '"' : '`';
+        return TableHelper::prepareColumnNameWithAlias($this->column, $quote);
     }
 
     /**

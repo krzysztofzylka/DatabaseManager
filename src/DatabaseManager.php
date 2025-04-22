@@ -4,14 +4,16 @@ namespace krzysztofzylka\DatabaseManager;
 
 use Exception;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
+use PDO;
 use PDOStatement;
 
 class DatabaseManager
 {
 
     /**
-     * Database connection
+     * Database connection - for backward compatibility
      * @var DatabaseConnect
      */
     public static DatabaseConnect $connection;
@@ -25,32 +27,55 @@ class DatabaseManager
     /**
      * Connect with database
      * @param DatabaseConnect $databaseConnect
+     * @param string|null $connectionName Optional connection name
      * @return void
-     * @throws Exception\ConnectException
+     * @throws ConnectException
      */
-    public function connect(DatabaseConnect $databaseConnect): void
+    public function connect(DatabaseConnect $databaseConnect, ?string $connectionName = null): void
     {
         $databaseConnect->connect();
+
+        // Keep backward compatibility
         self::$connection = $databaseConnect;
+
+        // Add connection to ConnectionManager
+        if (!is_null($connectionName)) {
+            ConnectionManager::addConnection($connectionName, $databaseConnect);
+        }
+
+        // Always set the connection as default in ConnectionManager
+        ConnectionManager::setDefaultConnectionObject($databaseConnect);
     }
 
     /**
      * Query
      * @param string $query
+     * @param string|null $connectionName
      * @return PDOStatement|bool
+     * @throws ConnectException
      */
-    public function query(string $query): PDOStatement|bool
+    public function query(string $query, ?string $connectionName = null): PDOStatement|bool
     {
-        return self::$connection->getConnection()->query($query);
+        $connection = is_null($connectionName)
+            ? self::$connection
+            : ConnectionManager::getConnection($connectionName);
+
+        return $connection->getConnection()->query($query);
     }
 
     /**
      * Get database type
+     * @param string|null $connectionName
      * @return DatabaseType
+     * @throws ConnectException
      */
-    public static function getDatabaseType(): DatabaseType
+    public static function getDatabaseType(?string $connectionName = null): DatabaseType
     {
-        return self::$connection->getType();
+        if (is_null($connectionName)) {
+            return self::$connection->getType();
+        }
+
+        return ConnectionManager::getConnection($connectionName)->getType();
     }
 
     /**
@@ -74,13 +99,17 @@ class DatabaseManager
 
     /**
      * Get all tables from database
+     * @param string|null $connectionName
      * @return array
      * @throws Exception
      */
-    public static function getTables(): array
+    public static function getTables(?string $connectionName = null): array
     {
         $tables = [];
-        $databaseType = self::getDatabaseType();
+        $connection = is_null($connectionName)
+            ? self::$connection
+            : ConnectionManager::getConnection($connectionName);
+        $databaseType = $connection->getType();
 
         switch ($databaseType->name) {
             case 'mysql':
@@ -96,10 +125,10 @@ class DatabaseManager
                 throw new Exception("Unsupported database type: " . $databaseType->value);
         }
 
-        $result = self::$connection->getConnection()->query($query);
+        $result = $connection->getConnection()->query($query);
 
         if ($result !== false) {
-            while ($row = $result->fetch(\PDO::FETCH_NUM)) {
+            while ($row = $result->fetch(PDO::FETCH_NUM)) {
                 $tables[] = $row[0];
             }
         }
@@ -109,13 +138,17 @@ class DatabaseManager
 
     /**
      * Get detailed information about all tables in the current database
+     * @param string|null $connectionName
      * @return array Array of table details, each containing information about columns, types, and constraints.
      * @throws Exception
      */
-    public static function getTableDetails(): array
+    public static function getTableDetails(?string $connectionName = null): array
     {
         $details = [];
-        $databaseType = self::getDatabaseType();
+        $connection = is_null($connectionName)
+            ? self::$connection
+            : ConnectionManager::getConnection($connectionName);
+        $databaseType = $connection->getType();
 
         switch ($databaseType->name) {
             case 'mysql':
@@ -159,17 +192,17 @@ class DatabaseManager
 
             case 'sqlite':
                 $tableQuery = "SELECT name FROM sqlite_master WHERE type='table'";
-                $tableResult = self::$connection->getConnection()->query($tableQuery);
+                $tableResult = $connection->getConnection()->query($tableQuery);
 
                 if ($tableResult !== false) {
-                    while ($row = $tableResult->fetch(\PDO::FETCH_NUM)) {
+                    while ($row = $tableResult->fetch(PDO::FETCH_NUM)) {
                         $tableName = $row[0];
                         $columnsQuery = "PRAGMA table_info('$tableName')";
-                        $columnsResult = self::$connection->getConnection()->query($columnsQuery);
+                        $columnsResult = $connection->getConnection()->query($columnsQuery);
 
                         $tableDetails = [];
                         if ($columnsResult !== false) {
-                            while ($column = $columnsResult->fetch(\PDO::FETCH_ASSOC)) {
+                            while ($column = $columnsResult->fetch(PDO::FETCH_ASSOC)) {
                                 $tableDetails[] = [
                                     'column_name' => $column['name'],
                                     'column_type' => $column['type'],
@@ -188,10 +221,10 @@ class DatabaseManager
                 throw new DatabaseManagerException("Unsupported database type: " . $databaseType->value);
         }
 
-        $result = self::$connection->getConnection()->query($query);
+        $result = $connection->getConnection()->query($query);
 
         if ($result !== false) {
-            while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
+            while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
                 $tableName = $row['TABLE_NAME'] ?? $row['table_name'];
                 $details[$tableName][] = $row;
             }

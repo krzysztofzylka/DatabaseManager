@@ -9,7 +9,6 @@ use PDOException;
 
 class DatabaseConnect
 {
-
     private string $host = '127.0.0.1';
 
     private string $name;
@@ -200,6 +199,16 @@ class DatabaseConnect
                 );
             } elseif ($this->getType() === DatabaseType::sqlite) {
                 $connection = new PDO('sqlite:' . $this->getSqlitePath());
+            } elseif ($this->getType() === DatabaseType::postgres) {
+                if (!extension_loaded('pdo_pgsql')) {
+                    throw new ConnectException('PostgreSQL PDO driver (pdo_pgsql) is not installed.');
+                }
+
+                $connection = new PDO(
+                    'pgsql:host=' . $this->getHost() . ';dbname=' . $this->getDatabaseName() . ';port=' . $this->getPort(),
+                    $this->getUsername() ?? '',
+                    $this->getPassword() ?? ''
+                );
             }
         } catch (PDOException $e) {
             throw new ConnectException($e->getMessage());

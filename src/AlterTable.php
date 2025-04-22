@@ -3,10 +3,10 @@
 namespace krzysztofzylka\DatabaseManager;
 
 use Exception;
+use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
-use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 
 class AlterTable
 {

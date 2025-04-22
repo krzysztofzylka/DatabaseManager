@@ -4,10 +4,24 @@ namespace krzysztofzylka\DatabaseManager\Trait;
 
 use Exception;
 use krzysztofzylka\DatabaseManager\DatabaseManager;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 
 trait TableUpdate
 {
+
+    /**
+     * Get SQL identifier quote character
+     * @return string
+     */
+    private function getIdQuote(): string
+    {
+        if ($this->getDatabaseType() === DatabaseType::postgres) {
+            return '"';
+        }
+
+        return '`';
+    }
 
     /**
      * Update
@@ -24,13 +38,14 @@ trait TableUpdate
         }
 
         $set = [];
+        $quote = $this->getIdQuote();
 
         foreach (array_keys($data) as $name) {
-            $set[] = '`' . $name . '` = :' . $name;
+            $set[] = $quote . $name . $quote . ' = :' . $name;
         }
 
         try {
-            $sql = 'UPDATE `' . $this->getName() . '` SET ' . implode(', ', $set) . ' WHERE id=' . $this->getId();
+            $sql = 'UPDATE ' . $quote . $this->getName() . $quote . ' SET ' . implode(', ', $set) . ' WHERE id=' . $this->getId();
             DatabaseManager::setLastSql($sql);
             $update = $this->pdo->prepare($sql);
 
@@ -60,7 +75,8 @@ trait TableUpdate
         }
 
         try {
-            $sql = 'UPDATE `' . $this->getName() . '` SET `' . $columnName . '` = :' . $columnName . ' WHERE id=' . $this->getId();
+            $quote = $this->getIdQuote();
+            $sql = 'UPDATE ' . $quote . $this->getName() . $quote . ' SET ' . $quote . $columnName . $quote . ' = :' . $columnName . ' WHERE id=' . $this->getId();
             DatabaseManager::setLastSql($sql);
             $update = $this->pdo->prepare($sql);
             $update->bindValue(':' . $columnName, $value);
