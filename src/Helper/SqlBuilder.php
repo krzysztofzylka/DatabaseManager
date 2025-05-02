@@ -101,10 +101,10 @@ class SqlBuilder
      * @param string $table Table name
      * @param array $setValues Column => value/placeholder pairs
      * @param string|null $where WHERE clause
-     * @param DatabaseType $databaseType Database type
+     * @param null|DatabaseType $databaseType Database type
      * @return string Generated SQL query
      */
-    public static function update(string $table, array $setValues, string $where = null, DatabaseType $databaseType = null): string
+    public static function update(string $table, array $setValues, ?string $where = null, ?DatabaseType $databaseType = null): string
     {
         $databaseType = $databaseType ?? DatabaseType::mysql;
         $cacheKey = md5('update_' . $table . serialize($setValues) . $where . ($databaseType ? $databaseType->name : 'mysql'));
