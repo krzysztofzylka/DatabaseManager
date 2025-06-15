@@ -104,6 +104,10 @@ trait TableHelpers
                 $bind['type'] = BindType::leftJoin->value;
             }
 
+            if (!empty($bind['tableAlias'])) {
+                $bind['tableName'] .= '` as `' . $bind['tableAlias'];
+            }
+
             $bindData = $bind['type'] . ' `' . $bind['tableName'] . '` ON ' . $bind['primaryKey'] . ' = ' . $bind['foreignKey'];
 
             if (!is_null($bind['condition'])) {

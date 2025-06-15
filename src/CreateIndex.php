@@ -40,6 +40,17 @@ class CreateIndex
     private ?string $connectionName = null;
 
     /**
+     * Static create method
+     * @param string $tableName
+     * @param string|null $connectionName
+     * @return CreateIndex
+     */
+    public static function create(string $tableName, ?string $connectionName = null): CreateIndex
+    {
+        return new CreateIndex($tableName, $connectionName);
+    }
+
+    /**
      * Constructor
      * @param string $tableName table name
      * @param string|null $connectionName Connection name
@@ -138,13 +149,26 @@ class CreateIndex
     }
 
     /**
+     * Get name
+     * @return string
+     */
+    public function getName(): string
+    {
+        if (!isset($this->name)) {
+            return 'index_' . $this->tableName . '_' . implode('_', $this->columns);
+        }
+
+        return $this->name;
+    }
+
+    /**
      * Execute sql
      * @return bool
      * @throws DatabaseManagerException
      */
     public function execute(): bool
     {
-        $sql = 'CREATE INDEX ' . $this->name . ' ON ' . $this->tableName . '(' . implode(',', $this->columns) . ')';
+        $sql = 'CREATE INDEX ' . $this->getName() . ' ON ' . $this->tableName . '(' . implode(',', $this->columns) . ')';
 
         try {
             DatabaseManager::setLastSql($sql);

@@ -180,7 +180,7 @@ trait TableSelect
         if (isset($this->bind)) {
             foreach ($this->bind as $bind) {
                 $bindTable = (new Table($bind['tableName'], $this->connectionName));
-                $columnList = array_merge($columnList, $bindTable->prepareColumnList(false));
+                $columnList = array_merge($columnList, $bindTable->prepareColumnList(false, $bind['tableAlias']));
             }
         }
 

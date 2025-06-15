@@ -195,6 +195,7 @@ class Table
      * @param ?string $primaryKey
      * @param ?string $foreignKey
      * @param array|Condition|null $condition
+     * @param ?string $tableAlias
      * @return $this
      */
     public function bind(
@@ -202,7 +203,8 @@ class Table
         ?string $tableName = null,
         ?string $primaryKey = null,
         ?string $foreignKey = null,
-        null|array|Condition $condition = null
+        null|array|Condition $condition = null,
+        ?string $tableAlias = null
     ): self
     {
         if (is_array($bind)) {
@@ -226,7 +228,7 @@ class Table
         $foreignKey = $foreignKey ? Helper\Table::prepareColumnNameWithAlias($foreignKey, $quote) : ($quote . $tableName . $quote . '.' . $quote . $this->getName() . '_id' . $quote);
 
         $bindTableNames = array_column($this->bind ?? [], 'tableName');
-        $bindSearch = array_search($tableName, $bindTableNames);
+        $bindSearch = array_search($tableAlias ?? $tableName, $bindTableNames);
 
         if ($bindSearch !== false) {
             unset($this->bind[$bindSearch]);
@@ -237,7 +239,8 @@ class Table
             'tableName' => $tableName,
             'primaryKey' => $primaryKey,
             'foreignKey' => $foreignKey,
-            'condition' => $condition
+            'condition' => $condition,
+            'tableAlias' => $tableAlias,
         ];
 
         return $this;
@@ -339,17 +342,18 @@ class Table
     /**
      * prepare column list
      * @param bool $asString
+     * @param ?string $tableAlias
      * @return array|string
      * @throws DatabaseManagerException
      */
-    public function prepareColumnList(bool $asString = true): array|string
+    public function prepareColumnList(bool $asString = true, ?string $tableAlias = null): array|string
     {
         $columnList = $this->columnList();
         $columnListString = [];
         $quote = $this->getIdQuote();
 
         foreach ($columnList as $column) {
-            $columnListString[] = $quote . $this->getName() . $quote . '.' . $quote . $column['Field'] . $quote . ' as ' . $quote . $this->getName() . '.' . $column['Field'] . $quote;
+            $columnListString[] = $quote . ($tableAlias ?? $this->getName()) . $quote . '.' . $quote . $column['Field'] . $quote . ' as ' . $quote . ($tableAlias ?? $this->getName()) . '.' . $column['Field'] . $quote;
         }
 
         if ($asString) {

@@ -18,6 +18,16 @@ class AlterTable
     private array $sql = [];
 
     /**
+     * Static create method
+     * @param string $tableName
+     * @return self
+     */
+    public static function create(string $tableName): self
+    {
+        return new self($tableName);
+    }
+
+    /**
      * Contructor
      * @param ?string $tableName alternative for $this->setName
      */
@@ -118,15 +128,19 @@ class AlterTable
      * @param string $columnName
      * @param ColumnType $columnType
      * @param mixed $size
+     * @param array $attributes addional atributes (np. ['UNSIGNED', 'NOT NULL', 'AUTO_INCREMENT'])
      * @return $this
      */
-    public function modifyColumn(string $columnName, ColumnType $columnType, mixed $size = '255'): self
+    public function modifyColumn(string $columnName, ColumnType $columnType, mixed $size = '255', array $attributes = []): self
     {
         $size = $size ? '(' . $size . ') ' : '';
-        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` MODIFY `' . $columnName . '` ' . $columnType->name . trim($size) . ';';
+        $attributesString = !empty($attributes) ? ' ' . implode(' ', $attributes) : '';
+
+        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` MODIFY `' . $columnName . '` ' . $columnType->name . trim($size) . $attributesString . ';';
 
         return $this;
     }
+
 
     /**
      * Rename column name
