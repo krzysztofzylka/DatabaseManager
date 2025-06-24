@@ -65,7 +65,7 @@ class Where
                     $conditionValue->setDatabaseType($this->databaseType);
                     $sqlArray[] = (string)$conditionValue;
                 } elseif (is_array($conditionValue)) {
-                    $sqlArray[] = $this->getPrepareConditions($conditionValue, $nextType);
+                    $sqlArray[] = $this->getPrepareConditions($conditionValue, is_int($nextType) ? 'AND' : $nextType);
                 } else {
                     $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' = ' . $this->prepareValue($conditionValue);
                 }
