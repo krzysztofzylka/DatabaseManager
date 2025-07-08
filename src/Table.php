@@ -545,6 +545,10 @@ class Table
      */
     public function getBind(): array
     {
+        if (!isset($this->bind)) {
+            return [];
+        }
+        
         return $this->bind;
     }
 
