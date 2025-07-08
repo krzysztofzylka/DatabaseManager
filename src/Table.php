@@ -539,4 +539,13 @@ class Table
         return false;
     }
 
+    /**
+     * Get bind list
+     * @return array
+     */
+    public function getBind(): array
+    {
+        return $this->bind;
+    }
+
 }
