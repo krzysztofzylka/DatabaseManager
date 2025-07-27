@@ -70,9 +70,22 @@ class Where
                     $result = $this->getPrepareConditions($conditionValue, is_int($nextType) ? 'AND' : $nextType, $bindIndex);
                     $sqlArray[] = $result['sql'];
                     $bindValues = array_merge($bindValues, $result['bind']);
+                } elseif (is_array($conditionValue) && count($conditionValue) === 2 && is_string($conditionValue[0])) {
+                    $operator = $conditionValue[0];
+                    $value = $conditionValue[1];
+                    $bindKey = ':bind_' . $bindIndex++;
+                    $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' ' . $operator . ' ' . $bindKey;
+                    $bindValues[$bindKey] = $value;
                 } else {
                     $bindKey = ':bind_' . $bindIndex++;
-                    $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' = ' . $bindKey;
+                    $columnName = $nextType;
+
+                    if (str_contains($columnName, '.')) {
+                    } else {
+                        $columnName = Table::prepareColumnNameWithAlias($columnName, $quote);
+                    }
+
+                    $sqlArray[] = $columnName . ' = ' . $bindKey;
                     $bindValues[$bindKey] = $conditionValue;
                 }
             }

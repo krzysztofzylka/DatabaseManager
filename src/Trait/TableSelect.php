@@ -69,10 +69,14 @@ trait TableSelect
             $whereData = $whereData['sql'];
         }
 
+        $bindData = $this->prepareBindData();
+        $joinSql = implode(' ', $bindData['sql']);
+        $bindValues = array_merge($bindValues, $bindData['bind']);
+
         $sql = SqlBuilder::select(
             $columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql(),
             $this->getName(),
-            trim(implode(' ', $this->prepareBindData())),
+            trim($joinSql),
             $whereData,
             null,
             $orderBy,
@@ -115,20 +119,25 @@ trait TableSelect
 
         $whereData = null;
         $bindValues = [];
+        $bindIndex = 0; // Reset bind index
 
         if ($condition) {
-            $whereData = $whereHelper->getPrepareConditions($condition);
+            $whereData = $whereHelper->getPrepareConditions($condition, 'AND', $bindIndex);
             $bindValues = $whereData['bind'];
             $whereData = $whereData['sql'];
         }
 
+        $bindData = $this->prepareBindData($bindIndex);
+        $joinSql = implode(' ', $bindData['sql']);
+        $bindValues = array_merge($bindValues, $bindData['bind']);
+
         $sql = SqlBuilder::select(
             $columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql(),
             $this->getName(),
-            trim(implode(' ', $this->prepareBindData())),
+            trim($joinSql),
             $whereData,
-            $groupBy,
-            $orderBy,
+            $groupBy ? $this->addBackticksToColumns($groupBy) : null,
+            $orderBy ? $this->addBackticksToColumns($orderBy) : null,
             $limit,
             $this->getDatabaseType()
         );
@@ -165,17 +174,22 @@ trait TableSelect
 
         $whereData = null;
         $bindValues = [];
+        $bindIndex = 0; // Reset bind index
 
         if ($condition) {
-            $whereData = $whereHelper->getPrepareConditions($condition);
+            $whereData = $whereHelper->getPrepareConditions($condition, 'AND', $bindIndex);
             $bindValues = $whereData['bind'];
             $whereData = $whereData['sql'];
         }
 
+        $bindData = $this->prepareBindData($bindIndex);
+        $joinSql = implode(' ', $bindData['sql']);
+        $bindValues = array_merge($bindValues, $bindData['bind']);
+
         $sql = SqlBuilder::select(
             'COUNT(*) as `count`',
             $this->getName(),
-            trim(implode(' ', $this->prepareBindData())),
+            trim($joinSql),
             $whereData,
             $groupBy,
             null,
@@ -223,7 +237,13 @@ trait TableSelect
 
         if (isset($this->bind)) {
             foreach ($this->bind as $bind) {
-                $bindTable = (new Table($bind['tableName'], $this->connectionName));
+                // Użyj oryginalnej nazwy tabeli bez aliasu
+                $tableName = $bind['tableName'];
+                if (str_contains($tableName, '` as `')) {
+                    $tableName = explode('` as `', $tableName)[0];
+                }
+
+                $bindTable = (new Table($tableName, $this->connectionName));
                 $columnList = array_merge($columnList, $bindTable->prepareColumnList(false, $bind['tableAlias']));
             }
         }
@@ -251,4 +271,45 @@ trait TableSelect
         return implode(', ', $columns);
     }
 
+    /**
+     * Add backticks to column names in GROUP BY and ORDER BY
+     * @param string $columns
+     * @return string
+     */
+    private function addBackticksToColumns(string $columns): string
+    {
+        $quote = $this->getIdQuote();
+        $parts = explode(',', $columns);
+        $result = [];
+
+        foreach ($parts as $part) {
+            $part = trim($part);
+
+            // Sprawdź czy ma kierunek sortowania
+            $direction = '';
+            if (preg_match('/\s+(ASC|DESC)$/i', $part, $matches)) {
+                $direction = ' ' . strtoupper($matches[1]);
+                $part = trim(str_replace($matches[0], '', $part));
+            }
+
+            if (str_contains($part, '.')) {
+                // Kolumna z aliasem tabeli
+                $tableColumn = explode('.', $part, 2);
+                $table = trim($tableColumn[0]);
+                $column = trim($tableColumn[1]);
+
+                // Usuń backticks jeśli istnieją
+                $table = str_replace(['`', '"'], '', $table);
+                $column = str_replace(['`', '"'], '', $column);
+
+                $result[] = $quote . $table . $quote . '.' . $quote . $column . $quote . $direction;
+            } else {
+                // Zwykła kolumna
+                $column = str_replace(['`', '"'], '', $part);
+                $result[] = $quote . $column . $quote . $direction;
+            }
+        }
+
+        return implode(', ', $result);
+    }
 }

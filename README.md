@@ -112,6 +112,8 @@ $results = $table->findAll($conditions);
 
 ```php
 $table = new \krzysztofzylka\DatabaseManager\Table('users');
+
+// Podstawowe złączenie
 $table->bind(
     \krzysztofzylka\DatabaseManager\Enum\BindType::leftJoin,
     'orders',
@@ -119,7 +121,90 @@ $table->bind(
     'orders.user_id'
 );
 
+// Złączenie z aliasem tabeli
+$table->bind(
+    \krzysztofzylka\DatabaseManager\Enum\BindType::leftJoin,
+    'orders',
+    'users.id',
+    'orders.user_id',
+    null,
+    'o'  // Alias tabeli
+);
+
+// Złączenie z warunkiem
+$table->bind(
+    \krzysztofzylka\DatabaseManager\Enum\BindType::leftJoin,
+    'orders',
+    'users.id',
+    'orders.user_id',
+    ['status' => 'completed']  // Warunek w JOIN
+);
+
+// Złączenie z aliasem i warunkiem
+$table->bind(
+    \krzysztofzylka\DatabaseManager\Enum\BindType::leftJoin,
+    'orders',
+    'users.id',
+    'orders.user_id',
+    ['status' => 'completed'],
+    'completed_orders'
+);
+
 $userWithOrders = $table->findAll();
+```
+
+#### Typy złączeń
+
+```php
+// INNER JOIN - tylko pasujące rekordy
+$table->bind(BindType::innerJoin, 'orders', 'users.id', 'orders.user_id');
+
+// LEFT JOIN - wszystkie użytkowniki, nawet bez zamówień
+$table->bind(BindType::leftJoin, 'orders', 'users.id', 'orders.user_id');
+
+// RIGHT JOIN - wszystkie zamówienia, nawet bez użytkowników
+$table->bind(BindType::rightJoin, 'orders', 'users.id', 'orders.user_id');
+
+// CROSS JOIN - iloczyn kartezjański
+$table->bind(BindType::crossJoin, 'categories', null, null);
+
+// FULL OUTER JOIN - wszystkie rekordy z obu tabel
+$table->bind(BindType::fullJoin, 'orders', 'users.id', 'orders.user_id');
+```
+
+#### Relacje
+
+```php
+// Relacja hasOne - jeden do jednego
+$table->bind(BindType::hasOne, 'profiles', 'users.id', 'profiles.user_id');
+
+// Relacja hasMany - jeden do wielu
+$table->bind(BindType::hasMany, 'orders', 'users.id', 'orders.user_id');
+```
+
+#### Złożone złączenia
+
+```php
+// Wielokrotne złączenia
+$table->bind(BindType::leftJoin, 'orders', 'users.id', 'orders.user_id', null, 'o');
+$table->bind(BindType::leftJoin, 'order_items', 'o.id', 'order_items.order_id', null, 'oi');
+$table->bind(BindType::leftJoin, 'products', 'oi.product_id', 'products.id', null, 'p');
+
+// Złączenie z warunkami AND/OR
+$table->bind(
+    BindType::leftJoin,
+    'orders',
+    'users.id',
+    'orders.user_id',
+    [
+        'status' => 'completed',
+        'OR' => [
+            'total' => ['>', 100],
+            'priority' => 'high'
+        ]
+    ],
+    'completed_orders'
+);
 ```
 
 #### Transakcje
