@@ -294,7 +294,39 @@ trait TableSelect
 
             if (preg_match('/^([A-Za-z_][A-Za-z0-9_]*)\s*\(/i', $part, $functionMatches)) {
                 $functionName = $functionMatches[1];
-                $functionContent = substr($part, strlen($functionName) + 1, -1); // Usuń nawiasy
+                $openBrackets = 0;
+                $functionContent = '';
+                $inString = false;
+                $stringChar = '';
+
+                for ($i = strlen($functionName) + 1; $i < strlen($part); $i++) {
+                    $char = $part[$i];
+
+                    if ($char === "'" || $char === '"') {
+                        if (!$inString) {
+                            $inString = true;
+                            $stringChar = $char;
+                        } elseif ($char === $stringChar) {
+                            $inString = false;
+                        }
+                    }
+
+                    if (!$inString) {
+                        if ($char === '(') {
+                            $openBrackets++;
+                        } elseif ($char === ')') {
+                            if ($openBrackets === 0) {
+                                break;
+                            }
+                            $openBrackets--;
+                        }
+                    }
+
+                    $functionContent .= $char;
+                }
+
+                // Usuń ostatni nawias zamykający
+                $functionContent = rtrim($functionContent, ')');
 
                 // Przetwórz zawartość funkcji rekurencyjnie
                 $processedContent = $this->addBackticksToColumns($functionContent);
@@ -311,9 +343,14 @@ trait TableSelect
 
                 $result[] = $quote . $table . $quote . '.' . $quote . $column . $quote . $direction;
             } else {
-                // Zwykła kolumna
                 $column = str_replace(['`', '"'], '', $part);
-                $result[] = $quote . $column . $quote . $direction;
+
+                if ((str_starts_with($column, "'") && str_ends_with($column, "'")) ||
+                    (str_starts_with($column, '"') && str_ends_with($column, '"'))) {
+                    $result[] = $column . $direction;
+                } else {
+                    $result[] = $quote . $column . $quote . $direction;
+                }
             }
         }
 
