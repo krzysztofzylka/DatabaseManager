@@ -24,7 +24,7 @@ class Where
      */
     public function __construct()
     {
-        $this->databaseType = DatabaseType::mysql;  // Default to MySQL
+        $this->databaseType = DatabaseType::mysql;
     }
 
     /**
@@ -48,33 +48,56 @@ class Where
     }
 
     /**
-     * Prepare conditions
+     * Prepare conditions with bind parameters
      * @param array $data
      * @param string $type
-     * @return string
+     * @param int $bindIndex
+     * @return array ['sql' => string, 'bind' => array]
      * @throws DatabaseManagerException
      */
-    public function getPrepareConditions(array $data, string $type = 'AND'): string
+    public function getPrepareConditions(array $data, string $type = 'AND', int &$bindIndex = 0): array
     {
         try {
             $sqlArray = [];
+            $bindValues = [];
             $quote = $this->getQuote();
 
             foreach ($data as $nextType => $conditionValue) {
                 if ($conditionValue instanceof Condition) {
                     $conditionValue->setDatabaseType($this->databaseType);
                     $sqlArray[] = (string)$conditionValue;
-                } elseif (is_array($conditionValue)) {
-                    $sqlArray[] = $this->getPrepareConditions($conditionValue, is_int($nextType) ? 'AND' : $nextType);
+                } elseif (is_array($conditionValue) && !empty($conditionValue) && array_keys($conditionValue) !== range(0, count($conditionValue) - 1)) {
+                    $result = $this->getPrepareConditions($conditionValue, is_int($nextType) ? 'AND' : $nextType, $bindIndex);
+                    $sqlArray[] = $result['sql'];
+                    $bindValues = array_merge($bindValues, $result['bind']);
                 } else {
-                    $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' = ' . $this->prepareValue($conditionValue);
+                    $bindKey = ':bind_' . $bindIndex++;
+                    $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' = ' . $bindKey;
+                    $bindValues[$bindKey] = $conditionValue;
                 }
             }
 
-            return '(' . implode(" $type ", $sqlArray) . ')';
+            return [
+                'sql' => '(' . implode(" $type ", $sqlArray) . ')',
+                'bind' => $bindValues
+            ];
         } catch (Exception $exception) {
             throw new DatabaseManagerException($exception->getMessage());
         }
+    }
+
+    /**
+     * Prepare conditions (legacy method for backward compatibility)
+     * @param array $data
+     * @param string $type
+     * @return string
+     * @throws DatabaseManagerException
+     * @deprecated Use getPrepareConditions() instead
+     */
+    public function getPrepareConditionsLegacy(array $data, string $type = 'AND'): string
+    {
+        $result = $this->getPrepareConditions($data, $type);
+        return $result['sql'];
     }
 
 }

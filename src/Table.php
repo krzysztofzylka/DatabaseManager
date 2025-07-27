@@ -5,6 +5,7 @@ namespace krzysztofzylka\DatabaseManager;
 use Exception;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\Where;
 use krzysztofzylka\DatabaseManager\Trait\TableHelpers;
@@ -68,7 +69,7 @@ class Table
                 $connection = ConnectionManager::getConnection($connectionName);
                 $this->pdo = $connection->getConnection();
                 $this->databaseType = $connection->getType();
-            } catch (Exception\ConnectException $e) {
+            } catch (ConnectException $e) {
                 $this->pdo = DatabaseManager::$connection->getConnection();
                 $this->connectionName = null;
                 $this->databaseType = DatabaseManager::$connection->getType();
@@ -147,8 +148,8 @@ class Table
             $this->pdo = $connection->getConnection();
             $this->connectionName = $connectionName;
             $this->databaseType = $connection->getType();
-        } catch (Exception\ConnectException $e) {
-            throw new Exception\DatabaseManagerException("Connection '$connectionName' not found");
+        } catch (ConnectException $e) {
+            throw new DatabaseManagerException("Connection '$connectionName' not found");
         }
 
         return $this;
@@ -435,7 +436,7 @@ class Table
     }
 
     /**
-     * Delete by condition
+     * Delete by conditions
      * @param array $condition
      * @return bool
      * @throws DatabaseManagerException
@@ -447,10 +448,20 @@ class Table
             $whereHelper = new Where();
             $whereHelper->setDatabaseType($this->getDatabaseType());
 
-            $sql = 'DELETE FROM ' . $quote . $this->getName() . $quote . ' WHERE ' . $whereHelper->getPrepareConditions($condition);
+            $whereData = $whereHelper->getPrepareConditions($condition);
+            $bindValues = $whereData['bind'];
+            $whereData = $whereData['sql'];
+
+            $sql = 'DELETE FROM ' . $quote . $this->getName() . $quote . ' WHERE ' . $whereData;
             DatabaseManager::setLastSql($sql);
 
-            return (bool)$this->pdo->exec($sql);
+            $stmt = $this->pdo->prepare($sql);
+
+            foreach ($bindValues as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+
+            return $stmt->execute();
         } catch (Exception $e) {
             throw new DatabaseManagerException($e->getMessage());
         }
@@ -466,7 +477,7 @@ class Table
             $sql = 'SELECT sql FROM sqlite_master WHERE type="table" AND name LIKE "%' . $this->getName() . '%";';
             DatabaseManager::setLastSql($sql);
 
-            return !empty($sql->fetchAll());
+            return !empty($this->pdo->query($sql)->fetchAll());
         } elseif ($this->getDatabaseType() === DatabaseType::postgres) {
             $sql = "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ? LIMIT 1;";
             DatabaseManager::setLastSql($sql);
@@ -548,7 +559,7 @@ class Table
         if (!isset($this->bind)) {
             return [];
         }
-        
+
         return $this->bind;
     }
 
