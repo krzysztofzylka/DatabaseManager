@@ -119,7 +119,8 @@ trait TableHelpers
                     $bind['condition']->setDatabaseType($this->getDatabaseType());
                     $bindData .= ' AND ' . (string)$bind['condition'];
                 } else {
-                    $bindData .= ' AND ' . $whereHelper->getPrepareConditions($bind['condition']);
+                    $whereData = $whereHelper->getPrepareConditions($bind['condition']);
+                    $bindData .= ' AND ' . $whereData['sql'];
                 }
             }
 

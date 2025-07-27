@@ -60,11 +60,20 @@ trait TableSelect
         $whereHelper = new Where();
         $whereHelper->setDatabaseType($this->getDatabaseType());
 
+        $whereData = null;
+        $bindValues = [];
+
+        if ($condition) {
+            $whereData = $whereHelper->getPrepareConditions($condition);
+            $bindValues = $whereData['bind'];
+            $whereData = $whereData['sql'];
+        }
+
         $sql = SqlBuilder::select(
             $columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql(),
             $this->getName(),
             trim(implode(' ', $this->prepareBindData())),
-            $condition ? $whereHelper->getPrepareConditions($condition) : null,
+            $whereData,
             null,
             $orderBy,
             1,
@@ -75,6 +84,11 @@ trait TableSelect
 
         try {
             $pdo = $this->pdo->prepare($sql);
+
+            foreach ($bindValues as $key => $value) {
+                $pdo->bindValue($key, $value);
+            }
+
             $pdo->execute();
             $fetchData = $pdo->fetch(PDO::FETCH_ASSOC);
 
@@ -99,11 +113,20 @@ trait TableSelect
         $whereHelper = new Where();
         $whereHelper->setDatabaseType($this->getDatabaseType());
 
+        $whereData = null;
+        $bindValues = [];
+
+        if ($condition) {
+            $whereData = $whereHelper->getPrepareConditions($condition);
+            $bindValues = $whereData['bind'];
+            $whereData = $whereData['sql'];
+        }
+
         $sql = SqlBuilder::select(
             $columns ? $this->prepareCustomColumnList($columns) : $this->prepareColumnListForSql(),
             $this->getName(),
             trim(implode(' ', $this->prepareBindData())),
-            $condition ? $whereHelper->getPrepareConditions($condition) : null,
+            $whereData,
             $groupBy,
             $orderBy,
             $limit,
@@ -114,6 +137,11 @@ trait TableSelect
 
         try {
             $pdo = $this->pdo->prepare($sql);
+
+            foreach ($bindValues as $key => $value) {
+                $pdo->bindValue($key, $value);
+            }
+
             $pdo->execute();
             $fetchData = $pdo->fetchAll(PDO::FETCH_ASSOC);
 
@@ -135,11 +163,20 @@ trait TableSelect
         $whereHelper = new Where();
         $whereHelper->setDatabaseType($this->getDatabaseType());
 
+        $whereData = null;
+        $bindValues = [];
+
+        if ($condition) {
+            $whereData = $whereHelper->getPrepareConditions($condition);
+            $bindValues = $whereData['bind'];
+            $whereData = $whereData['sql'];
+        }
+
         $sql = SqlBuilder::select(
             'COUNT(*) as `count`',
             $this->getName(),
             trim(implode(' ', $this->prepareBindData())),
-            $condition ? $whereHelper->getPrepareConditions($condition) : null,
+            $whereData,
             $groupBy,
             null,
             null,
@@ -149,7 +186,14 @@ trait TableSelect
         DatabaseManager::setLastSql($sql);
 
         try {
-            $count = $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
+            $pdo = $this->pdo->prepare($sql);
+
+            foreach ($bindValues as $key => $value) {
+                $pdo->bindValue($key, $value);
+            }
+
+            $pdo->execute();
+            $count = $pdo->fetch(PDO::FETCH_ASSOC);
 
             return $count['count'] ?? 0;
         } catch (Exception $e) {
