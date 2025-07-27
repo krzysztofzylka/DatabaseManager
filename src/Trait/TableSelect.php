@@ -292,7 +292,14 @@ trait TableSelect
                 $part = trim(str_replace($matches[0], '', $part));
             }
 
-            if (str_contains($part, '.')) {
+            if (preg_match('/^([A-Za-z_][A-Za-z0-9_]*)\s*\(/i', $part, $functionMatches)) {
+                $functionName = $functionMatches[1];
+                $functionContent = substr($part, strlen($functionName) + 1, -1); // Usuń nawiasy
+
+                // Przetwórz zawartość funkcji rekurencyjnie
+                $processedContent = $this->addBackticksToColumns($functionContent);
+                $result[] = $functionName . '(' . $processedContent . ')' . $direction;
+            } elseif (str_contains($part, '.')) {
                 // Kolumna z aliasem tabeli
                 $tableColumn = explode('.', $part, 2);
                 $table = trim($tableColumn[0]);
