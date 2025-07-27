@@ -279,7 +279,22 @@ trait TableSelect
     private function addBackticksToColumns(string $columns): string
     {
         $quote = $this->getIdQuote();
-        $parts = explode(',', $columns);
+
+        $functions = [];
+        $functionCounter = 0;
+
+        $processedColumns = preg_replace_callback(
+            '/[A-Za-z_][A-Za-z0-9_]*\s*\([^)]*\)/',
+            function($matches) use (&$functions, &$functionCounter) {
+                $placeholder = "___FUNCTION_{$functionCounter}___";
+                $functions[$placeholder] = $matches[0];
+                $functionCounter++;
+                return $placeholder;
+            },
+            $columns
+        );
+
+        $parts = explode(',', $processedColumns);
         $result = [];
 
         foreach ($parts as $part) {
@@ -292,45 +307,17 @@ trait TableSelect
                 $part = trim(str_replace($matches[0], '', $part));
             }
 
-            if (preg_match('/^([A-Za-z_][A-Za-z0-9_]*)\s*\(/i', $part, $functionMatches)) {
-                $functionName = $functionMatches[1];
-                $openBrackets = 0;
-                $functionContent = '';
-                $inString = false;
-                $stringChar = '';
+            if (preg_match('/___FUNCTION_(\d+)___/', $part, $matches)) {
+                $functionIndex = $matches[1];
+                $functionPlaceholder = "___FUNCTION_{$functionIndex}___";
 
-                for ($i = strlen($functionName) + 1; $i < strlen($part); $i++) {
-                    $char = $part[$i];
+                if (isset($functions[$functionPlaceholder])) {
+                    $function = $functions[$functionPlaceholder];
 
-                    if ($char === "'" || $char === '"') {
-                        if (!$inString) {
-                            $inString = true;
-                            $stringChar = $char;
-                        } elseif ($char === $stringChar) {
-                            $inString = false;
-                        }
-                    }
-
-                    if (!$inString) {
-                        if ($char === '(') {
-                            $openBrackets++;
-                        } elseif ($char === ')') {
-                            if ($openBrackets === 0) {
-                                break;
-                            }
-                            $openBrackets--;
-                        }
-                    }
-
-                    $functionContent .= $char;
+                    // Przetwórz funkcję - dodaj backticks do nazw kolumn w funkcji
+                    $processedFunction = $this->processFunctionInOrderBy($function, $quote);
+                    $result[] = $processedFunction . $direction;
                 }
-
-                // Usuń ostatni nawias zamykający
-                $functionContent = rtrim($functionContent, ')');
-
-                // Przetwórz zawartość funkcji rekurencyjnie
-                $processedContent = $this->addBackticksToColumns($functionContent);
-                $result[] = $functionName . '(' . $processedContent . ')' . $direction;
             } elseif (str_contains($part, '.')) {
                 // Kolumna z aliasem tabeli
                 $tableColumn = explode('.', $part, 2);
@@ -343,8 +330,10 @@ trait TableSelect
 
                 $result[] = $quote . $table . $quote . '.' . $quote . $column . $quote . $direction;
             } else {
+                // Zwykła kolumna lub wartość
                 $column = str_replace(['`', '"'], '', $part);
 
+                // Sprawdź czy to string literal (w cudzysłowach)
                 if ((str_starts_with($column, "'") && str_ends_with($column, "'")) ||
                     (str_starts_with($column, '"') && str_ends_with($column, '"'))) {
                     $result[] = $column . $direction;
@@ -355,5 +344,100 @@ trait TableSelect
         }
 
         return implode(', ', $result);
+    }
+
+    /**
+     * Process function in ORDER BY clause
+     * @param string $function
+     * @param string $quote
+     * @return string
+     */
+    private function processFunctionInOrderBy(string $function, string $quote): string
+    {
+        // Znajdź nazwę funkcji i jej parametry
+        if (preg_match('/^([A-Za-z_][A-Za-z0-9_]*)\s*\((.*)\)$/', $function, $matches)) {
+            $functionName = $matches[1];
+            $parameters = $matches[2];
+
+            // Przetwórz parametry funkcji
+            $processedParams = [];
+            $paramParts = $this->splitFunctionParameters($parameters);
+
+            foreach ($paramParts as $param) {
+                $param = trim($param);
+
+                if (str_contains($param, '.')) {
+                    // Kolumna z aliasem tabeli
+                    $tableColumn = explode('.', $param, 2);
+                    $table = trim($tableColumn[0]);
+                    $column = trim($tableColumn[1]);
+
+                    // Usuń backticks jeśli istnieją
+                    $table = str_replace(['`', '"'], '', $table);
+                    $column = str_replace(['`', '"'], '', $column);
+
+                    $processedParams[] = $quote . $table . $quote . '.' . $quote . $column . $quote;
+                } elseif ((str_starts_with($param, "'") && str_ends_with($param, "'")) ||
+                         (str_starts_with($param, '"') && str_ends_with($param, '"'))) {
+                    // String literal
+                    $processedParams[] = $param;
+                } else {
+                    // Zwykła kolumna
+                    $column = str_replace(['`', '"'], '', $param);
+                    $processedParams[] = $quote . $column . $quote;
+                }
+            }
+
+            return $functionName . '(' . implode(', ', $processedParams) . ')';
+        }
+
+        return $function;
+    }
+
+    /**
+     * Split function parameters correctly
+     * @param string $parameters
+     * @return array
+     */
+    private function splitFunctionParameters(string $parameters): array
+    {
+        $result = [];
+        $current = '';
+        $inString = false;
+        $stringChar = '';
+        $bracketCount = 0;
+
+        for ($i = 0; $i < strlen($parameters); $i++) {
+            $char = $parameters[$i];
+
+            if ($char === "'" || $char === '"') {
+                if (!$inString) {
+                    $inString = true;
+                    $stringChar = $char;
+                } elseif ($char === $stringChar) {
+                    $inString = false;
+                }
+            }
+
+            if (!$inString) {
+                if ($char === '(') {
+                    $bracketCount++;
+                } elseif ($char === ')') {
+                    $bracketCount--;
+                } elseif ($char === ',' && $bracketCount === 0) {
+                    $result[] = trim($current);
+                    $current = '';
+                    continue;
+                }
+            }
+
+            $current .= $char;
+        }
+
+        if (!empty(trim($current))) {
+            $result[] = trim($current);
+        }
+
+        return $result;
     }
 }
