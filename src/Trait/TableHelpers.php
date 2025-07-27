@@ -3,6 +3,7 @@
 namespace krzysztofzylka\DatabaseManager\Trait;
 
 use Krzysztofzylka\Arrays\Arrays;
+use krzysztofzylka\DatabaseManager\Condition;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Helper\Where;
 
@@ -111,7 +112,15 @@ trait TableHelpers
             $bindData = $bind['type'] . ' `' . $bind['tableName'] . '` ON ' . $bind['primaryKey'] . ' = ' . $bind['foreignKey'];
 
             if (!is_null($bind['condition'])) {
-                $bindData .= ' WHERE ' . (new Where())->getPrepareConditions($bind['condition']);
+                $whereHelper = new Where();
+                $whereHelper->setDatabaseType($this->getDatabaseType());
+
+                if ($bind['condition'] instanceof Condition) {
+                    $bind['condition']->setDatabaseType($this->getDatabaseType());
+                    $bindData .= ' AND ' . (string)$bind['condition'];
+                } else {
+                    $bindData .= ' AND ' . $whereHelper->getPrepareConditions($bind['condition']);
+                }
             }
 
             $return[] = $bindData;
