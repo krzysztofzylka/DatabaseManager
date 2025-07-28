@@ -70,7 +70,7 @@ class Where
                     $isIndexedArray = array_keys($conditionValue) === range(0, count($conditionValue) - 1);
 
                     if ($isIndexedArray) {
-                        $subConditions = $this->processIndexedConditions($conditionValue, $bindIndex);
+                        $subConditions = $this->processIndexedConditions($conditionValue, $bindIndex, $nextType === 'OR' ? 'OR' : 'AND');
 
                         if (!empty($subConditions['sql'])) {
                             $sqlArray[] = $subConditions['sql'];
@@ -118,10 +118,11 @@ class Where
     /**
      * @param array $conditions
      * @param int $bindIndex
+     * @param string $type
      * @return array
      * @throws DatabaseManagerException
      */
-    private function processIndexedConditions(array $conditions, int &$bindIndex): array
+    private function processIndexedConditions(array $conditions, int &$bindIndex, string $type = 'AND'): array
     {
         $sqlParts = [];
         $bindValues = [];
@@ -140,14 +141,14 @@ class Where
             }
         }
 
-        $sql = empty($sqlParts) ? '' : '(' . implode(' AND ', $sqlParts) . ')';
+        // Użyj przekazanego typu zamiast zawsze AND
+        $sql = empty($sqlParts) ? '' : '(' . implode(" $type ", $sqlParts) . ')';
 
         return [
             'sql' => $sql,
             'bind' => $bindValues
         ];
     }
-
 
     /**
      * Prepare conditions (legacy method for backward compatibility)
