@@ -66,10 +66,25 @@ class Where
                 if ($conditionValue instanceof Condition) {
                     $conditionValue->setDatabaseType($this->databaseType);
                     $sqlArray[] = (string)$conditionValue;
-                } elseif (is_array($conditionValue) && !empty($conditionValue) && array_keys($conditionValue) !== range(0, count($conditionValue) - 1)) {
-                    $result = $this->getPrepareConditions($conditionValue, is_int($nextType) ? 'AND' : $nextType, $bindIndex);
-                    $sqlArray[] = $result['sql'];
-                    $bindValues = array_merge($bindValues, $result['bind']);
+                } elseif (is_array($conditionValue) && !empty($conditionValue)) {
+                    $isIndexedArray = array_keys($conditionValue) === range(0, count($conditionValue) - 1);
+
+                    if ($isIndexedArray) {
+                        $subConditions = $this->processIndexedConditions($conditionValue, $bindIndex);
+
+                        if (!empty($subConditions['sql'])) {
+                            $sqlArray[] = $subConditions['sql'];
+                            $bindValues = array_merge($bindValues, $subConditions['bind']);
+                        }
+                    } else {
+                        $subType = is_string($nextType) ? $nextType : 'AND';
+                        $result = $this->getPrepareConditions($conditionValue, $subType, $bindIndex);
+
+                        if (!empty($result['sql'])) {
+                            $sqlArray[] = $result['sql'];
+                            $bindValues = array_merge($bindValues, $result['bind']);
+                        }
+                    }
                 } elseif (is_array($conditionValue) && count($conditionValue) === 2 && is_string($conditionValue[0])) {
                     $operator = $conditionValue[0];
                     $value = $conditionValue[1];
@@ -80,8 +95,7 @@ class Where
                     $bindKey = ':bind_' . $bindIndex++;
                     $columnName = $nextType;
 
-                    if (str_contains($columnName, '.')) {
-                    } else {
+                    if (!str_contains($columnName, '.')) {
                         $columnName = Table::prepareColumnNameWithAlias($columnName, $quote);
                     }
 
@@ -90,14 +104,50 @@ class Where
                 }
             }
 
+            $sql = empty($sqlArray) ? '' : '(' . implode(" $type ", $sqlArray) . ')';
+
             return [
-                'sql' => '(' . implode(" $type ", $sqlArray) . ')',
+                'sql' => $sql,
                 'bind' => $bindValues
             ];
         } catch (Exception $exception) {
             throw new DatabaseManagerException($exception->getMessage());
         }
     }
+
+    /**
+     * @param array $conditions
+     * @param int $bindIndex
+     * @return array
+     * @throws DatabaseManagerException
+     */
+    private function processIndexedConditions(array $conditions, int &$bindIndex): array
+    {
+        $sqlParts = [];
+        $bindValues = [];
+
+        foreach ($conditions as $condition) {
+            if ($condition instanceof Condition) {
+                $condition->setDatabaseType($this->databaseType);
+                $sqlParts[] = (string)$condition;
+            } elseif (is_array($condition)) {
+                $result = $this->getPrepareConditions($condition, 'AND', $bindIndex);
+
+                if (!empty($result['sql'])) {
+                    $sqlParts[] = $result['sql'];
+                    $bindValues = array_merge($bindValues, $result['bind']);
+                }
+            }
+        }
+
+        $sql = empty($sqlParts) ? '' : '(' . implode(' AND ', $sqlParts) . ')';
+
+        return [
+            'sql' => $sql,
+            'bind' => $bindValues
+        ];
+    }
+
 
     /**
      * Prepare conditions (legacy method for backward compatibility)
