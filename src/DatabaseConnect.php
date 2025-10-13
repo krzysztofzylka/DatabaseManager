@@ -72,7 +72,7 @@ class DatabaseConnect
     }
 
     /**
-     * Set database type
+     * Set the database type
      * @param DatabaseType $type
      * @return $this
      */

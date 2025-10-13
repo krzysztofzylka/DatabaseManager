@@ -34,16 +34,12 @@ class DatabaseManager
     public function connect(DatabaseConnect $databaseConnect, ?string $connectionName = null): void
     {
         $databaseConnect->connect();
-
-        // Keep backward compatibility
         self::$connection = $databaseConnect;
 
-        // Add connection to ConnectionManager
         if (!is_null($connectionName)) {
             ConnectionManager::addConnection($connectionName, $databaseConnect);
         }
 
-        // Always set the connection as default in ConnectionManager
         ConnectionManager::setDefaultConnectionObject($databaseConnect);
     }
 

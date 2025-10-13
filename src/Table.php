@@ -94,7 +94,7 @@ class Table
     }
 
     /**
-     * Set column name
+     * Set the column name
      * @param string $name
      * @return Table
      */
@@ -139,7 +139,7 @@ class Table
      * Set connection by name
      * @param string $connectionName
      * @return $this
-     * @throws Exception\DatabaseManagerException
+     * @throws DatabaseManagerException
      */
     public function setConnection(string $connectionName): self
     {
@@ -275,7 +275,7 @@ class Table
     }
 
     /**
-     * Get column list
+     * Get a column list
      * @param ?string $columnName column name
      * @return array|bool
      * @throws DatabaseManagerException

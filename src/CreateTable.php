@@ -13,6 +13,7 @@ use PDO;
 
 class CreateTable
 {
+
     use TablePredefinedColumn;
 
     /**
@@ -86,7 +87,7 @@ class CreateTable
     }
 
     /**
-     * Get connection name
+     * Get a connection name
      * @return string|null
      */
     public function getConnectionName(): ?string
@@ -173,7 +174,7 @@ class CreateTable
     }
 
     /**
-     * Execute create table script
+     * Execute create a table script
      * @return bool
      * @throws DatabaseManagerException
      */
@@ -197,7 +198,7 @@ class CreateTable
     }
 
     /**
-     * Build CREATE TABLE SQL statement based on database type
+     * Build CREATE a TABLE SQL statement based on a database type
      * @return string
      */
     private function buildCreateTableSql(): string
@@ -220,4 +221,5 @@ class CreateTable
             return $sql;
         }
     }
+
 }
