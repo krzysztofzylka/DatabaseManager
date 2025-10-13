@@ -5,6 +5,7 @@ namespace krzysztofzylka\DatabaseManager\Trait;
 use Krzysztofzylka\Arrays\Arrays;
 use krzysztofzylka\DatabaseManager\Condition;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
+use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\Where;
 
 trait TableHelpers
@@ -90,6 +91,7 @@ trait TableHelpers
      * Prepare bind data
      * @param int $bindIndex
      * @return array
+     * @throws DatabaseManagerException
      */
     private function prepareBindData(int &$bindIndex = 0): array
     {

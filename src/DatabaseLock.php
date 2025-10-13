@@ -10,6 +10,7 @@ use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 
 class DatabaseLock
 {
+
     /**
      * Table instance
      * @var Table
@@ -71,7 +72,7 @@ class DatabaseLock
     }
 
     /**
-     * Get connection name
+     * Get a connection name
      * @return string|null
      */
     public function getConnectionName(): ?string

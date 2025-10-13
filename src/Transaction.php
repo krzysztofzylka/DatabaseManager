@@ -9,6 +9,7 @@ use PDO;
 
 class Transaction
 {
+
     /**
      * PDO instance
      * @var PDO
@@ -23,13 +24,13 @@ class Transaction
 
     /**
      * Transaction level counter
-     * @var int
+     * @var array
      */
     private static array $transactionLevels = [];
 
     /**
      * Savepoint counter for unique names
-     * @var int
+     * @var array
      */
     private static array $savepointCounters = [];
 
@@ -59,7 +60,7 @@ class Transaction
     }
 
     /**
-     * Get current transaction level
+     * Get the current transaction level
      * @return int
      */
     private function getTransactionLevel(): int
@@ -69,7 +70,7 @@ class Transaction
     }
 
     /**
-     * Set transaction level
+     * Set the transaction level
      * @param int $level
      * @return void
      */
@@ -217,7 +218,7 @@ class Transaction
     }
 
     /**
-     * Get connection name
+     * Get a connection name
      * @return string|null
      */
     public function getConnectionName(): ?string
@@ -244,4 +245,5 @@ class Transaction
             throw $e;
         }
     }
+
 }

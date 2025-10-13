@@ -3,6 +3,7 @@
 namespace krzysztofzylka\DatabaseManager;
 
 use Exception;
+use Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
@@ -90,6 +91,7 @@ class AlterTable
      * @param Column $column
      * @param ?string $afterColumnName
      * @return AlterTable
+     * @throws ConnectException
      */
     public function addColumn(Column $column, ?string $afterColumnName = null): self
     {

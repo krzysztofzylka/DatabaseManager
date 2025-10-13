@@ -48,6 +48,7 @@ trait TablePredefinedColumn
      * @param ?string $name column name
      * @param int $size size
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addEmailColumn(bool $null = true, ?string $name = 'email', int $size = 255): CreateTable
     {
@@ -67,6 +68,7 @@ trait TablePredefinedColumn
      * @param ?string $name column name
      * @param int $size
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addUsernameColumn(bool $null = true, ?string $name = 'username', int $size = 255): CreateTable
     {
@@ -86,6 +88,7 @@ trait TablePredefinedColumn
      * @param ?string $name column name
      * @param int $size
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addPasswordColumn(bool $null = true, ?string $name = 'password', int $size = 255): CreateTable
     {
@@ -104,6 +107,7 @@ trait TablePredefinedColumn
      * @param bool $null is nullable
      * @param ?string $name column name
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addPhoneColumn(bool $null = true, ?string $name = 'phone'): CreateTable
     {
@@ -121,6 +125,7 @@ trait TablePredefinedColumn
      * Add date created column
      * @param ?string $name column name
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addDateCreatedColumn(?string $name = 'date_created'): CreateTable
     {
@@ -139,6 +144,7 @@ trait TablePredefinedColumn
      * Add date modify column
      * @param ?string $name column name
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addDateModifyColumn(?string $name = 'date_modify'): CreateTable
     {
@@ -161,6 +167,7 @@ trait TablePredefinedColumn
      * @param bool $null allow null value
      * @param string|null $default
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addSimpleVarcharColumn(string $name, int $size = 255, bool $null = true, ?string $default = null): CreateTable
     {
@@ -184,6 +191,7 @@ trait TablePredefinedColumn
      * @param bool $null allow null value
      * @param bool $unsigned
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addSimpleIntColumn(string $name, bool $null = true, bool $unsigned = false): CreateTable
     {
@@ -203,6 +211,7 @@ trait TablePredefinedColumn
      * @param string $name column name
      * @param bool $default default
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addSimpleBoolColumn(string $name, bool $default = false): CreateTable
     {
@@ -222,6 +231,7 @@ trait TablePredefinedColumn
      * @param string $size
      * @param float|null $default
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addSimpleFloatColumn(string $name, string $size = '16,2', ?float $default = null): CreateTable
     {
@@ -241,6 +251,7 @@ trait TablePredefinedColumn
      * @param string $size
      * @param float|null $default
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addSimpleDecimalColumn(string $name, string $size = '16,2', ?float $default = null): CreateTable
     {
@@ -259,6 +270,7 @@ trait TablePredefinedColumn
      * @param string $name
      * @param string|null $default
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addSimpleTextColumn(string $name, ?string $default = null): CreateTable
     {
@@ -277,6 +289,7 @@ trait TablePredefinedColumn
      * @param string $name
      * @param string|null $default
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addSimpleDateColumn(string $name, ?string $default = null): CreateTable
     {
@@ -296,6 +309,7 @@ trait TablePredefinedColumn
      * @param array $values
      * @param string|null $default
      * @return CreateTable
+     * @throws ConnectException
      */
     public function addSimpleEnumColumn(string $name, array $values, ?string $default = null): CreateTable
     {

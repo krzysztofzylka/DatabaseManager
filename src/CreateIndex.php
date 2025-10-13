@@ -9,6 +9,7 @@ use PDO;
 
 class CreateIndex
 {
+
     /**
      * Table name
      * @var string
