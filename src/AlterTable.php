@@ -173,6 +173,9 @@ class AlterTable
 
             DatabaseManager::setLastSql($sql);
             $this->databaseManager->query($sql);
+            
+            // Clear cache for this table after modification
+            Cache::clearTableCache($this->getName());
         } catch (Exception $exception) {
             throw new DatabaseManagerException($exception->getMessage());
         }

@@ -191,6 +191,9 @@ class CreateTable
                 $this->pdo->exec($additionalSql);
             }
 
+            // Clear cache for this table after creation
+            Cache::clearTableCache($this->name);
+
             return true;
         } catch (Exception $e) {
             throw new DatabaseManagerException($e->getMessage());

@@ -32,4 +32,23 @@ class Cache
         self::$data[$name] = $value;
     }
 
+    /**
+     * Clear cache for a specific table
+     * @param string $tableName
+     * @return void
+     */
+    public static function clearTableCache(string $tableName): void
+    {
+        unset(self::$data['columnList_' . $tableName]);
+    }
+
+    /**
+     * Clear all cache
+     * @return void
+     */
+    public static function clearAllCache(): void
+    {
+        self::$data = [];
+    }
+
 }
