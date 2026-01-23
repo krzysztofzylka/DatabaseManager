@@ -261,10 +261,26 @@ trait TableSelect
         $quote = $this->getIdQuote();
 
         foreach ($columns as $id => $column) {
+            if (is_object($column) && method_exists($column, '__toString')) {
+                $expr = (string)$column;
+
+                if (preg_match('/\s+as\s+([a-zA-Z0-9_.]+)/i', $expr, $m)) {
+                    $alias = $m[1];
+                    if (!str_starts_with($alias, '`') && !str_ends_with($alias, '`')) {
+                        if (!str_contains($alias, '.')) {
+                            $alias = $this->getName() . '.' . $alias;
+                        }
+
+                        $aliasTicked = '`' . $alias . '`';
+                        $expr = preg_replace('/\s+as\s+' . preg_quote($m[1], '/') . '/i', ' as ' . $aliasTicked, $expr);
+                    }
+                }
+                $columns[$id] = $expr;
+                continue;
+            }
             if (!str_contains($column, '.')) {
                 $column = $this->getName() . '.' . $column;
             }
-
             $columns[$id] = \krzysztofzylka\DatabaseManager\Helper\Table::prepareColumnNameWithAlias($column, $quote) . ' as ' . $quote . $column . $quote;
         }
 
