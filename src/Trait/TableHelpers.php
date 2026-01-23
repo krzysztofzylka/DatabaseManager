@@ -113,13 +113,9 @@ trait TableHelpers
             }
 
             if (!empty($bind['tableAlias'])) {
-                // Usuń backticks z tableName jeśli istnieją
                 $cleanTableName = str_replace('`', '', $bind['tableName']);
                 $bind['tableName'] = $cleanTableName . '` as `' . $bind['tableAlias'];
-
-                // Zastąp nazwę tabeli aliasem w foreignKey
                 $foreignKey = $bind['foreignKey'];
-                // Sprawdź czy foreignKey zawiera nazwę tabeli (z backticks lub bez)
                 $patterns = [
                     '`' . $cleanTableName . '`.`' => '`' . $bind['tableAlias'] . '`.`',
                     $cleanTableName . '.' => $bind['tableAlias'] . '.'
@@ -134,44 +130,54 @@ trait TableHelpers
             $bindData = $bind['type'] . ' `' . $bind['tableName'] . '` ON ' . $bind['primaryKey'] . ' = ' . $foreignKey;
 
             if (!is_null($bind['condition'])) {
-                if ($bind['condition'] instanceof Condition) {
-                    $bind['condition']->setDatabaseType($this->getDatabaseType());
-                    // Zastąp nazwę tabeli aliasem w Condition
-                    $conditionString = (string)$bind['condition'];
-                    if (!empty($bind['tableAlias'])) {
-                        $cleanTableName = str_replace('`', '', $bind['tableName']);
-                        $patterns = [
-                            '`' . $cleanTableName . '`.`' => '`' . $bind['tableAlias'] . '`.`',
-                            $cleanTableName . '.' => $bind['tableAlias'] . '.'
-                        ];
-                        foreach ($patterns as $pattern => $replacement) {
-                            $conditionString = str_replace($pattern, $replacement, $conditionString);
-                        }
-                    }
-                    $bindData .= ' AND ' . $conditionString;
-                } else {
-                    $whereHelper = new Where();
-                    $whereHelper->setDatabaseType($this->getDatabaseType());
+                $isNotEmpty = false;
 
-                    // Przekaż alias tabeli do Where helper
-                    if (!empty($bind['tableAlias'])) {
-                        $cleanTableName = str_replace('`', '', $bind['tableName']);
-                        // Zastąp nazwy kolumn w warunkach aliasami
-                        $modifiedCondition = [];
-                        foreach ($bind['condition'] as $key => $value) {
-                            if (!str_contains($key, '.') && !in_array(strtoupper($key), ['AND', 'OR'])) {
-                                $modifiedCondition[$bind['tableAlias'] . '.' . $key] = $value;
-                            } else {
-                                $modifiedCondition[$key] = $value;
+                if ($bind['condition'] instanceof Condition) {
+                    $conditionString = trim((string)$bind['condition']);
+                    $isNotEmpty = $conditionString !== '';
+                } elseif (is_array($bind['condition'])) {
+                    $isNotEmpty = count($bind['condition']) > 0;
+                }
+
+                if ($isNotEmpty) {
+                    if ($bind['condition'] instanceof Condition) {
+                        $bind['condition']->setDatabaseType($this->getDatabaseType());
+                        $conditionString = (string)$bind['condition'];
+
+                        if (!empty($bind['tableAlias'])) {
+                            $cleanTableName = str_replace('`', '', $bind['tableName']);
+                            $patterns = [
+                                '`' . $cleanTableName . '`.`' => '`' . $bind['tableAlias'] . '`.`',
+                                $cleanTableName . '.' => $bind['tableAlias'] . '.'
+                            ];
+                            foreach ($patterns as $pattern => $replacement) {
+                                $conditionString = str_replace($pattern, $replacement, $conditionString);
                             }
                         }
-                        $whereData = $whereHelper->getPrepareConditions($modifiedCondition, 'AND', $bindIndex);
+                        $bindData .= ' AND ' . $conditionString;
                     } else {
-                        $whereData = $whereHelper->getPrepareConditions($bind['condition'], 'AND', $bindIndex);
-                    }
+                        $whereHelper = new Where();
+                        $whereHelper->setDatabaseType($this->getDatabaseType());
 
-                    $bindData .= ' AND ' . $whereData['sql'];
-                    $bindValues = array_merge($bindValues, $whereData['bind']);
+                        if (!empty($bind['tableAlias'])) {
+                            $cleanTableName = str_replace('`', '', $bind['tableName']);
+                            $modifiedCondition = [];
+
+                            foreach ($bind['condition'] as $key => $value) {
+                                if (!str_contains($key, '.') && !in_array(strtoupper($key), ['AND', 'OR'])) {
+                                    $modifiedCondition[$bind['tableAlias'] . '.' . $key] = $value;
+                                } else {
+                                    $modifiedCondition[$key] = $value;
+                                }
+                            }
+                            $whereData = $whereHelper->getPrepareConditions($modifiedCondition, 'AND', $bindIndex);
+                        } else {
+                            $whereData = $whereHelper->getPrepareConditions($bind['condition'], 'AND', $bindIndex);
+                        }
+
+                        $bindData .= ' AND ' . $whereData['sql'];
+                        $bindValues = array_merge($bindValues, $whereData['bind']);
+                    }
                 }
             }
 
