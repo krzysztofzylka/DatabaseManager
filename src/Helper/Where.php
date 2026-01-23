@@ -68,7 +68,7 @@ class Where
                     $sqlArray[] = (string)$conditionValue;
                 } elseif (is_array($conditionValue) && !empty($conditionValue)) {
                     // Najpierw BETWEEN, potem IN
-                    if (count($conditionValue) === 2 && is_string($conditionValue[0]) && strtoupper($conditionValue[0]) === 'BETWEEN') {
+                    if (array_key_exists(0, $conditionValue) && count($conditionValue) === 2 && is_string($conditionValue[0]) && strtoupper($conditionValue[0]) === 'BETWEEN') {
                         // BETWEEN
                         $bindKey1 = ':bind_' . $bindIndex++;
                         $bindKey2 = ':bind_' . $bindIndex++;
@@ -102,6 +102,7 @@ class Where
                     $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' ' . $operator . ' ' . $bindKey;
                     $bindValues[$bindKey] = $value;
                 } else {
+                    // Obsługa prostych wartości (bool, int, string, float)
                     $bindKey = ':bind_' . $bindIndex++;
                     $columnName = $nextType;
                     $columnName = Table::prepareColumnNameWithAlias($columnName, $quote);
