@@ -67,22 +67,32 @@ class Where
                     $conditionValue->setDatabaseType($this->databaseType);
                     $sqlArray[] = (string)$conditionValue;
                 } elseif (is_array($conditionValue) && !empty($conditionValue)) {
-                    $isIndexedArray = array_keys($conditionValue) === range(0, count($conditionValue) - 1);
-
-                    if ($isIndexedArray) {
-                        $subConditions = $this->processIndexedConditions($conditionValue, $bindIndex, $nextType === 'OR' ? 'OR' : 'AND');
-
-                        if (!empty($subConditions['sql'])) {
-                            $sqlArray[] = $subConditions['sql'];
-                            $bindValues = array_merge($bindValues, $subConditions['bind']);
-                        }
+                    // Najpierw BETWEEN, potem IN
+                    if (count($conditionValue) === 2 && is_string($conditionValue[0]) && strtoupper($conditionValue[0]) === 'BETWEEN') {
+                        // BETWEEN
+                        $bindKey1 = ':bind_' . $bindIndex++;
+                        $bindKey2 = ':bind_' . $bindIndex++;
+                        $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' BETWEEN ' . $bindKey1 . ' AND ' . $bindKey2;
+                        $bindValues[$bindKey1] = $conditionValue[1][0];
+                        $bindValues[$bindKey2] = $conditionValue[1][1];
                     } else {
-                        $subType = is_string($nextType) ? $nextType : 'AND';
-                        $result = $this->getPrepareConditions($conditionValue, $subType, $bindIndex);
-
-                        if (!empty($result['sql'])) {
-                            $sqlArray[] = $result['sql'];
-                            $bindValues = array_merge($bindValues, $result['bind']);
+                        $isIndexedArray = array_keys($conditionValue) === range(0, count($conditionValue) - 1);
+                        if ($isIndexedArray) {
+                            // IN
+                            $inBinds = [];
+                            foreach ($conditionValue as $val) {
+                                $bindKey = ':bind_' . $bindIndex++;
+                                $inBinds[] = $bindKey;
+                                $bindValues[$bindKey] = $val;
+                            }
+                            $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' IN (' . implode(', ', $inBinds) . ')';
+                        } else {
+                            $subType = is_string($nextType) ? $nextType : 'AND';
+                            $result = $this->getPrepareConditions($conditionValue, $subType, $bindIndex);
+                            if (!empty($result['sql'])) {
+                                $sqlArray[] = $result['sql'];
+                                $bindValues = array_merge($bindValues, $result['bind']);
+                            }
                         }
                     }
                 } elseif (is_array($conditionValue) && count($conditionValue) === 2 && is_string($conditionValue[0])) {

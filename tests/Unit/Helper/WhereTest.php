@@ -61,8 +61,19 @@ class WhereTest extends TestCase
             'status' => ['active', 'pending']
         ];
         $sql = $this->where->getPrepareConditions($conditions);
-        // Oczekiwany SQL dla tablicy wartości nie jest już generowany w tej formie, sprawdź czy SQL jest pusty (brak obsługi takiego zapytania)
-        $this->assertEquals('', $sql['sql']);
+        $this->assertEquals('(`status` IN (:bind_0, :bind_1))', $sql['sql']);
+        $this->assertEquals([':bind_0' => 'active', ':bind_1' => 'pending'], $sql['bind']);
+
+    }
+
+    public function testBetweenValues(): void
+    {
+        $conditions = [
+            'created_at' => ['BETWEEN', ['2024-01-01', '2024-12-31']]
+        ];
+        $sql = $this->where->getPrepareConditions($conditions);
+        $this->assertEquals('(`created_at` BETWEEN :bind_0 AND :bind_1)', $sql['sql']);
+        $this->assertEquals([':bind_0' => '2024-01-01', ':bind_1' => '2024-12-31'], $sql['bind']);
     }
 
     public function testNullValue(): void
