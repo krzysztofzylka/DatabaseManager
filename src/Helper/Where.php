@@ -94,11 +94,7 @@ class Where
                 } else {
                     $bindKey = ':bind_' . $bindIndex++;
                     $columnName = $nextType;
-
-                    if (!str_contains($columnName, '.')) {
-                        $columnName = Table::prepareColumnNameWithAlias($columnName, $quote);
-                    }
-
+                    $columnName = Table::prepareColumnNameWithAlias($columnName, $quote);
                     $sqlArray[] = $columnName . ' = ' . $bindKey;
                     $bindValues[$bindKey] = $conditionValue;
                 }
