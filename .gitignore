@@ -3,3 +3,6 @@
 composer.lock
 composer.phar
 .phpunit.result.cache
+docker-compose.yml
+init/
+test.php

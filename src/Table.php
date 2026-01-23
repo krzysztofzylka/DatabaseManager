@@ -228,11 +228,14 @@ class Table
         $primaryKey = $primaryKey ? Helper\Table::prepareColumnNameWithAlias($primaryKey, $quote) : ($quote . $this->getName() . $quote . '.' . $quote . 'id' . $quote);
         $foreignKey = $foreignKey ? Helper\Table::prepareColumnNameWithAlias($foreignKey, $quote) : ($quote . $tableName . $quote . '.' . $quote . $this->getName() . '_id' . $quote);
 
-        $bindTableNames = array_column($this->bind ?? [], 'tableName');
-        $bindSearch = array_search($tableAlias ?? $tableName, $bindTableNames);
-
-        if ($bindSearch !== false) {
-            unset($this->bind[$bindSearch]);
+        if (isset($this->bind) && is_array($this->bind)) {
+            foreach ($this->bind as $idx => $b) {
+                if (!empty($tableAlias) && isset($b['tableAlias']) && $b['tableAlias'] === $tableAlias) {
+                    unset($this->bind[$idx]);
+                } elseif (empty($tableAlias) && empty($b['tableAlias']) && isset($b['tableName']) && $b['tableName'] === $tableName) {
+                    unset($this->bind[$idx]);
+                }
+            }
         }
 
         $this->bind[] = [
