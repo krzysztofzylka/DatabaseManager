@@ -85,14 +85,30 @@ class Where
                     } else {
                         $isIndexedArray = array_keys($conditionValue) === range(0, count($conditionValue) - 1);
                         if ($isIndexedArray) {
-                            // IN
-                            $inBinds = [];
-                            foreach ($conditionValue as $val) {
-                                $bindKey = ':bind_' . $bindIndex++;
-                                $inBinds[] = $bindKey;
-                                $bindValues[$bindKey] = $val;
+                            // Sprawdź, czy wszystkie elementy to Condition lub tablice (czyli podwarunki logiczne)
+                            $allAreConditionOrArray = true;
+                            foreach ($conditionValue as $item) {
+                                if (!($item instanceof Condition) && !is_array($item)) {
+                                    $allAreConditionOrArray = false;
+                                    break;
+                                }
                             }
-                            $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' IN (' . implode(', ', $inBinds) . ')';
+                            if ($allAreConditionOrArray) {
+                                $result = $this->processIndexedConditions($conditionValue, $bindIndex, 'AND');
+                                if (!empty($result['sql'])) {
+                                    $sqlArray[] = $result['sql'];
+                                    $bindValues = array_merge($bindValues, $result['bind']);
+                                }
+                            } else {
+                                // IN
+                                $inBinds = [];
+                                foreach ($conditionValue as $val) {
+                                    $bindKey = ':bind_' . $bindIndex++;
+                                    $inBinds[] = $bindKey;
+                                    $bindValues[$bindKey] = $val;
+                                }
+                                $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' IN (' . implode(', ', $inBinds) . ')';
+                            }
                         } else {
                             $subType = is_string($nextType) ? $nextType : 'AND';
                             $result = $this->getPrepareConditions($conditionValue, $subType, $bindIndex);
@@ -146,8 +162,19 @@ class Where
                 $condition->setDatabaseType($this->databaseType);
                 $sqlParts[] = (string)$condition;
             } elseif (is_array($condition)) {
-                $result = $this->getPrepareConditions($condition, 'AND', $bindIndex);
-
+                // Jeśli tablica zawiera tylko Condition lub tablice warunków, potraktuj jako podwarunek logiczny
+                $allAreConditionOrArray = true;
+                foreach ($condition as $item) {
+                    if (!($item instanceof Condition) && !is_array($item)) {
+                        $allAreConditionOrArray = false;
+                        break;
+                    }
+                }
+                if ($allAreConditionOrArray) {
+                    $result = $this->processIndexedConditions($condition, $bindIndex, 'AND');
+                } else {
+                    $result = $this->getPrepareConditions($condition, 'AND', $bindIndex);
+                }
                 if (!empty($result['sql'])) {
                     $sqlParts[] = $result['sql'];
                     $bindValues = array_merge($bindValues, $result['bind']);
