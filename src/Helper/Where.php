@@ -64,12 +64,23 @@ class Where
 
             foreach ($data as $nextType => $conditionValue) {
                 // Specjalna obsługa dla kluczy 'OR' i 'AND' – traktuj jako złożone warunki logiczne
-                if ((strtoupper($nextType) === 'OR' || strtoupper($nextType) === 'AND') && is_array($conditionValue)) {
-                    $result = $this->processIndexedConditions($conditionValue, $bindIndex, strtoupper($nextType));
-                    if (!empty($result['sql'])) {
-                        $sqlArray[] = $result['sql'];
-                        $bindValues = array_merge($bindValues, $result['bind']);
-                    }
+                    if ((strtoupper($nextType) === 'OR' || strtoupper($nextType) === 'AND') && is_array($conditionValue)) {
+                        $isAssoc = count(array_filter(array_keys($conditionValue), 'is_string')) > 0;
+                        if ($isAssoc) {
+                            // Asocjacyjna tablica: wywołaj getPrepareConditions z odpowiednim typem
+                            $result = $this->getPrepareConditions($conditionValue, strtoupper($nextType), $bindIndex);
+                            if (!empty($result['sql'])) {
+                                $sqlArray[] = $result['sql'];
+                                $bindValues = array_merge($bindValues, $result['bind']);
+                            }
+                        } else {
+                            // Tablica warunków logicznych: processIndexedConditions
+                            $result = $this->processIndexedConditions($conditionValue, $bindIndex, strtoupper($nextType));
+                            if (!empty($result['sql'])) {
+                                $sqlArray[] = $result['sql'];
+                                $bindValues = array_merge($bindValues, $result['bind']);
+                            }
+                        }
                 } elseif ($conditionValue instanceof Condition) {
                     $conditionValue->setDatabaseType($this->databaseType);
                     $sqlArray[] = (string)$conditionValue;
@@ -162,18 +173,24 @@ class Where
                 $condition->setDatabaseType($this->databaseType);
                 $sqlParts[] = (string)$condition;
             } elseif (is_array($condition)) {
-                // Jeśli tablica zawiera tylko Condition lub tablice warunków, potraktuj jako podwarunek logiczny
-                $allAreConditionOrArray = true;
-                foreach ($condition as $item) {
-                    if (!($item instanceof Condition) && !is_array($item)) {
-                        $allAreConditionOrArray = false;
-                        break;
-                    }
-                }
-                if ($allAreConditionOrArray) {
-                    $result = $this->processIndexedConditions($condition, $bindIndex, 'AND');
+                // Jeśli asocjacyjna tablica (ma klucze string), potraktuj jako podwarunek logiczny
+                $isAssoc = count(array_filter(array_keys($condition), 'is_string')) > 0;
+                if ($isAssoc) {
+                    $result = $this->getPrepareConditions($condition, $type, $bindIndex);
                 } else {
-                    $result = $this->getPrepareConditions($condition, 'AND', $bindIndex);
+                    // Jeśli tablica zawiera tylko Condition lub tablice warunków, potraktuj jako podwarunek logiczny
+                    $allAreConditionOrArray = true;
+                    foreach ($condition as $item) {
+                        if (!($item instanceof Condition) && !is_array($item)) {
+                            $allAreConditionOrArray = false;
+                            break;
+                        }
+                    }
+                    if ($allAreConditionOrArray) {
+                        $result = $this->processIndexedConditions($condition, $bindIndex, 'AND');
+                    } else {
+                        $result = $this->getPrepareConditions($condition, 'AND', $bindIndex);
+                    }
                 }
                 if (!empty($result['sql'])) {
                     $sqlParts[] = $result['sql'];

@@ -47,7 +47,7 @@ class SqlBuilder
             $sql .= ' ' . self::cleanSql($join);
         }
 
-        if ($where !== null) {
+        if ($where !== null && trim($where) !== '') {
             $sql .= ' WHERE ' . self::cleanSql($where);
         }
 
