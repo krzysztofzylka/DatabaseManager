@@ -63,7 +63,14 @@ class Where
             $quote = $this->getQuote();
 
             foreach ($data as $nextType => $conditionValue) {
-                if ($conditionValue instanceof Condition) {
+                // Specjalna obsługa dla kluczy 'OR' i 'AND' – traktuj jako złożone warunki logiczne
+                if ((strtoupper($nextType) === 'OR' || strtoupper($nextType) === 'AND') && is_array($conditionValue)) {
+                    $result = $this->processIndexedConditions($conditionValue, $bindIndex, strtoupper($nextType));
+                    if (!empty($result['sql'])) {
+                        $sqlArray[] = $result['sql'];
+                        $bindValues = array_merge($bindValues, $result['bind']);
+                    }
+                } elseif ($conditionValue instanceof Condition) {
                     $conditionValue->setDatabaseType($this->databaseType);
                     $sqlArray[] = (string)$conditionValue;
                 } elseif (is_array($conditionValue) && !empty($conditionValue)) {
