@@ -169,7 +169,7 @@ class CreateIndex
      */
     public function execute(): bool
     {
-        $sql = 'CREATE INDEX ' . $this->getName() . ' ON ' . $this->tableName . '(' . implode(',', $this->columns) . ')';
+        $sql = 'CREATE INDEX ' . $this->getName() . ' ON ' . $this->tableName . '(`' . implode('`, `', $this->columns) . '`)';
 
         try {
             DatabaseManager::setLastSql($sql);
