@@ -18,6 +18,7 @@ trait TablePredefinedColumn
      * Add ID column
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new IdColumn()) instead
      */
     public function addIdColumn(): CreateTable
     {
@@ -49,6 +50,7 @@ trait TablePredefinedColumn
      * @param int $size size
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new EmailColumn(...)) instead
      */
     public function addEmailColumn(bool $null = true, ?string $name = 'email', int $size = 255): CreateTable
     {
@@ -69,6 +71,7 @@ trait TablePredefinedColumn
      * @param int $size
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new UsernameColumn(...)) instead
      */
     public function addUsernameColumn(bool $null = true, ?string $name = 'username', int $size = 255): CreateTable
     {
@@ -89,6 +92,7 @@ trait TablePredefinedColumn
      * @param int $size
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new PasswordColumn(...)) instead
      */
     public function addPasswordColumn(bool $null = true, ?string $name = 'password', int $size = 255): CreateTable
     {
@@ -108,6 +112,7 @@ trait TablePredefinedColumn
      * @param ?string $name column name
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new PhoneColumn(...)) instead
      */
     public function addPhoneColumn(bool $null = true, ?string $name = 'phone'): CreateTable
     {
@@ -126,6 +131,7 @@ trait TablePredefinedColumn
      * @param ?string $name column name
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new DateCreatedColumn(...)) instead
      */
     public function addDateCreatedColumn(?string $name = 'date_created'): CreateTable
     {
@@ -145,6 +151,7 @@ trait TablePredefinedColumn
      * @param ?string $name column name
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new DateModifyColumn(...)) instead
      */
     public function addDateModifyColumn(?string $name = 'date_modify'): CreateTable
     {
@@ -168,6 +175,7 @@ trait TablePredefinedColumn
      * @param string|null $default
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new VarcharColumn(...)) instead
      */
     public function addSimpleVarcharColumn(string $name, int $size = 255, bool $null = true, ?string $default = null): CreateTable
     {
@@ -192,6 +200,7 @@ trait TablePredefinedColumn
      * @param bool $unsigned
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new IntColumn(...)) instead
      */
     public function addSimpleIntColumn(string $name, bool $null = true, bool $unsigned = false): CreateTable
     {
@@ -212,6 +221,7 @@ trait TablePredefinedColumn
      * @param bool $default default
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new BoolColumn(...)) instead
      */
     public function addSimpleBoolColumn(string $name, bool $default = false): CreateTable
     {
@@ -232,6 +242,7 @@ trait TablePredefinedColumn
      * @param float|null $default
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new FloatColumn(...)) instead
      */
     public function addSimpleFloatColumn(string $name, string $size = '16,2', ?float $default = null): CreateTable
     {
@@ -246,12 +257,13 @@ trait TablePredefinedColumn
     }
 
     /**
-     * Add simple float column
+     * Add simple decimal column
      * @param string $name
      * @param string $size
      * @param float|null $default
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new DecimalColumn(...)) instead
      */
     public function addSimpleDecimalColumn(string $name, string $size = '16,2', ?float $default = null): CreateTable
     {
@@ -271,6 +283,7 @@ trait TablePredefinedColumn
      * @param string|null $default
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new TextColumn(...)) instead
      */
     public function addSimpleTextColumn(string $name, ?string $default = null): CreateTable
     {
@@ -290,6 +303,7 @@ trait TablePredefinedColumn
      * @param string|null $default
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new DateColumn(...)) instead
      */
     public function addSimpleDateColumn(string $name, ?string $default = null): CreateTable
     {
@@ -310,6 +324,7 @@ trait TablePredefinedColumn
      * @param string|null $default
      * @return CreateTable
      * @throws ConnectException
+     * @deprecated Use addColumn(new EnumColumn(...)) instead
      */
     public function addSimpleEnumColumn(string $name, array $values, ?string $default = null): CreateTable
     {
