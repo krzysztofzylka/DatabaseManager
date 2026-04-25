@@ -333,6 +333,8 @@ class Table
                         return $data;
                     }
                 }
+
+                return false;
             }
 
             Cache::saveData('columnList_' . $this->getName(), $return);
