@@ -39,7 +39,7 @@ class Column
      */
     public static function create(?string $name = null, ColumnType $columnType = ColumnType::varchar, mixed $size = 255): self
     {
-        return new self($name, $columnType, $size);
+        return new static($name, $columnType, $size);
     }
 
     /**

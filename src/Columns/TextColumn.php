@@ -7,6 +7,7 @@ use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 
 class TextColumn extends Column
 {
+
     public function __construct(string $name, ?string $default = null)
     {
         parent::__construct($name, ColumnType::text, null);
@@ -15,4 +16,5 @@ class TextColumn extends Column
             $this->setDefault($default);
         }
     }
+
 }

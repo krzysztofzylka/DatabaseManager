@@ -7,6 +7,7 @@ use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 
 class EnumColumn extends Column
 {
+
     public function __construct(string $name, array $values, ?string $default = null)
     {
         parent::__construct($name, ColumnType::enum, $values);
@@ -15,4 +16,5 @@ class EnumColumn extends Column
             $this->setDefault($default);
         }
     }
+
 }
