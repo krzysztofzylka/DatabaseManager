@@ -7,6 +7,7 @@ use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 
 class DateColumn extends Column
 {
+
     public function __construct(string $name, ?string $default = null)
     {
         parent::__construct($name, ColumnType::date, null);
@@ -15,4 +16,5 @@ class DateColumn extends Column
             $this->setDefault($default);
         }
     }
+
 }

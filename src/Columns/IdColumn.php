@@ -9,6 +9,7 @@ use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 
 class IdColumn extends Column
 {
+
     public function __construct()
     {
         parent::__construct('id', ColumnType::bigint, null);
@@ -22,4 +23,5 @@ class IdColumn extends Column
             ->setAutoincrement(true)
             ->setPrimary(true);
     }
+
 }
