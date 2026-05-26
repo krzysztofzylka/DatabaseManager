@@ -63,78 +63,97 @@ class Where
             $quote = $this->getQuote();
 
             foreach ($data as $nextType => $conditionValue) {
-                // Specjalna obsługa dla kluczy 'OR' i 'AND' – traktuj jako złożone warunki logiczne
-                    if ((strtoupper($nextType) === 'OR' || strtoupper($nextType) === 'AND') && is_array($conditionValue)) {
-                        $isAssoc = count(array_filter(array_keys($conditionValue), 'is_string')) > 0;
-                        if ($isAssoc) {
-                            // Asocjacyjna tablica: wywołaj getPrepareConditions z odpowiednim typem
-                            $result = $this->getPrepareConditions($conditionValue, strtoupper($nextType), $bindIndex);
-                            if (!empty($result['sql'])) {
-                                $sqlArray[] = $result['sql'];
-                                $bindValues = array_merge($bindValues, $result['bind']);
-                            }
-                        } else {
-                            // Tablica warunków logicznych: processIndexedConditions
-                            $result = $this->processIndexedConditions($conditionValue, $bindIndex, strtoupper($nextType));
-                            if (!empty($result['sql'])) {
-                                $sqlArray[] = $result['sql'];
-                                $bindValues = array_merge($bindValues, $result['bind']);
-                            }
+                if ((strtoupper($nextType) === 'OR' || strtoupper($nextType) === 'AND') && is_array($conditionValue)) {
+                    $isAssoc = count(array_filter(array_keys($conditionValue), 'is_string')) > 0;
+
+                    if ($isAssoc) {
+                        $result = $this->getPrepareConditions($conditionValue, strtoupper($nextType), $bindIndex);
+
+                        if (!empty($result['sql'])) {
+                            $sqlArray[] = $result['sql'];
+                            $bindValues = array_merge($bindValues, $result['bind']);
                         }
+                    } else {
+                        $result = $this->processIndexedConditions($conditionValue, $bindIndex, strtoupper($nextType));
+
+                        if (!empty($result['sql'])) {
+                            $sqlArray[] = $result['sql'];
+                            $bindValues = array_merge($bindValues, $result['bind']);
+                        }
+                    }
                 } elseif ($conditionValue instanceof Condition) {
                     $conditionValue->setDatabaseType($this->databaseType);
                     $sqlArray[] = (string)$conditionValue;
                 } elseif (is_array($conditionValue) && !empty($conditionValue)) {
-                    // Najpierw BETWEEN, potem IN
                     if (array_key_exists(0, $conditionValue) && count($conditionValue) === 2 && is_string($conditionValue[0]) && strtoupper($conditionValue[0]) === 'BETWEEN') {
-                        // BETWEEN
                         $bindKey1 = ':bind_' . $bindIndex++;
                         $bindKey2 = ':bind_' . $bindIndex++;
                         $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' BETWEEN ' . $bindKey1 . ' AND ' . $bindKey2;
                         $bindValues[$bindKey1] = $conditionValue[1][0];
                         $bindValues[$bindKey2] = $conditionValue[1][1];
+                    } elseif (
+                        array_key_exists(0, $conditionValue)
+                        && count($conditionValue) === 2
+                        && is_string($conditionValue[0])
+                        && in_array(strtoupper(trim($conditionValue[0])), [
+                            '=',
+                            '!=',
+                            '<>',
+                            '>',
+                            '<',
+                            '>=',
+                            '<=',
+                            'LIKE',
+                            'NOT LIKE',
+                            'IS',
+                            'IS NOT'
+                        ], true)
+                    ) {
+                        $operator = strtoupper(trim($conditionValue[0]));
+                        $bindKey = ':bind_' . $bindIndex++;
+                        $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' ' . $operator . ' ' . $bindKey;
+                        $bindValues[$bindKey] = $conditionValue[1];
                     } else {
                         $isIndexedArray = array_keys($conditionValue) === range(0, count($conditionValue) - 1);
+
                         if ($isIndexedArray) {
-                            // Sprawdź, czy wszystkie elementy to Condition lub tablice (czyli podwarunki logiczne)
                             $allAreConditionOrArray = true;
+
                             foreach ($conditionValue as $item) {
                                 if (!($item instanceof Condition) && !is_array($item)) {
                                     $allAreConditionOrArray = false;
+
                                     break;
                                 }
                             }
                             if ($allAreConditionOrArray) {
                                 $result = $this->processIndexedConditions($conditionValue, $bindIndex, 'AND');
+
                                 if (!empty($result['sql'])) {
                                     $sqlArray[] = $result['sql'];
                                     $bindValues = array_merge($bindValues, $result['bind']);
                                 }
                             } else {
-                                // IN
                                 $inBinds = [];
+
                                 foreach ($conditionValue as $val) {
                                     $bindKey = ':bind_' . $bindIndex++;
                                     $inBinds[] = $bindKey;
                                     $bindValues[$bindKey] = $val;
                                 }
+
                                 $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' IN (' . implode(', ', $inBinds) . ')';
                             }
                         } else {
                             $subType = is_string($nextType) ? $nextType : 'AND';
                             $result = $this->getPrepareConditions($conditionValue, $subType, $bindIndex);
+
                             if (!empty($result['sql'])) {
                                 $sqlArray[] = $result['sql'];
                                 $bindValues = array_merge($bindValues, $result['bind']);
                             }
                         }
                     }
-                } elseif (is_array($conditionValue) && count($conditionValue) === 2 && is_string($conditionValue[0])) {
-                    $operator = $conditionValue[0];
-                    $value = $conditionValue[1];
-                    $bindKey = ':bind_' . $bindIndex++;
-                    $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' ' . $operator . ' ' . $bindKey;
-                    $bindValues[$bindKey] = $value;
                 } else {
                     // Obsługa prostych wartości (bool, int, string, float)
                     $bindKey = ':bind_' . $bindIndex++;
