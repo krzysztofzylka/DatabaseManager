@@ -152,7 +152,7 @@ class AlterTable
      */
     public function renameColumn(string $oldName, string $newName): self
     {
-        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` RENAME `' . $oldName . '` TO `' . $newName . '`;';
+        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` RENAME COLUMN `' . $oldName . '` TO `' . $newName . '`;';
 
         return $this;
     }
@@ -173,7 +173,7 @@ class AlterTable
 
             DatabaseManager::setLastSql($sql);
             $this->databaseManager->query($sql);
-            
+
             // Clear cache for this table after modification
             Cache::clearTableCache($this->getName());
         } catch (Exception $exception) {
