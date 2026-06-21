@@ -186,16 +186,34 @@ trait TableSelect
         $joinSql = implode(' ', $bindData['sql']);
         $bindValues = array_merge($bindValues, $bindData['bind']);
 
-        $sql = SqlBuilder::select(
-            'COUNT(*) as `count`',
-            $this->getName(),
-            trim($joinSql),
-            $whereData,
-            $groupBy,
-            null,
-            null,
-            $this->getDatabaseType()
-        );
+        $quote = $this->getIdQuote();
+
+        if ($groupBy !== null) {
+            $innerSql = SqlBuilder::select(
+                '1',
+                $this->getName(),
+                trim($joinSql),
+                $whereData,
+                $this->addBackticksToColumns($groupBy),
+                null,
+                null,
+                $this->getDatabaseType()
+            );
+
+            $sql = 'SELECT COUNT(*) as ' . $quote . 'count' . $quote
+                . ' FROM (' . $innerSql . ') as ' . $quote . 'grouped_count' . $quote;
+        } else {
+            $sql = SqlBuilder::select(
+                'COUNT(*) as ' . $quote . 'count' . $quote,
+                $this->getName(),
+                trim($joinSql),
+                $whereData,
+                null,
+                null,
+                null,
+                $this->getDatabaseType()
+            );
+        }
 
         DatabaseManager::setLastSql($sql);
 
