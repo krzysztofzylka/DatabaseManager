@@ -7,6 +7,7 @@ use krzysztofzylka\DatabaseManager\Enum\ColumnDefault;
 use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
+use Random\RandomException;
 
 class DatabaseLock
 {
@@ -112,6 +113,7 @@ class DatabaseLock
      * @param int|null $timeout
      * @return bool
      * @throws DatabaseManagerException
+     * @throws RandomException
      */
     public function lock(string $name, ?int $timeout = null): bool
     {
@@ -123,12 +125,12 @@ class DatabaseLock
         }
 
         try {
-            $this->table->insert([
+            $this->executeWithRetry(fn () => $this->table->insert([
                 'lock_name' => $name,
                 'lock_time' => date('Y-m-d H:i:s'),
                 'lock_expiration' => date('Y-m-d H:i:s', strtotime("+$timeout seconds")),
                 'server_identifier' => $this->serverIdentifier
-            ]);
+            ]));
 
             return true;
         } catch (Exception) {
@@ -141,10 +143,13 @@ class DatabaseLock
      * @param string $name
      * @return bool
      * @throws DatabaseManagerException
+     * @throws RandomException
      */
     public function unlock(string $name): bool
     {
-        return $this->table->deleteByConditions(['lock_name' => $name, 'server_identifier' => $this->serverIdentifier]);
+        return $this->executeWithRetry(
+            fn () => $this->table->deleteByConditions(['lock_name' => $name, 'server_identifier' => $this->serverIdentifier])
+        );
     }
 
     /**
@@ -162,10 +167,38 @@ class DatabaseLock
      * Delete expired locks
      * @return void
      * @throws DatabaseManagerException
+     * @throws RandomException
      */
     private function cleanExpiredLocks(): void
     {
-        $this->table->deleteByConditions([new Condition('lock_expiration', '<', date('Y-m-d H:i:s'))]);
+        $this->executeWithRetry(
+            fn () => $this->table->deleteByConditions([new Condition('lock_expiration', '<', date('Y-m-d H:i:s'))])
+        );
+    }
+
+    /**
+     * Execute callback with retry on deadlock
+     * @param callable $callback
+     * @param int $retries
+     * @return mixed
+     * @throws DatabaseManagerException
+     * @throws RandomException
+     */
+    private function executeWithRetry(callable $callback, int $retries = 10): mixed
+    {
+        for ($attempt = 1; $attempt <= $retries; $attempt++) {
+            try {
+                return $callback();
+            } catch (DatabaseManagerException $exception) {
+                if ($attempt === $retries || !str_contains($exception->getHiddenMessage(), 'Deadlock')) {
+                    throw $exception;
+                }
+
+                usleep(min(500000, 50000 * $attempt) + random_int(0, 50000));
+            }
+        }
+
+        return null;
     }
 
     /**
