@@ -7,6 +7,7 @@ use krzysztofzylka\DatabaseManager\Enum\ColumnDefault;
 use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
+use Random\RandomException;
 
 class DatabaseLock
 {
@@ -112,6 +113,7 @@ class DatabaseLock
      * @param int|null $timeout
      * @return bool
      * @throws DatabaseManagerException
+     * @throws RandomException
      */
     public function lock(string $name, ?int $timeout = null): bool
     {
@@ -141,6 +143,7 @@ class DatabaseLock
      * @param string $name
      * @return bool
      * @throws DatabaseManagerException
+     * @throws RandomException
      */
     public function unlock(string $name): bool
     {
@@ -164,6 +167,7 @@ class DatabaseLock
      * Delete expired locks
      * @return void
      * @throws DatabaseManagerException
+     * @throws RandomException
      */
     private function cleanExpiredLocks(): void
     {
@@ -178,6 +182,7 @@ class DatabaseLock
      * @param int $retries
      * @return mixed
      * @throws DatabaseManagerException
+     * @throws RandomException
      */
     private function executeWithRetry(callable $callback, int $retries = 10): mixed
     {
