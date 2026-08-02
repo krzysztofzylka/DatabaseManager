@@ -22,7 +22,7 @@ class RevisedColumnTypeTest extends TestCase
         $this->column = new Column();
 
         // Mock połączenia bazodanowego
-        $mockConnection = $this->createMock(DatabaseConnect::class);
+        $mockConnection = $this->createStub(DatabaseConnect::class);
         $mockConnection->method('getType')->willReturn(DatabaseType::mysql);
 
         $reflection = new ReflectionClass(DatabaseManager::class);

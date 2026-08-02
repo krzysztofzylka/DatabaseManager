@@ -8,17 +8,18 @@ class Table
     /**
      * Prepare column name with alias
      * @param string $name
+     * @param string $quote
      * @return string
      */
-    public static function prepareColumnNameWithAlias(string $name): string
+    public static function prepareColumnNameWithAlias(string $name, string $quote = '`'): string
     {
         if (str_contains($name, '.')) {
             $explode = explode('.', $name);
 
-            return '`' . $explode[0] . '`.`' . $explode[1] . '`';
+            return $quote . $explode[0] . $quote . '.' . $quote . $explode[1] . $quote;
         }
 
-        return '`' . $name . '`';
+        return $quote . $name . $quote;
     }
 
 }

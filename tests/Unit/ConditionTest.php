@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use krzysztofzylka\DatabaseManager\Condition;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use PHPUnit\Framework\TestCase;
 
 class ConditionTest extends TestCase
@@ -68,5 +69,13 @@ class ConditionTest extends TestCase
         $condition->setValue(21);
         $this->assertEquals(21, $condition->getValue());
         $this->assertEquals('`age` > 21', (string)$condition);
+    }
+
+    public function testPostgresUsesDoubleQuotes(): void
+    {
+        $condition = new Condition('users.email', '=', 'john@example.com');
+        $condition->setDatabaseType(DatabaseType::postgres);
+
+        $this->assertEquals('"users"."email" = "john@example.com"', (string)$condition);
     }
 }

@@ -111,7 +111,7 @@ class DatabaseManager
             case 'mysql':
                 $query = "SHOW TABLES";
                 break;
-            case 'postgresql':
+            case 'postgres':
                 $query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'";
                 break;
             case 'sqlite':
@@ -163,7 +163,7 @@ class DatabaseManager
             ";
                 break;
 
-            case 'postgresql':
+            case 'postgres':
                 $query = "
                 SELECT 
                     c.table_name, 

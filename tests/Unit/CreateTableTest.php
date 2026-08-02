@@ -29,7 +29,7 @@ class CreateTableTest extends TestCase
     {
         // Używamy mock obiektu do symulowania typu bazy danych
         // Tworzymy obiekt połączenia i ustawiamy go w DatabaseManager
-        $mockConnection = $this->createMock(\krzysztofzylka\DatabaseManager\DatabaseConnect::class);
+        $mockConnection = $this->createStub(\krzysztofzylka\DatabaseManager\DatabaseConnect::class);
         $mockConnection->method('getType')->willReturn(DatabaseType::mysql);
 
         $reflection = new ReflectionClass(DatabaseManager::class);

@@ -30,4 +30,18 @@ class TableHelperTest extends TestCase
         $result = Table::prepareColumnNameWithAlias('table1.column2');
         $this->assertEquals('`table1`.`column2`', $result);
     }
+
+    public function testPrepareColumnNameWithAliasUsesGivenQuoteCharacter(): void
+    {
+        $result = Table::prepareColumnNameWithAlias('table.column', '"');
+
+        $this->assertSame('"table"."column"', $result);
+    }
+
+    public function testPrepareColumnNameWithAliasDefaultsToBacktick(): void
+    {
+        $result = Table::prepareColumnNameWithAlias('table.column');
+
+        $this->assertSame('`table`.`column`', $result);
+    }
 }

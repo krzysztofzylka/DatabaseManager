@@ -127,7 +127,8 @@ trait TableHelpers
                 $foreignKey = $bind['foreignKey'];
             }
 
-            $bindData = $bind['type'] . ' `' . $bind['tableName'] . '` ON ' . $bind['primaryKey'] . ' = ' . $foreignKey;
+            $quote = $this->getIdQuote();
+            $bindData = $bind['type'] . ' ' . $quote . $bind['tableName'] . $quote . ' ON ' . $bind['primaryKey'] . ' = ' . $foreignKey;
 
             if (!is_null($bind['condition'])) {
                 $isNotEmpty = false;
