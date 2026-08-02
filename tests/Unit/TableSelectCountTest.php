@@ -15,7 +15,7 @@ class TableSelectCountTest extends TestCase
 {
     private function connectWithMockPdo(PDOStatement $statement): PDO
     {
-        $pdo = $this->createMock(PDO::class);
+        $pdo = $this->createStub(PDO::class);
         $pdo->method('prepare')->willReturn($statement);
 
         $connect = DatabaseConnect::create()
@@ -30,7 +30,7 @@ class TableSelectCountTest extends TestCase
 
     public function testFindCountWithoutGroupByUsesSimpleCount(): void
     {
-        $statement = $this->createMock(PDOStatement::class);
+        $statement = $this->createStub(PDOStatement::class);
         $statement->method('execute')->willReturn(true);
         $statement->method('fetch')->willReturn(['count' => 5]);
 
@@ -47,7 +47,7 @@ class TableSelectCountTest extends TestCase
 
     public function testFindCountWithGroupByCountsGroupsNotRows(): void
     {
-        $statement = $this->createMock(PDOStatement::class);
+        $statement = $this->createStub(PDOStatement::class);
         $statement->method('execute')->willReturn(true);
         $statement->method('fetch')->willReturn(['count' => 3]);
 

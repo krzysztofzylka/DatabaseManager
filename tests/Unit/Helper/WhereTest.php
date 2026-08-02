@@ -3,6 +3,7 @@
 namespace Tests\Unit\Helper;
 
 use krzysztofzylka\DatabaseManager\Condition;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Helper\Where;
 use PHPUnit\Framework\TestCase;
 
@@ -111,5 +112,14 @@ class WhereTest extends TestCase
         ];
         $sql = $this->where->getPrepareConditions($conditions, 'OR');
         $this->assertEquals('(`name` = :bind_0 OR `email` = :bind_1)', $sql['sql']);
+    }
+
+    public function testPostgresUsesDoubleQuotes(): void
+    {
+        $this->where->setDatabaseType(DatabaseType::postgres);
+
+        $sql = $this->where->getPrepareConditions(['users.name' => 'John']);
+
+        $this->assertEquals('("users"."name" = :bind_0)', $sql['sql']);
     }
 }
