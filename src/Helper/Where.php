@@ -83,7 +83,9 @@ class Where
                     }
                 } elseif ($conditionValue instanceof Condition) {
                     $conditionValue->setDatabaseType($this->databaseType);
-                    $sqlArray[] = (string)$conditionValue;
+                    $compiled = $conditionValue->toSql($bindIndex);
+                    $sqlArray[] = $compiled['sql'];
+                    $bindValues = array_merge($bindValues, $compiled['bind']);
                 } elseif (is_array($conditionValue) && !empty($conditionValue)) {
                     if (array_key_exists(0, $conditionValue) && count($conditionValue) === 2 && is_string($conditionValue[0]) && strtoupper($conditionValue[0]) === 'BETWEEN') {
                         $bindKey1 = ':bind_' . $bindIndex++;
@@ -190,7 +192,9 @@ class Where
         foreach ($conditions as $condition) {
             if ($condition instanceof Condition) {
                 $condition->setDatabaseType($this->databaseType);
-                $sqlParts[] = (string)$condition;
+                $compiled = $condition->toSql($bindIndex);
+                $sqlParts[] = $compiled['sql'];
+                $bindValues = array_merge($bindValues, $compiled['bind']);
             } elseif (is_array($condition)) {
                 // Jeśli asocjacyjna tablica (ma klucze string), potraktuj jako podwarunek logiczny
                 $isAssoc = count(array_filter(array_keys($condition), 'is_string')) > 0;

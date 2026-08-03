@@ -132,19 +132,21 @@ trait TableHelpers
 
             if (!is_null($bind['condition'])) {
                 $isNotEmpty = false;
+                $conditionSql = null;
+                $conditionBind = [];
 
                 if ($bind['condition'] instanceof Condition) {
-                    $conditionString = trim((string)$bind['condition']);
-                    $isNotEmpty = $conditionString !== '';
+                    $bind['condition']->setDatabaseType($this->getDatabaseType());
+                    $compiled = $bind['condition']->toSql($bindIndex);
+                    $conditionSql = trim($compiled['sql']);
+                    $conditionBind = $compiled['bind'];
+                    $isNotEmpty = $conditionSql !== '';
                 } elseif (is_array($bind['condition'])) {
                     $isNotEmpty = count($bind['condition']) > 0;
                 }
 
                 if ($isNotEmpty) {
                     if ($bind['condition'] instanceof Condition) {
-                        $bind['condition']->setDatabaseType($this->getDatabaseType());
-                        $conditionString = (string)$bind['condition'];
-
                         if (!empty($bind['tableAlias'])) {
                             $cleanTableName = str_replace('`', '', $bind['tableName']);
                             $patterns = [
@@ -152,10 +154,11 @@ trait TableHelpers
                                 $cleanTableName . '.' => $bind['tableAlias'] . '.'
                             ];
                             foreach ($patterns as $pattern => $replacement) {
-                                $conditionString = str_replace($pattern, $replacement, $conditionString);
+                                $conditionSql = str_replace($pattern, $replacement, $conditionSql);
                             }
                         }
-                        $bindData .= ' AND ' . $conditionString;
+                        $bindData .= ' AND ' . $conditionSql;
+                        $bindValues = array_merge($bindValues, $conditionBind);
                     } else {
                         $whereHelper = new Where();
                         $whereHelper->setDatabaseType($this->getDatabaseType());
