@@ -53,7 +53,8 @@ class WhereTest extends TestCase
             new Condition('age', '>', 25)
         ];
         $sql = $this->where->getPrepareConditions($conditions);
-        $this->assertEquals('(`name` = :bind_0 AND `age` > 25)', $sql['sql']);
+        $this->assertEquals('(`name` = :bind_0 AND `age` > :bind_1)', $sql['sql']);
+        $this->assertEquals([':bind_0' => 'John', ':bind_1' => 25], $sql['bind']);
     }
 
     public function testArrayValues(): void

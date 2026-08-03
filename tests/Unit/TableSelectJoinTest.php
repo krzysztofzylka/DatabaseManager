@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use krzysztofzylka\DatabaseManager\Condition;
 use krzysztofzylka\DatabaseManager\DatabaseConnect;
 use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
@@ -100,6 +101,44 @@ class TableSelectJoinTest extends TestCase
                 'tags' => [['name' => 'green']],
             ],
         ], $result);
+    }
+
+    /**
+     * Regression test for the Condition SQL injection fix: a Condition attached to a
+     * JOIN via bind() must bind its value as a parameter, never embed it into the SQL
+     * string, and its placeholder must not collide with the WHERE clause's placeholders.
+     */
+    public function testJoinConditionBindsValueInsteadOfEmbeddingIt(): void
+    {
+        $boundValues = [];
+
+        $statement = $this->createStub(PDOStatement::class);
+        $statement->method('execute')->willReturn(true);
+        $statement->method('fetchAll')->willReturn([]);
+        $statement->method('bindValue')->willReturnCallback(function ($key, $value) use (&$boundValues) {
+            $boundValues[$key] = $value;
+
+            return true;
+        });
+
+        $this->connectWithMockPdo($statement);
+
+        $table = new Table('items');
+        $table->bind(
+            BindType::innerJoin,
+            'categories',
+            condition: new Condition('categories.status', '=', "x' OR '1'='1")
+        );
+
+        $table->findAll(['name' => 'Widget'], ['id']);
+
+        $sql = DatabaseManager::getLastSql();
+
+        $this->assertStringNotContainsString("x' OR '1'='1", $sql);
+        $this->assertStringContainsString(':bind_0', $sql);
+        $this->assertStringContainsString(':bind_1', $sql);
+        $this->assertSame('Widget', $boundValues[':bind_0']);
+        $this->assertSame("x' OR '1'='1", $boundValues[':bind_1']);
     }
 
     public function testUnbindRemovesPreviouslyBoundTable(): void
