@@ -7,8 +7,10 @@ use krzysztofzylka\DatabaseManager\ConnectionManager;
 use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
+use krzysztofzylka\DatabaseManager\GroupBy;
 use krzysztofzylka\DatabaseManager\Helper\SqlBuilder;
 use krzysztofzylka\DatabaseManager\Helper\Where;
+use krzysztofzylka\DatabaseManager\OrderBy;
 use krzysztofzylka\DatabaseManager\Table;
 use PDO;
 
@@ -51,12 +53,14 @@ trait TableSelect
      * Find one element
      * @param array|null $condition
      * @param array|null $columns
-     * @param ?string $orderBy
+     * @param string|OrderBy|array|null $orderBy raw string (deprecated) or OrderBy/array of OrderBy
      * @return array
      * @throws DatabaseManagerException
      */
-    public function find(?array $condition = null, ?array $columns = null, ?string $orderBy = null): array
+    public function find(?array $condition = null, ?array $columns = null, string|OrderBy|array|null $orderBy = null): array
     {
+        $orderBy = $this->normalizeSqlList($orderBy);
+
         $whereHelper = new Where();
         $whereHelper->setDatabaseType($this->getDatabaseType());
 
@@ -106,14 +110,26 @@ trait TableSelect
      * Find all elements
      * @param array|null $condition
      * @param array|null $columns
-     * @param ?string $orderBy
-     * @param ?string $limit
-     * @param ?string $groupBy
+     * @param string|OrderBy|array|null $orderBy raw string (deprecated) or OrderBy/array of OrderBy
+     * @param string|int|null $limit raw "LIMIT" string (deprecated) or a validated non-negative integer
+     * @param string|GroupBy|array|null $groupBy raw string (deprecated) or GroupBy/array of GroupBy
+     * @param ?int $offset only usable together with an integer $limit
      * @return array
      * @throws DatabaseManagerException
      */
-    public function findAll(?array $condition = null, ?array $columns = null, ?string $orderBy = null, ?string $limit = null, ?string $groupBy = null): array
+    public function findAll(
+        ?array $condition = null,
+        ?array $columns = null,
+        string|OrderBy|array|null $orderBy = null,
+        string|int|null $limit = null,
+        string|GroupBy|array|null $groupBy = null,
+        ?int $offset = null
+    ): array
     {
+        $orderBy = $this->normalizeSqlList($orderBy);
+        $groupBy = $this->normalizeSqlList($groupBy);
+        $limit = $this->normalizeLimit($limit, $offset);
+
         $whereHelper = new Where();
         $whereHelper->setDatabaseType($this->getDatabaseType());
 

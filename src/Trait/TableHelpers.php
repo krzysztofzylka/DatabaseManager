@@ -2,14 +2,77 @@
 
 namespace krzysztofzylka\DatabaseManager\Trait;
 
+use InvalidArgumentException;
 use Krzysztofzylka\Arrays\Arrays;
 use krzysztofzylka\DatabaseManager\Condition;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
+use krzysztofzylka\DatabaseManager\GroupBy;
 use krzysztofzylka\DatabaseManager\Helper\Where;
+use krzysztofzylka\DatabaseManager\OrderBy;
 
 trait TableHelpers
 {
+
+    /**
+     * Normalize a raw string, a single OrderBy/GroupBy, or an array of them into the
+     * plain comma-separated string the existing SQL-building pipeline expects
+     * @param string|OrderBy|GroupBy|array|null $value
+     * @return ?string
+     */
+    private function normalizeSqlList(string|OrderBy|GroupBy|array|null $value): ?string
+    {
+        if (is_null($value)) {
+            return null;
+        }
+
+        if (is_array($value)) {
+            return implode(', ', array_map('strval', $value));
+        }
+
+        return (string)$value;
+    }
+
+    /**
+     * Normalize the limit/offset pair into the raw string the existing SQL-building
+     * pipeline expects, validating the structured (integer) form
+     * @param string|int|null $limit
+     * @param ?int $offset
+     * @return ?string
+     * @throws InvalidArgumentException
+     */
+    private function normalizeLimit(string|int|null $limit, ?int $offset): ?string
+    {
+        if (is_null($limit)) {
+            if (!is_null($offset)) {
+                throw new InvalidArgumentException('offset can only be used together with a limit');
+            }
+
+            return null;
+        }
+
+        if (is_string($limit)) {
+            if (!is_null($offset)) {
+                throw new InvalidArgumentException('offset can only be combined with an integer limit, not a raw limit string');
+            }
+
+            return $limit;
+        }
+
+        if ($limit < 0) {
+            throw new InvalidArgumentException('limit must not be negative');
+        }
+
+        if (is_null($offset)) {
+            return (string)$limit;
+        }
+
+        if ($offset < 0) {
+            throw new InvalidArgumentException('offset must not be negative');
+        }
+
+        return $limit . ' OFFSET ' . $offset;
+    }
 
     /**
      * Prepare return data

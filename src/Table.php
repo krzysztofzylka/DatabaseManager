@@ -310,7 +310,7 @@ class Table
                 $return = $cacheData;
             } else {
                 if ($this->getDatabaseType() === DatabaseType::sqlite) {
-                    $sql = 'pragma table_info("user");';
+                    $sql = 'pragma table_info("' . $this->getName() . '");';
                     DatabaseManager::setLastSql($sql);
                     $data = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
