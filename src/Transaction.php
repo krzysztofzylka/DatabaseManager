@@ -6,6 +6,7 @@ use Exception;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Exception\TransactionException;
 use PDO;
+use Throwable;
 
 class Transaction
 {
@@ -144,18 +145,19 @@ class Transaction
                 throw new TransactionException('No active transaction to commit');
             }
 
-            $this->setTransactionLevel($level - 1);
-
             if ($level === 1) {
                 $this->sql->commit();
                 DatabaseManager::setLastSql('[commit]');
+                $this->setTransactionLevel(0);
             } elseif ($this->supportsSavepoints()) {
                 $savepointName = 'sp_' . self::$savepointCounters[$this->getConnectionId()];
                 $this->sql->exec("RELEASE SAVEPOINT $savepointName");
                 DatabaseManager::setLastSql("[release savepoint $savepointName]");
                 self::$savepointCounters[$this->getConnectionId()]--;
+                $this->setTransactionLevel($level - 1);
             } else {
                 DatabaseManager::setLastSql('[nested commit - ignored]');
+                $this->setTransactionLevel($level - 1);
             }
         } catch (Exception $exception) {
             throw new TransactionException($exception->getMessage());
@@ -232,7 +234,7 @@ class Transaction
      * @return mixed
      * @throws TransactionException
      */
-    public function execute(callable $callback)
+    public function execute(callable $callback): mixed
     {
         $this->begin();
 
@@ -240,9 +242,20 @@ class Transaction
             $result = $callback($this);
             $this->commit();
             return $result;
-        } catch (Exception $e) {
-            $this->rollback();
-            throw $e;
+        } catch (Throwable $original) {
+            try {
+                if ($this->inTransaction()) {
+                    $this->rollback();
+                }
+            } catch (Throwable $rollbackError) {
+                throw new TransactionException(
+                    $original->getMessage() . ' (rollback also failed: ' . $rollbackError->getMessage() . ')',
+                    0,
+                    $original
+                );
+            }
+
+            throw $original;
         }
     }
 
