@@ -8,6 +8,7 @@ use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
+use krzysztofzylka\DatabaseManager\Helper\SqlIdentifier;
 
 class AlterTable
 {
@@ -57,6 +58,10 @@ class AlterTable
      */
     public function setName(?string $name): self
     {
+        if (!is_null($name)) {
+            SqlIdentifier::validate($name);
+        }
+
         $this->name = $name;
 
         return $this;
@@ -72,6 +77,8 @@ class AlterTable
      */
     public function extendEnum(string $columnName, string $newValue, ?bool $sort = true): self
     {
+        SqlIdentifier::validate($columnName);
+
         $columnData = (new Table())->setName($this->name)->columnList($columnName);
         $columnType = $columnData['Type'];
         $columnType = explode("','", substr($columnType, 6, -2));
@@ -104,6 +111,7 @@ class AlterTable
         $after = '';
 
         if (!is_null($afterColumnName)) {
+            SqlIdentifier::validate($afterColumnName);
             $after .= ' AFTER `' . $afterColumnName . '`';
         }
 
@@ -120,6 +128,8 @@ class AlterTable
      */
     public function removeColumn(string $columnName): self
     {
+        SqlIdentifier::validate($columnName);
+
         $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` DROP COLUMN `' . $columnName . '`;';
 
         return $this;
@@ -135,6 +145,8 @@ class AlterTable
      */
     public function modifyColumn(string $columnName, ColumnType $columnType, mixed $size = '255', array $attributes = []): self
     {
+        SqlIdentifier::validate($columnName);
+
         $size = $size ? '(' . $size . ') ' : '';
         $attributesString = !empty($attributes) ? ' ' . implode(' ', $attributes) : '';
 
@@ -152,6 +164,9 @@ class AlterTable
      */
     public function renameColumn(string $oldName, string $newName): self
     {
+        SqlIdentifier::validate($oldName);
+        SqlIdentifier::validate($newName);
+
         $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` RENAME COLUMN `' . $oldName . '` TO `' . $newName . '`;';
 
         return $this;

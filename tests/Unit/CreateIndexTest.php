@@ -8,6 +8,7 @@ use krzysztofzylka\DatabaseManager\DatabaseConnect;
 use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
+use InvalidArgumentException;
 use PDO;
 use PHPUnit\Framework\TestCase;
 
@@ -38,6 +39,33 @@ class CreateIndexTest extends TestCase
             ->addColumn('email');
 
         $this->assertSame('idx_users_email', $index->getName());
+    }
+
+    public function testSetTableNameRejectsInvalidSqlIdentifier(): void
+    {
+        $this->connectDefaultWithMockPdo();
+
+        $this->expectException(InvalidArgumentException::class);
+
+        CreateIndex::create('users')->setTableName('users; DROP TABLE users; --');
+    }
+
+    public function testSetNameRejectsInvalidSqlIdentifier(): void
+    {
+        $this->connectDefaultWithMockPdo();
+
+        $this->expectException(InvalidArgumentException::class);
+
+        CreateIndex::create('users')->setName("idx' OR '1'='1");
+    }
+
+    public function testAddColumnRejectsInvalidSqlIdentifier(): void
+    {
+        $this->connectDefaultWithMockPdo();
+
+        $this->expectException(InvalidArgumentException::class);
+
+        CreateIndex::create('users')->addColumn('email; DROP TABLE users; --');
     }
 
     public function testGetNameFallsBackToGeneratedNameFromColumns(): void

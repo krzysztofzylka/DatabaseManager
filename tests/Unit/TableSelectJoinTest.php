@@ -8,6 +8,7 @@ use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Table;
+use InvalidArgumentException;
 use PDO;
 use PDOStatement;
 use PHPUnit\Framework\TestCase;
@@ -139,6 +140,54 @@ class TableSelectJoinTest extends TestCase
         $this->assertStringContainsString(':bind_1', $sql);
         $this->assertSame('Widget', $boundValues[':bind_0']);
         $this->assertSame("x' OR '1'='1", $boundValues[':bind_1']);
+    }
+
+    public function testBindRejectsInvalidTableName(): void
+    {
+        $statement = $this->createStub(PDOStatement::class);
+        $this->connectWithMockPdo($statement);
+
+        $table = new Table('items');
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $table->bind(BindType::innerJoin, "categories; DROP TABLE users; --");
+    }
+
+    public function testBindRejectsInvalidPrimaryKey(): void
+    {
+        $statement = $this->createStub(PDOStatement::class);
+        $this->connectWithMockPdo($statement);
+
+        $table = new Table('items');
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $table->bind(BindType::innerJoin, 'categories', primaryKey: "id' OR '1'='1");
+    }
+
+    public function testBindRejectsInvalidForeignKey(): void
+    {
+        $statement = $this->createStub(PDOStatement::class);
+        $this->connectWithMockPdo($statement);
+
+        $table = new Table('items');
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $table->bind(BindType::innerJoin, 'categories', foreignKey: "items_id' OR '1'='1");
+    }
+
+    public function testBindRejectsInvalidTableAlias(): void
+    {
+        $statement = $this->createStub(PDOStatement::class);
+        $this->connectWithMockPdo($statement);
+
+        $table = new Table('items');
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $table->bind(BindType::innerJoin, 'categories', tableAlias: "c; DROP TABLE users; --");
     }
 
     public function testUnbindRemovesPreviouslyBoundTable(): void

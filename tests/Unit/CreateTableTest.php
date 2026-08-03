@@ -8,6 +8,7 @@ use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Enum\ColumnDefault;
 use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
@@ -18,11 +19,12 @@ class CreateTableTest extends TestCase
 
     protected function setUp(): void
     {
+        // Mock DatabaseManager::getDatabaseType before constructing CreateTable, since
+        // its constructor reads the current connection's type once and caches it.
+        $this->mockDatabaseType();
+
         $this->createTable = new CreateTable();
         $this->createTable->setName('test_table');
-
-        // Mock DatabaseManager::getDatabaseType
-        $this->mockDatabaseType();
     }
 
     private function mockDatabaseType(): void
@@ -46,6 +48,13 @@ class CreateTableTest extends TestCase
         $reflectionMethod->setAccessible(true);
 
         $this->assertEquals('new_table_name', $reflectionMethod->invoke($this->createTable));
+    }
+
+    public function testSetNameRejectsInvalidSqlIdentifier(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createTable->setName("users; DROP TABLE users; --");
     }
 
     public function testAddColumn(): void

@@ -4,6 +4,7 @@ namespace krzysztofzylka\DatabaseManager;
 
 use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 use krzysztofzylka\DatabaseManager\Enum\Trigger;
+use krzysztofzylka\DatabaseManager\Helper\SqlIdentifier;
 
 class Column
 {
@@ -62,7 +63,7 @@ class Column
      */
     public function setName(string $name): Column
     {
-        $this->name = $name;
+        $this->name = SqlIdentifier::validate($name);
 
         return $this;
     }
