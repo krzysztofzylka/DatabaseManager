@@ -5,6 +5,7 @@ namespace krzysztofzylka\DatabaseManager;
 use Exception;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
+use krzysztofzylka\DatabaseManager\Helper\SqlIdentifier;
 use PDO;
 
 class CreateIndex
@@ -120,7 +121,7 @@ class CreateIndex
      */
     public function setTableName(string $tableName): CreateIndex
     {
-        $this->tableName = $tableName;
+        $this->tableName = SqlIdentifier::validate($tableName);
 
         return $this;
     }
@@ -132,7 +133,7 @@ class CreateIndex
      */
     public function setName(string $name): CreateIndex
     {
-        $this->name = $name;
+        $this->name = SqlIdentifier::validate($name);
 
         return $this;
     }
@@ -144,7 +145,7 @@ class CreateIndex
      */
     public function addColumn(string $name): CreateIndex
     {
-        $this->columns[] = $name;
+        $this->columns[] = SqlIdentifier::validate($name);
 
         return $this;
     }

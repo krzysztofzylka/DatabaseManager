@@ -8,6 +8,7 @@ use krzysztofzylka\DatabaseManager\Enum\Trigger;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
+use krzysztofzylka\DatabaseManager\Helper\SqlIdentifier;
 use krzysztofzylka\DatabaseManager\Trait\TablePredefinedColumn;
 use PDO;
 
@@ -135,7 +136,7 @@ class CreateTable
      */
     public function setName(string $name): self
     {
-        $this->name = $name;
+        $this->name = SqlIdentifier::validate($name);
 
         return $this;
     }

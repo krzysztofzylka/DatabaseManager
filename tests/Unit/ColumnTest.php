@@ -6,6 +6,7 @@ use krzysztofzylka\DatabaseManager\Column;
 use krzysztofzylka\DatabaseManager\Enum\ColumnDefault;
 use krzysztofzylka\DatabaseManager\Enum\ColumnType;
 use krzysztofzylka\DatabaseManager\Enum\Trigger;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 class ColumnTest extends TestCase
@@ -26,6 +27,15 @@ class ColumnTest extends TestCase
         $column->setName('test_column');
 
         $this->assertEquals('test_column', $column->getName());
+    }
+
+    public function testSetNameRejectsInvalidSqlIdentifier(): void
+    {
+        $column = new Column();
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $column->setName("name' OR '1'='1");
     }
 
     public function testSetType(): void

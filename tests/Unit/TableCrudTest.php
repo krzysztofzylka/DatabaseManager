@@ -8,6 +8,7 @@ use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Table;
+use InvalidArgumentException;
 use PDO;
 use PDOStatement;
 use PHPUnit\Framework\TestCase;
@@ -23,14 +24,31 @@ class TableCrudTest extends TestCase
         (new DatabaseManager())->connect($connect);
     }
 
-    public function testSetNameEscapesHtmlSpecialCharacters(): void
+    /**
+     * setName() used to silently mangle invalid input via htmlspecialchars(), which does
+     * not protect against SQL injection and produced a garbled table name instead of
+     * rejecting it. It now validates the name as a strict SQL identifier and rejects
+     * anything that isn't one.
+     */
+    public function testSetNameRejectsInvalidSqlIdentifier(): void
     {
         $this->connectWithMockPdo($this->createStub(PDO::class));
 
         $table = new Table();
-        $table->setName('<items>');
 
-        $this->assertSame('&lt;items&gt;', $table->getName());
+        $this->expectException(InvalidArgumentException::class);
+
+        $table->setName('<items>');
+    }
+
+    public function testSetNameAcceptsValidIdentifier(): void
+    {
+        $this->connectWithMockPdo($this->createStub(PDO::class));
+
+        $table = new Table();
+        $table->setName('items_2');
+
+        $this->assertSame('items_2', $table->getName());
     }
 
     public function testSetAndGetId(): void

@@ -7,6 +7,7 @@ use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
+use krzysztofzylka\DatabaseManager\Helper\SqlIdentifier;
 use krzysztofzylka\DatabaseManager\Helper\Where;
 use krzysztofzylka\DatabaseManager\Trait\TableHelpers;
 use krzysztofzylka\DatabaseManager\Trait\TableSelect;
@@ -100,7 +101,7 @@ class Table
      */
     public function setName(string $name): self
     {
-        $this->name = htmlspecialchars($name);
+        $this->name = SqlIdentifier::validate($name);
 
         return $this;
     }
@@ -222,6 +223,22 @@ class Table
             }
 
             return $this;
+        }
+
+        if (!is_null($tableName)) {
+            SqlIdentifier::validate($tableName);
+        }
+
+        if (!is_null($primaryKey)) {
+            SqlIdentifier::validateQualified($primaryKey);
+        }
+
+        if (!is_null($foreignKey)) {
+            SqlIdentifier::validateQualified($foreignKey);
+        }
+
+        if (!is_null($tableAlias)) {
+            SqlIdentifier::validate($tableAlias);
         }
 
         $quote = $this->getIdQuote();
