@@ -85,6 +85,31 @@ class ConditionToSqlTest extends TestCase
         $this->assertSame(2, $bindIndex);
     }
 
+    /**
+     * Regression test: toSql() used to build `column IN ()` for an empty array, which is
+     * a SQL syntax error on MySQL/PostgreSQL/SQLite. IN with nothing to match can never
+     * be true, so it must compile to an always-false fragment instead.
+     */
+    public function testInWithEmptyArrayIsAlwaysFalseNotASyntaxError(): void
+    {
+        $bindIndex = 0;
+        $result = (new Condition('id', 'IN', []))->toSql($bindIndex);
+
+        $this->assertSame('1 = 0', $result['sql']);
+        $this->assertSame([], $result['bind']);
+        $this->assertSame(0, $bindIndex);
+    }
+
+    public function testNotInWithEmptyArrayIsAlwaysTrueNotASyntaxError(): void
+    {
+        $bindIndex = 0;
+        $result = (new Condition('id', 'NOT IN', []))->toSql($bindIndex);
+
+        $this->assertSame('1 = 1', $result['sql']);
+        $this->assertSame([], $result['bind']);
+        $this->assertSame(0, $bindIndex);
+    }
+
     public function testInWithMaliciousElementStaysBound(): void
     {
         $bindIndex = 0;
