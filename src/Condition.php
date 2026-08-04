@@ -115,6 +115,16 @@ class Condition
         }
 
         if (is_array($this->value) && ($normalizedOperator === 'IN' || $normalizedOperator === 'NOT IN')) {
+            if (empty($this->value)) {
+                // An empty list can never contain a value, so IN () is always false and
+                // NOT IN () is always true. Returning literal `column IN ()`/`NOT IN ()`
+                // would be a SQL syntax error on MySQL/PostgreSQL/SQLite.
+                return [
+                    'sql' => $normalizedOperator === 'IN' ? '1 = 0' : '1 = 1',
+                    'bind' => []
+                ];
+            }
+
             $bind = [];
             $placeholders = [];
 
