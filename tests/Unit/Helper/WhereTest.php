@@ -68,6 +68,31 @@ class WhereTest extends TestCase
 
     }
 
+    /**
+     * Regression test: an empty array value used to fall through to the scalar branch
+     * and get bound as a PDO parameter, which PHP silently coerces to the string "Array"
+     * (with a PHP warning) instead of matching nothing. It now compiles to a clean,
+     * always-false fragment with no bind and no warning.
+     */
+    public function testEmptyArrayValueIsAlwaysFalseNotBoundAsArray(): void
+    {
+        $sql = $this->where->getPrepareConditions(['status' => []]);
+
+        $this->assertEquals('(1 = 0)', $sql['sql']);
+        $this->assertEquals([], $sql['bind']);
+    }
+
+    public function testEmptyArrayValueComposesInsideNestedOr(): void
+    {
+        $sql = $this->where->getPrepareConditions([
+            'active' => 1,
+            'OR' => ['status' => []],
+        ]);
+
+        $this->assertEquals('(`active` = :bind_0 AND (1 = 0))', $sql['sql']);
+        $this->assertEquals([':bind_0' => 1], $sql['bind']);
+    }
+
     public function testBetweenValues(): void
     {
         $conditions = [
