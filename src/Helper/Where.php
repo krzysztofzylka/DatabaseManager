@@ -86,6 +86,11 @@ class Where
                     $compiled = $conditionValue->toSql($bindIndex);
                     $sqlArray[] = $compiled['sql'];
                     $bindValues = array_merge($bindValues, $compiled['bind']);
+                } elseif (is_array($conditionValue) && empty($conditionValue)) {
+                    // An empty list can never contain a value, so this is always false.
+                    // Falling through to the scalar branch would bind [] as a PDO
+                    // parameter, which PHP silently coerces to the string "Array".
+                    $sqlArray[] = '1 = 0';
                 } elseif (is_array($conditionValue) && !empty($conditionValue)) {
                     if (array_key_exists(0, $conditionValue) && count($conditionValue) === 2 && is_string($conditionValue[0]) && strtoupper($conditionValue[0]) === 'BETWEEN') {
                         $bindKey1 = ':bind_' . $bindIndex++;
