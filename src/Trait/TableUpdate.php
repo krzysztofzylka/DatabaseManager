@@ -4,24 +4,10 @@ namespace krzysztofzylka\DatabaseManager\Trait;
 
 use Exception;
 use krzysztofzylka\DatabaseManager\DatabaseManager;
-use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 
 trait TableUpdate
 {
-
-    /**
-     * Get SQL identifier quote character
-     * @return string
-     */
-    private function getIdQuote(): string
-    {
-        if ($this->getDatabaseType() === DatabaseType::postgres) {
-            return '"';
-        }
-
-        return '`';
-    }
 
     /**
      * Update

@@ -92,7 +92,7 @@ trait TableHelpers
         if (isset($this->bind)) {
             foreach ($this->bind as $bind) {
                 if ($bind['type'] === '#HAS_ONE#') {
-                    $hasOneBinds[] = str_replace('`', '', $bind['primaryKey']);
+                    $hasOneBinds[] = str_replace(['`', '"'], '', $bind['primaryKey']);
                 }
             }
         }
@@ -122,7 +122,7 @@ trait TableHelpers
                 foreach ($this->bind as $bind) {
                     if ($bind['type'] === '#HAS_MANY#') {
                         for ($i = 0; $i < count($returnData); $i++) {
-                            $dataId = Arrays::getFromArrayUsingString(str_replace('`', '', $bind['primaryKey']), $returnData[$i]);
+                            $dataId = Arrays::getFromArrayUsingString(str_replace(['`', '"'], '', $bind['primaryKey']), $returnData[$i]);
 
                             if (Arrays::inArrayKeys($dataId, $hasManyIds)) {
                                 $returnDataNew[$hasManyIds[$dataId]][$bind['tableName']][] = $returnData[$i][$bind['tableName']];
@@ -168,6 +168,8 @@ trait TableHelpers
         $return = [];
         $bindValues = [];
 
+        $quote = $this->getIdQuote();
+
         foreach ($this->bind as $bind) {
             if ($bind['type'] === '#HAS_ONE#') {
                 $bind['type'] = BindType::leftJoin->value;
@@ -175,23 +177,15 @@ trait TableHelpers
                 $bind['type'] = BindType::leftJoin->value;
             }
 
+            $foreignKey = $bind['foreignKey'];
+            $joinTable = $quote . $bind['tableName'] . $quote;
+
             if (!empty($bind['tableAlias'])) {
-                $cleanTableName = str_replace('`', '', $bind['tableName']);
-                $bind['tableName'] = $cleanTableName . '` as `' . $bind['tableAlias'];
-                $foreignKey = $bind['foreignKey'];
-                $patterns = [
-                    '`' . $cleanTableName . '`.`' => '`' . $bind['tableAlias'] . '`.`',
-                    $cleanTableName . '.' => $bind['tableAlias'] . '.'
-                ];
-                foreach ($patterns as $pattern => $replacement) {
-                    $foreignKey = str_replace($pattern, $replacement, $foreignKey);
-                }
-            } else {
-                $foreignKey = $bind['foreignKey'];
+                $joinTable .= ' as ' . $quote . $bind['tableAlias'] . $quote;
+                $foreignKey = $this->replaceTableWithAlias($foreignKey, $bind['tableName'], $bind['tableAlias']);
             }
 
-            $quote = $this->getIdQuote();
-            $bindData = $bind['type'] . ' ' . $quote . $bind['tableName'] . $quote . ' ON ' . $bind['primaryKey'] . ' = ' . $foreignKey;
+            $bindData = $bind['type'] . ' ' . $joinTable . ' ON ' . $bind['primaryKey'] . ' = ' . $foreignKey;
 
             if (!is_null($bind['condition'])) {
                 $isNotEmpty = false;
@@ -211,14 +205,7 @@ trait TableHelpers
                 if ($isNotEmpty) {
                     if ($bind['condition'] instanceof Condition) {
                         if (!empty($bind['tableAlias'])) {
-                            $cleanTableName = str_replace('`', '', $bind['tableName']);
-                            $patterns = [
-                                '`' . $cleanTableName . '`.`' => '`' . $bind['tableAlias'] . '`.`',
-                                $cleanTableName . '.' => $bind['tableAlias'] . '.'
-                            ];
-                            foreach ($patterns as $pattern => $replacement) {
-                                $conditionSql = str_replace($pattern, $replacement, $conditionSql);
-                            }
+                            $conditionSql = $this->replaceTableWithAlias($conditionSql, $bind['tableName'], $bind['tableAlias']);
                         }
                         $bindData .= ' AND ' . $conditionSql;
                         $bindValues = array_merge($bindValues, $conditionBind);
@@ -227,7 +214,6 @@ trait TableHelpers
                         $whereHelper->setDatabaseType($this->getDatabaseType());
 
                         if (!empty($bind['tableAlias'])) {
-                            $cleanTableName = str_replace('`', '', $bind['tableName']);
                             $modifiedCondition = [];
 
                             foreach ($bind['condition'] as $key => $value) {
@@ -255,6 +241,24 @@ trait TableHelpers
             'sql' => $return,
             'bind' => $bindValues
         ];
+    }
+
+    /**
+     * Point column references at the join alias instead of the joined table name
+     * @param string $sql
+     * @param string $tableName
+     * @param string $alias
+     * @return string
+     */
+    private function replaceTableWithAlias(string $sql, string $tableName, string $alias): string
+    {
+        $quote = $this->getIdQuote();
+
+        return str_replace(
+            [$quote . $tableName . $quote . '.', $tableName . '.'],
+            [$quote . $alias . $quote . '.', $alias . '.'],
+            $sql
+        );
     }
 
 }

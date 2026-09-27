@@ -84,7 +84,7 @@ class CreateIndexTest extends TestCase
         $pdo = $this->createMock(PDO::class);
         $pdo->expects($this->once())
             ->method('exec')
-            ->with('CREATE INDEX index_users_email ON users(`email`)')
+            ->with('CREATE INDEX `index_users_email` ON `users`(`email`)')
             ->willReturn(0);
         $this->connectDefaultWithGivenPdo($pdo);
 
@@ -92,7 +92,7 @@ class CreateIndexTest extends TestCase
 
         $this->assertTrue($index->execute());
         $this->assertSame(
-            'CREATE INDEX index_users_email ON users(`email`)',
+            'CREATE INDEX `index_users_email` ON `users`(`email`)',
             DatabaseManager::getLastSql()
         );
     }
@@ -102,7 +102,7 @@ class CreateIndexTest extends TestCase
         $pdo = $this->createMock(PDO::class);
         $pdo->expects($this->once())
             ->method('exec')
-            ->with('CREATE INDEX idx_multi ON orders(`user_id`, `status`)')
+            ->with('CREATE INDEX `idx_multi` ON `orders`(`user_id`, `status`)')
             ->willReturn(0);
         $this->connectDefaultWithGivenPdo($pdo);
 

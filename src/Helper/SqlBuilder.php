@@ -40,7 +40,7 @@ class SqlBuilder
             return self::$cache[$cacheKey];
         }
 
-        $quote = $databaseType === DatabaseType::postgres ? '"' : '`';
+        $quote = $databaseType->getDialect()->getIdentifierQuote();
         $sql = 'SELECT ' . $columns . ' FROM ' . self::prepareTableName($from, $quote);
 
         if ($join !== null) {
@@ -86,7 +86,7 @@ class SqlBuilder
             return self::$cache[$cacheKey];
         }
 
-        $quote = $databaseType === DatabaseType::postgres ? '"' : '`';
+        $quote = $databaseType->getDialect()->getIdentifierQuote();
         $sql = 'INSERT INTO ' . self::prepareTableName($table, $quote);
         $sql .= ' (' . implode(', ', array_map(fn($col) => $quote . $col . $quote, $columns)) . ')';
         $sql .= ' VALUES (' . implode(', ', $values) . ')';
@@ -113,7 +113,7 @@ class SqlBuilder
             return self::$cache[$cacheKey];
         }
 
-        $quote = $databaseType === DatabaseType::postgres ? '"' : '`';
+        $quote = $databaseType->getDialect()->getIdentifierQuote();
         $setParts = [];
 
         foreach ($setValues as $column => $value) {
@@ -148,7 +148,7 @@ class SqlBuilder
             return self::$cache[$cacheKey];
         }
 
-        $quote = $databaseType === DatabaseType::postgres ? '"' : '`';
+        $quote = $databaseType->getDialect()->getIdentifierQuote();
         $sql = 'DELETE FROM ' . self::prepareTableName($table, $quote);
 
         if ($where !== null) {

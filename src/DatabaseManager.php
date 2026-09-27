@@ -2,11 +2,8 @@
 
 namespace krzysztofzylka\DatabaseManager;
 
-use Exception;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
-use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
-use PDO;
 use PDOStatement;
 
 class DatabaseManager
@@ -97,136 +94,39 @@ class DatabaseManager
      * Get all tables from database
      * @param string|null $connectionName
      * @return array
-     * @throws Exception
+     * @throws ConnectException
      */
     public static function getTables(?string $connectionName = null): array
     {
-        $tables = [];
-        $connection = is_null($connectionName)
-            ? self::$connection
-            : ConnectionManager::getConnection($connectionName);
-        $databaseType = $connection->getType();
+        $connection = self::resolveConnection($connectionName);
 
-        switch ($databaseType->name) {
-            case 'mysql':
-                $query = "SHOW TABLES";
-                break;
-            case 'postgres':
-                $query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'";
-                break;
-            case 'sqlite':
-                $query = "SELECT name FROM sqlite_master WHERE type='table'";
-                break;
-            default:
-                throw new Exception("Unsupported database type: " . $databaseType->value);
-        }
-
-        $result = $connection->getConnection()->query($query);
-
-        if ($result !== false) {
-            while ($row = $result->fetch(PDO::FETCH_NUM)) {
-                $tables[] = $row[0];
-            }
-        }
-
-        return $tables;
+        return $connection->getType()->getDialect()->listTables($connection->getConnection());
     }
 
     /**
      * Get detailed information about all tables in the current database
      * @param string|null $connectionName
      * @return array Array of table details, each containing information about columns, types, and constraints.
-     * @throws Exception
+     * @throws ConnectException
      */
     public static function getTableDetails(?string $connectionName = null): array
     {
-        $details = [];
-        $connection = is_null($connectionName)
+        $connection = self::resolveConnection($connectionName);
+
+        return $connection->getType()->getDialect()->tableDetails($connection->getConnection());
+    }
+
+    /**
+     * Get the named connection, or the default one when no name is given
+     * @param string|null $connectionName
+     * @return DatabaseConnect
+     * @throws ConnectException
+     */
+    private static function resolveConnection(?string $connectionName): DatabaseConnect
+    {
+        return is_null($connectionName)
             ? self::$connection
             : ConnectionManager::getConnection($connectionName);
-        $databaseType = $connection->getType();
-
-        switch ($databaseType->name) {
-            case 'mysql':
-                $query = "
-                SELECT 
-                    TABLE_NAME, 
-                    COLUMN_NAME, 
-                    COLUMN_TYPE, 
-                    IS_NULLABLE, 
-                    COLUMN_KEY, 
-                    EXTRA 
-                FROM 
-                    information_schema.COLUMNS 
-                WHERE 
-                    TABLE_SCHEMA = DATABASE()
-            ";
-                break;
-
-            case 'postgres':
-                $query = "
-                SELECT 
-                    c.table_name, 
-                    c.column_name, 
-                    c.data_type, 
-                    c.is_nullable, 
-                    tc.constraint_type
-                FROM 
-                    information_schema.columns AS c
-                LEFT JOIN 
-                    information_schema.key_column_usage AS kcu
-                ON 
-                    c.table_name = kcu.table_name AND c.column_name = kcu.column_name
-                LEFT JOIN 
-                    information_schema.table_constraints AS tc
-                ON 
-                    kcu.constraint_name = tc.constraint_name
-                WHERE 
-                    c.table_schema = 'public'
-            ";
-                break;
-
-            case 'sqlite':
-                $tableQuery = "SELECT name FROM sqlite_master WHERE type='table'";
-                $tableResult = $connection->getConnection()->query($tableQuery);
-
-                if ($tableResult !== false) {
-                    while ($row = $tableResult->fetch(PDO::FETCH_NUM)) {
-                        $tableName = $row[0];
-                        $columnsQuery = "PRAGMA table_info('$tableName')";
-                        $columnsResult = $connection->getConnection()->query($columnsQuery);
-
-                        $tableDetails = [];
-                        if ($columnsResult !== false) {
-                            while ($column = $columnsResult->fetch(PDO::FETCH_ASSOC)) {
-                                $tableDetails[] = [
-                                    'column_name' => $column['name'],
-                                    'column_type' => $column['type'],
-                                    'is_nullable' => $column['notnull'] === 1 ? 'NO' : 'YES',
-                                    'default_value' => $column['dflt_value'],
-                                    'is_primary_key' => $column['pk'] === 1 ? 'YES' : 'NO',
-                                ];
-                            }
-                        }
-                        $details[$tableName] = $tableDetails;
-                    }
-                }
-                return $details;
-
-            default:
-                throw new DatabaseManagerException("Unsupported database type: " . $databaseType->value);
-        }
-
-        $result = $connection->getConnection()->query($query);
-
-        if ($result !== false) {
-            while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-                $tableName = $row['TABLE_NAME'] ?? $row['table_name'];
-                $details[$tableName][] = $row;
-            }
-        }
-
-        return $details;
     }
 
 }

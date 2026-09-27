@@ -39,15 +39,6 @@ class Where
     }
 
     /**
-     * Get quote character for identifiers
-     * @return string
-     */
-    private function getQuote(): string
-    {
-        return $this->databaseType === DatabaseType::postgres ? '"' : '`';
-    }
-
-    /**
      * Prepare conditions with bind parameters
      * @param array $data
      * @param string $type
@@ -60,7 +51,6 @@ class Where
         try {
             $sqlArray = [];
             $bindValues = [];
-            $quote = $this->getQuote();
 
             foreach ($data as $nextType => $conditionValue) {
                 if ((strtoupper($nextType) === 'OR' || strtoupper($nextType) === 'AND') && is_array($conditionValue)) {
@@ -95,7 +85,7 @@ class Where
                     if (array_key_exists(0, $conditionValue) && count($conditionValue) === 2 && is_string($conditionValue[0]) && strtoupper($conditionValue[0]) === 'BETWEEN') {
                         $bindKey1 = ':bind_' . $bindIndex++;
                         $bindKey2 = ':bind_' . $bindIndex++;
-                        $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' BETWEEN ' . $bindKey1 . ' AND ' . $bindKey2;
+                        $sqlArray[] = $this->databaseType->getDialect()->quoteIdentifier($nextType) . ' BETWEEN ' . $bindKey1 . ' AND ' . $bindKey2;
                         $bindValues[$bindKey1] = $conditionValue[1][0];
                         $bindValues[$bindKey2] = $conditionValue[1][1];
                     } elseif (
@@ -118,7 +108,7 @@ class Where
                     ) {
                         $operator = strtoupper(trim($conditionValue[0]));
                         $bindKey = ':bind_' . $bindIndex++;
-                        $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' ' . $operator . ' ' . $bindKey;
+                        $sqlArray[] = $this->databaseType->getDialect()->quoteIdentifier($nextType) . ' ' . $operator . ' ' . $bindKey;
                         $bindValues[$bindKey] = $conditionValue[1];
                     } else {
                         $isIndexedArray = array_keys($conditionValue) === range(0, count($conditionValue) - 1);
@@ -149,7 +139,7 @@ class Where
                                     $bindValues[$bindKey] = $val;
                                 }
 
-                                $sqlArray[] = Table::prepareColumnNameWithAlias($nextType, $quote) . ' IN (' . implode(', ', $inBinds) . ')';
+                                $sqlArray[] = $this->databaseType->getDialect()->quoteIdentifier($nextType) . ' IN (' . implode(', ', $inBinds) . ')';
                             }
                         } else {
                             $subType = is_string($nextType) ? $nextType : 'AND';
@@ -164,9 +154,7 @@ class Where
                 } else {
                     // Obsługa prostych wartości (bool, int, string, float)
                     $bindKey = ':bind_' . $bindIndex++;
-                    $columnName = $nextType;
-                    $columnName = Table::prepareColumnNameWithAlias($columnName, $quote);
-                    $sqlArray[] = $columnName . ' = ' . $bindKey;
+                    $sqlArray[] = $this->databaseType->getDialect()->quoteIdentifier($nextType) . ' = ' . $bindKey;
                     $bindValues[$bindKey] = $conditionValue;
                 }
             }

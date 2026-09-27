@@ -4,7 +4,6 @@ namespace krzysztofzylka\DatabaseManager;
 
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
-use krzysztofzylka\DatabaseManager\Helper\Table as TableHelper;
 use krzysztofzylka\DatabaseManager\Trait\ConditionMethods;
 
 class Condition
@@ -72,8 +71,7 @@ class Condition
             return $this->column;
         }
 
-        $quote = $this->databaseType === DatabaseType::postgres ? '"' : '`';
-        return TableHelper::prepareColumnNameWithAlias($this->column, $quote);
+        return $this->databaseType->getDialect()->quoteIdentifier($this->column);
     }
 
     /**

@@ -244,14 +244,13 @@ class ColumnsTest extends TestCase
         $this->assertTrue($column->isPrimary());
     }
 
-    public function testIdColumnOnSqliteUsesIntegerType(): void
+    public function testIdColumnOnSqliteRendersAsIntegerPrimaryKeyAutoincrement(): void
     {
-        $this->connectWithMockPdo(DatabaseType::sqlite);
-
         $column = new IdColumn();
 
-        $this->assertSame(ColumnType::integer, $column->getType());
-        $this->assertTrue($column->isPrimary());
-        $this->assertTrue($column->isAutoincrement());
+        $this->assertSame(
+            '`id` INTEGER PRIMARY KEY AUTOINCREMENT',
+            DatabaseType::sqlite->getDialect()->columnDefinition($column)
+        );
     }
 }

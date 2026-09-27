@@ -3,11 +3,10 @@
 namespace krzysztofzylka\DatabaseManager;
 
 use Exception;
-use Exception\ConnectException;
+use krzysztofzylka\DatabaseManager\Dialect\DatabaseDialect;
 use krzysztofzylka\DatabaseManager\Enum\ColumnType;
-use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
+use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
-use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
 use krzysztofzylka\DatabaseManager\Helper\SqlIdentifier;
 
 class AlterTable
@@ -89,7 +88,8 @@ class AlterTable
         }
 
         $enumValues = "'" . implode("','", $columnType) . "'";
-        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` CHANGE `' . $columnName . '` `' . $columnName . '` ENUM(' . $enumValues . ');';
+        $column = $this->quote($columnName);
+        $this->sql[] = 'ALTER TABLE ' . $this->quote($this->getName()) . ' CHANGE ' . $column . ' ' . $column . ' ENUM(' . $enumValues . ');';
 
         return $this;
     }
@@ -102,20 +102,15 @@ class AlterTable
      */
     public function addColumn(Column $column, ?string $afterColumnName = null): self
     {
-        $columnString = PrepareColumn::generateCreateColumnSql($column);
-
-        if ($column->isPrimary() && DatabaseManager::getDatabaseType() === DatabaseType::mysql) {
-            $this->primary[] = 'PRIMARY KEY (' . $column->getName() . ')';
-        }
-
+        $columnString = $this->getDialect()->columnDefinition($column);
         $after = '';
 
         if (!is_null($afterColumnName)) {
             SqlIdentifier::validate($afterColumnName);
-            $after .= ' AFTER `' . $afterColumnName . '`';
+            $after .= ' AFTER ' . $this->quote($afterColumnName);
         }
 
-        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` ADD ' . $columnString . $after . ';';
+        $this->sql[] = 'ALTER TABLE ' . $this->quote($this->getName()) . ' ADD ' . $columnString . $after . ';';
 
         return $this;
     }
@@ -130,7 +125,7 @@ class AlterTable
     {
         SqlIdentifier::validate($columnName);
 
-        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` DROP COLUMN `' . $columnName . '`;';
+        $this->sql[] = 'ALTER TABLE ' . $this->quote($this->getName()) . ' DROP COLUMN ' . $this->quote($columnName) . ';';
 
         return $this;
     }
@@ -150,7 +145,7 @@ class AlterTable
         $size = $size ? '(' . $size . ') ' : '';
         $attributesString = !empty($attributes) ? ' ' . implode(' ', $attributes) : '';
 
-        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` MODIFY `' . $columnName . '` ' . $columnType->name . trim($size) . $attributesString . ';';
+        $this->sql[] = 'ALTER TABLE ' . $this->quote($this->getName()) . ' MODIFY ' . $this->quote($columnName) . ' ' . $columnType->name . trim($size) . $attributesString . ';';
 
         return $this;
     }
@@ -167,7 +162,7 @@ class AlterTable
         SqlIdentifier::validate($oldName);
         SqlIdentifier::validate($newName);
 
-        $this->sql[] = 'ALTER TABLE `' . $this->getName() . '` RENAME COLUMN `' . $oldName . '` TO `' . $newName . '`;';
+        $this->sql[] = 'ALTER TABLE ' . $this->quote($this->getName()) . ' RENAME COLUMN ' . $this->quote($oldName) . ' TO ' . $this->quote($newName) . ';';
 
         return $this;
     }
@@ -194,6 +189,27 @@ class AlterTable
         } catch (Exception $exception) {
             throw new DatabaseManagerException($exception->getMessage());
         }
+    }
+
+    /**
+     * SQL dialect of the default connection
+     * @return DatabaseDialect
+     * @throws ConnectException
+     */
+    private function getDialect(): DatabaseDialect
+    {
+        return DatabaseManager::getDatabaseType()->getDialect();
+    }
+
+    /**
+     * Quote an identifier for the default connection
+     * @param string $name
+     * @return string
+     * @throws ConnectException
+     */
+    private function quote(string $name): string
+    {
+        return $this->getDialect()->quoteIdentifier($name);
     }
 
 }

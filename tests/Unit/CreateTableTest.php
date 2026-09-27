@@ -96,7 +96,7 @@ class CreateTableTest extends TestCase
         $this->assertStringContainsString('AUTO_INCREMENT', $columns[0]);
 
         $this->assertCount(1, $primary);
-        $this->assertEquals('PRIMARY KEY (id)', $primary[0]);
+        $this->assertEquals('PRIMARY KEY (`id`)', $primary[0]);
     }
 
     public function testAddEmailColumn(): void

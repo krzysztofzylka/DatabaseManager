@@ -3,6 +3,7 @@
 namespace krzysztofzylka\DatabaseManager;
 
 use Exception;
+use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\Helper\SqlIdentifier;
@@ -36,6 +37,12 @@ class CreateIndex
     private PDO $pdo;
 
     /**
+     * Database type
+     * @var DatabaseType
+     */
+    private DatabaseType $databaseType;
+
+    /**
      * Connection name
      * @var string|null
      */
@@ -62,13 +69,17 @@ class CreateIndex
         if (!is_null($connectionName)) {
             try {
                 $this->connectionName = $connectionName;
-                $this->pdo = ConnectionManager::getConnection($connectionName)->getConnection();
+                $connection = ConnectionManager::getConnection($connectionName);
+                $this->pdo = $connection->getConnection();
+                $this->databaseType = $connection->getType();
             } catch (ConnectException $e) {
                 $this->pdo = DatabaseManager::$connection->getConnection();
+                $this->databaseType = DatabaseManager::$connection->getType();
                 $this->connectionName = null;
             }
         } else {
             $this->pdo = DatabaseManager::$connection->getConnection();
+            $this->databaseType = DatabaseManager::$connection->getType();
         }
 
         $this->setTableName($tableName);
@@ -94,6 +105,7 @@ class CreateIndex
         try {
             $connection = ConnectionManager::getConnection($connectionName);
             $this->pdo = $connection->getConnection();
+            $this->databaseType = $connection->getType();
             $this->connectionName = $connectionName;
         } catch (ConnectException $e) {
             throw new DatabaseManagerException("Connection '$connectionName' not found");
@@ -109,6 +121,7 @@ class CreateIndex
     public function useDefaultConnection(): self
     {
         $this->pdo = DatabaseManager::$connection->getConnection();
+        $this->databaseType = DatabaseManager::$connection->getType();
         $this->connectionName = null;
 
         return $this;
@@ -170,7 +183,10 @@ class CreateIndex
      */
     public function execute(): bool
     {
-        $sql = 'CREATE INDEX ' . $this->getName() . ' ON ' . $this->tableName . '(`' . implode('`, `', $this->columns) . '`)';
+        $dialect = $this->databaseType->getDialect();
+        $sql = 'CREATE INDEX ' . $dialect->quoteIdentifier($this->getName())
+            . ' ON ' . $dialect->quoteIdentifier($this->tableName)
+            . '(' . implode(', ', array_map([$dialect, 'quoteIdentifier'], $this->columns)) . ')';
 
         try {
             DatabaseManager::setLastSql($sql);

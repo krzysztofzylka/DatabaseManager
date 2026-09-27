@@ -3,9 +3,7 @@
 namespace krzysztofzylka\DatabaseManager\Trait;
 
 use Exception;
-use krzysztofzylka\DatabaseManager\ConnectionManager;
 use krzysztofzylka\DatabaseManager\DatabaseManager;
-use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
 use krzysztofzylka\DatabaseManager\GroupBy;
 use krzysztofzylka\DatabaseManager\Helper\SqlBuilder;
@@ -16,38 +14,6 @@ use PDO;
 
 trait TableSelect
 {
-
-    /**
-     * Get database type for the current connection
-     * @return DatabaseType
-     */
-    private function getDatabaseType(): DatabaseType
-    {
-        if (isset($this->databaseType)) {
-            return $this->databaseType;
-        }
-
-        if (isset($this->connectionName) && !is_null($this->connectionName)) {
-            try {
-                return ConnectionManager::getConnection($this->connectionName)->getType();
-            } catch (Exception $e) {
-            }
-        }
-
-        return DatabaseManager::$connection->getType();
-    }
-
-    /**
-     * Get SQL identifier quote character
-     * @return string
-     */
-    private function getIdQuote(): string
-    {
-        if ($this->getDatabaseType() === DatabaseType::postgres) {
-            return '"';
-        }
-        return '`';
-    }
 
     /**
      * Find one element
@@ -300,12 +266,12 @@ trait TableSelect
 
                 if (preg_match('/\s+as\s+([a-zA-Z0-9_.]+)/i', $expr, $m)) {
                     $alias = $m[1];
-                    if (!str_starts_with($alias, '`') && !str_ends_with($alias, '`')) {
+                    if (!str_starts_with($alias, $quote) && !str_ends_with($alias, $quote)) {
                         if (!str_contains($alias, '.')) {
                             $alias = $this->getName() . '.' . $alias;
                         }
 
-                        $aliasTicked = '`' . $alias . '`';
+                        $aliasTicked = $quote . $alias . $quote;
                         $expr = preg_replace('/\s+as\s+' . preg_quote($m[1], '/') . '/i', ' as ' . $aliasTicked, $expr);
                     }
                 }
@@ -315,7 +281,7 @@ trait TableSelect
             if (!str_contains($column, '.')) {
                 $column = $this->getName() . '.' . $column;
             }
-            $columns[$id] = \krzysztofzylka\DatabaseManager\Helper\Table::prepareColumnNameWithAlias($column, $quote) . ' as ' . $quote . $column . $quote;
+            $columns[$id] = $this->getDialect()->quoteIdentifier($column) . ' as ' . $quote . $column . $quote;
         }
 
         return implode(', ', $columns);

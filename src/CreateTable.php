@@ -7,7 +7,6 @@ use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Enum\Trigger;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 use krzysztofzylka\DatabaseManager\Exception\DatabaseManagerException;
-use krzysztofzylka\DatabaseManager\Helper\PrepareColumn;
 use krzysztofzylka\DatabaseManager\Helper\SqlIdentifier;
 use krzysztofzylka\DatabaseManager\Trait\TablePredefinedColumn;
 use PDO;
@@ -154,20 +153,23 @@ class CreateTable
     /**
      * @param Column $column
      * @return CreateTable
-     * @throws ConnectException
      */
     public function addColumn(Column $column): self
     {
-        $this->columns[] = PrepareColumn::generateCreateColumnSql($column, $this->databaseType);
+        $dialect = $this->databaseType->getDialect();
+        $this->columns[] = $dialect->columnDefinition($column);
+        $primaryKey = $dialect->primaryKeyClause($column);
 
-        if ($column->isPrimary() && $this->databaseType === DatabaseType::mysql) {
-            $this->primary[] = 'PRIMARY KEY (' . $column->getName() . ')';
+        if (!is_null($primaryKey)) {
+            $this->primary[] = $primaryKey;
         }
 
-        if ($this->databaseType === DatabaseType::mysql) {
-            /** @var Trigger $trigger */
-            foreach ($column->getTriggers() as $trigger) {
-                $this->additionalSql[] = $trigger->generate($this->getName(), $column->getName()) . ';';
+        /** @var Trigger $trigger */
+        foreach ($column->getTriggers() as $trigger) {
+            $triggerSql = $dialect->triggerSql($trigger, $this->getName(), $column->getName());
+
+            if (!is_null($triggerSql)) {
+                $this->additionalSql[] = $triggerSql;
             }
         }
 
@@ -207,23 +209,7 @@ class CreateTable
      */
     private function buildCreateTableSql(): string
     {
-        if ($this->databaseType === DatabaseType::postgres) {
-            // PostgreSQL używa podwójnych cudzysłowów dla identyfikatorów
-            $sql = 'CREATE TABLE "' . $this->name . '" (';
-            $sql .= implode(', ', $this->columns);
-            // W PostgreSQL, klucze primary są zwykle definiowane w definicji kolumny
-            $sql .= ')';
-
-            return $sql;
-        } else {
-            // MySQL/SQLite używa backticks
-            $sql = 'CREATE TABLE `' . $this->name . '` (';
-            $sql .= implode(', ', $this->columns);
-            $sql .= (!empty($this->primary) ? ', ' . implode(', ', $this->primary) : '');
-            $sql .= ')';
-
-            return $sql;
-        }
+        return $this->databaseType->getDialect()->createTableSql($this->name, $this->columns, $this->primary);
     }
 
 }

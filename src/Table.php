@@ -3,6 +3,8 @@
 namespace krzysztofzylka\DatabaseManager;
 
 use Exception;
+use InvalidArgumentException;
+use krzysztofzylka\DatabaseManager\Dialect\DatabaseDialect;
 use krzysztofzylka\DatabaseManager\Enum\BindType;
 use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
@@ -179,15 +181,21 @@ class Table
     }
 
     /**
+     * Get SQL dialect of the current connection
+     * @return DatabaseDialect
+     */
+    private function getDialect(): DatabaseDialect
+    {
+        return $this->getDatabaseType()->getDialect();
+    }
+
+    /**
      * Get SQL identifier quote character
      * @return string
      */
     private function getIdQuote(): string
     {
-        if ($this->getDatabaseType() === DatabaseType::postgres) {
-            return '"';
-        }
-        return '`';
+        return $this->getDialect()->getIdentifierQuote();
     }
 
     /**
@@ -309,39 +317,7 @@ class Table
             if (!is_null($cacheData)) {
                 $return = $cacheData;
             } else {
-                if ($this->getDatabaseType() === DatabaseType::sqlite) {
-                    $sql = 'pragma table_info("' . $this->getName() . '");';
-                    DatabaseManager::setLastSql($sql);
-                    $data = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-
-                    foreach ($data as $column) {
-                        $return[] = [
-                            'Field' => $column['name'],
-                            'Type' => $column['type'],
-                            'Null' => $column['notnull'] ? 'NO' : 'YES',
-                            'Key' => $column['pk'] ? 'PRI' : '',
-                            'Default' => $column['dflt_value'],
-                            'Extra' => ''
-                        ];
-                    }
-                } elseif ($this->getDatabaseType() === DatabaseType::mysql) {
-                    $sql = 'DESCRIBE `' . $this->getName() . '`;';
-                    DatabaseManager::setLastSql($sql);
-                    $return = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-                } elseif ($this->getDatabaseType() === DatabaseType::postgres) {
-                    $sql = "SELECT
-                        column_name AS \"Field\",
-                        data_type AS \"Type\",
-                        CASE WHEN is_nullable = 'YES' THEN 'YES' ELSE 'NO' END AS \"Null\",
-                        CASE WHEN column_default IS NOT NULL THEN column_default ELSE '' END AS \"Default\",
-                        CASE WHEN column_name IN (SELECT column_name FROM information_schema.key_column_usage WHERE table_name = '" . $this->getName() . "') THEN 'PRI' ELSE '' END AS \"Key\",
-                        '' AS \"Extra\"
-                    FROM information_schema.columns
-                    WHERE table_name = '" . $this->getName() . "'
-                    ORDER BY ordinal_position;";
-                    DatabaseManager::setLastSql($sql);
-                    $return = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-                }
+                $return = $this->getDialect()->columnList($this->pdo, $this->getName());
             }
 
             if (!is_null($columnName)) {
@@ -400,10 +376,7 @@ class Table
                 $quote . implode($quote . ', ' . $quote, array_keys($data)) . $quote .
                 ') VALUES (:' . implode(', :', array_keys($data)) . ')';
 
-            // Dla PostgreSQL, dodaj RETURNING id dla auto-generowanych kluczy
-            if ($this->getDatabaseType() === DatabaseType::postgres) {
-                $sql .= ' RETURNING id';
-            }
+            $sql .= $this->getDialect()->insertReturningClause();
 
             DatabaseManager::setLastSql($sql);
             $insert = $this->pdo->prepare($sql);
@@ -413,13 +386,7 @@ class Table
             }
 
             if ($insert->execute()) {
-                if ($this->getDatabaseType() === DatabaseType::postgres) {
-                    // Dla PostgreSQL, pobierz ID z zapytania RETURNING
-                    $idResult = $insert->fetch(PDO::FETCH_ASSOC);
-                    $this->setId($idResult['id'] ?? null);
-                } else {
-                    $this->setId($this->pdo->lastInsertId());
-                }
+                $this->setId($this->getDialect()->lastInsertId($insert, $this->pdo));
 
                 return true;
             } else {
@@ -495,26 +462,7 @@ class Table
      */
     public function exists(): bool
     {
-        if ($this->getDatabaseType() === DatabaseType::sqlite) {
-            $sql = 'SELECT sql FROM sqlite_master WHERE type="table" AND name LIKE "%' . $this->getName() . '%";';
-            DatabaseManager::setLastSql($sql);
-
-            return !empty($this->pdo->query($sql)->fetchAll());
-        } elseif ($this->getDatabaseType() === DatabaseType::postgres) {
-            $sql = "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ? LIMIT 1;";
-            DatabaseManager::setLastSql($sql);
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$this->getName()]);
-
-            return $stmt->fetchColumn() >= 1;
-        } else {
-            $sql = 'SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? LIMIT 1;';
-            DatabaseManager::setLastSql($sql);
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$this->getName()]);
-
-            return $stmt->fetchColumn() >= 1;
-        }
+        return $this->getDialect()->tableExists($this->pdo, $this->getName());
     }
 
     /**
@@ -542,34 +490,13 @@ class Table
      * Check if a column in a table has a UNIQUE constraint
      * @param string $columnName The name of the column
      * @return bool True if the column has a UNIQUE constraint, otherwise false
-     * @throws Exception
+     * @throws InvalidArgumentException when the column name is not a valid identifier
      */
     public function isColumnUnique(string $columnName): bool
     {
-        if ($this->getDatabaseType() === DatabaseType::postgres) {
-            $query = "SELECT COUNT(*) FROM pg_constraint c
-                     JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
-                     WHERE c.conrelid = '" . $this->getName() . "'::regclass
-                     AND c.contype = 'u'
-                     AND a.attname = '" . $columnName . "'";
+        SqlIdentifier::validate($columnName);
 
-            $result = $this->pdo->query($query)->fetchColumn();
-            return (int)$result > 0;
-        } else {
-            $tablesDetails = DatabaseManager::getTableDetails();
-
-            if (!isset($tablesDetails[$this->getName()])) {
-                return false;
-            }
-
-            foreach ($tablesDetails[$this->getName()] as $columnDetails) {
-                if ($columnDetails['COLUMN_NAME'] === $columnName && $columnDetails['COLUMN_KEY'] === 'UNI') {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return $this->getDialect()->isColumnUnique($this->pdo, $this->getName(), $columnName);
     }
 
     /**

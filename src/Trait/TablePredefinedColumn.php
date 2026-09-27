@@ -4,10 +4,8 @@ namespace krzysztofzylka\DatabaseManager\Trait;
 
 use krzysztofzylka\DatabaseManager\Column;
 use krzysztofzylka\DatabaseManager\CreateTable;
-use krzysztofzylka\DatabaseManager\DatabaseManager;
 use krzysztofzylka\DatabaseManager\Enum\ColumnDefault;
 use krzysztofzylka\DatabaseManager\Enum\ColumnType;
-use krzysztofzylka\DatabaseManager\Enum\DatabaseType;
 use krzysztofzylka\DatabaseManager\Enum\Trigger;
 use krzysztofzylka\DatabaseManager\Exception\ConnectException;
 
@@ -29,14 +27,6 @@ trait TablePredefinedColumn
             ->setNull(false)
             ->setAutoincrement(true)
             ->setPrimary(true);
-
-        if (DatabaseManager::getDatabaseType() === DatabaseType::sqlite) {
-            $column = (new Column())
-                ->setName('id')
-                ->setType(ColumnType::integer)
-                ->setPrimary(true)
-                ->setAutoincrement(true);
-        }
 
         $this->addColumn($column);
 
